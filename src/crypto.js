@@ -7,7 +7,7 @@ var Internal = Internal || {};
 (function() {
     'use strict';
 
-    var crypto = window.crypto;
+    var crypto = self.crypto;
 
     if (!crypto || !crypto.subtle || typeof crypto.getRandomValues !== 'function') {
         throw new Error('WebCrypto not found');
