@@ -195,7 +195,7 @@ module.exports = function(grunt) {
         return "'_" + name + "'";
       });
       var flags = [
-          '-O2',
+          '-O3',
           '--memory-init-file 0',
           '-Qunused-arguments',
           '-s INLINING_LIMIT=1',
