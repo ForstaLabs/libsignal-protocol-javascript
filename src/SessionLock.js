@@ -3,21 +3,27 @@
   * session io ops on the database.
   */
 ;(function() {
-'use strict';
+    'use strict';
 
-Internal.SessionLock = {};
+    Internal.SessionLock = {};
+    const jobQueue = {};
 
-var jobQueue = {};
-
-Internal.SessionLock.queueJobForNumber = function queueJobForNumber(number, runJob) {
-     var runPrevious = jobQueue[number] || Promise.resolve();
-     var runCurrent = jobQueue[number] = runPrevious.then(runJob, runJob);
-     runCurrent.then(function() {
-         if (jobQueue[number] === runCurrent) {
-             delete jobQueue[number];
-         }
-     });
-     return runCurrent;
-};
-
+    Internal.SessionLock.queueJobForNumber = async function queueJobForNumber(number, job) {
+        const running = jobQueue[number];
+        jobQueue[number] = job;
+        try {
+            // Wait for current job to finish first...
+            if (running) {
+                await running;
+            }
+        } finally {
+            try {
+                return await job();
+            } finally {
+                if (jobQueue[number] === job) {
+                    delete jobQueue[number];  // We're the last one, do cleanup.
+                }
+            }
+        }
+    };
 })();
