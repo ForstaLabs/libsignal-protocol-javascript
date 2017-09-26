@@ -80,7 +80,7 @@ module.exports = function(grunt) {
         ],
         dest: 'dist/libsignal-protocol.js',
         options: {
-          banner: ';(function(){\nvar Internal = {};\nwindow.libsignal = {};\n',
+          banner: ';(function(){\nvar Internal = {};\nself.libsignal = {};\n',
           footer: '\n})();'
         }
 
@@ -95,7 +95,7 @@ module.exports = function(grunt) {
         ],
         dest: 'test/test.js',
         options: {
-          banner: 'var Internal = {};\nwindow.libsignal = {};\n'
+          banner: 'var Internal = {};\nself.libsignal = {};\n'
         }
       }
     },
