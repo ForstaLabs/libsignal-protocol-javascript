@@ -195,8 +195,10 @@ module.exports = function(grunt) {
         return "'_" + name + "'";
       });
       var flags = [
-          '-O1',
+          '-O2',
+          '--memory-init-file 0',
           '-Qunused-arguments',
+          '-s INLINING_LIMIT=1',
           '-o',  outfile,
           '-Inative/ed25519/nacl_includes -Inative/ed25519 -Inative/ed25519/sha512',
           '-s', "EXPORTED_FUNCTIONS=\"[" + exported_functions.join(',') + "]\""];
