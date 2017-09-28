@@ -10527,7 +10527,7 @@ Internal.SessionRecord = function() {
             }
             if (util.toString(this.identityKey) !== util.toString(session.indexInfo.remoteIdentityKey)) {
                 var e = new Error("Identity key changed at session save time");
-                e.identityKey = session.indexInfo.remoteIdentityKey.toArrayBuffer();
+                e.identityKey = util.toArrayBuffer(session.indexInfo.remoteIdentityKey);
                 throw e;
             }
 
