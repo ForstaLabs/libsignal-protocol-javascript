@@ -62,10 +62,10 @@ module.exports = function(grunt) {
       },
       libsignalprotocol: {
         src: [
+          'src/compat.js',
           'build/curve25519_concat.js',
           'src/curve25519_worker_manager.js',
           'build/components_concat.js',
-
           'src/Curve.js',
           'src/crypto.js',
           'src/helpers.js',
