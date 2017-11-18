@@ -10377,6 +10377,7 @@ Internal.BaseKeyType = {
   OURS: 1,
   THEIRS: 2
 };
+
 Internal.ChainType = {
   SENDING: 1,
   RECEIVING: 2
@@ -10398,6 +10399,7 @@ Internal.SessionRecord = function() {
                     thing.__proto__ == StaticUint8ArrayProto ||
                     thing.__proto__ == StaticByteBufferProto));
     }
+
     function ensureStringed(thing) {
         if (typeof thing == "string" || typeof thing == "number" || typeof thing == "boolean") {
             return thing;
@@ -10461,6 +10463,7 @@ Internal.SessionRecord = function() {
                 identityKey    : this.identityKey
             });
         },
+
         haveOpenSession: function() {
             return this.registrationId !== null;
         },
@@ -10473,6 +10476,7 @@ Internal.SessionRecord = function() {
             }
             return session;
         },
+
         getSessionByRemoteEphemeralKey: function(remoteEphemeralKey) {
             this.detectDuplicateOpenSessions();
             var sessions = this._sessions;
@@ -10494,6 +10498,7 @@ Internal.SessionRecord = function() {
 
             return undefined;
         },
+
         getOpenSession: function() {
             var sessions = this._sessions;
             if (sessions === undefined) {
@@ -10509,6 +10514,7 @@ Internal.SessionRecord = function() {
             }
             return undefined;
         },
+
         detectDuplicateOpenSessions: function() {
             var openSession;
             var sessions = this._sessions;
@@ -10521,6 +10527,7 @@ Internal.SessionRecord = function() {
                 }
             }
         },
+
         updateSessionState: function(session, registrationId) {
             var sessions = this._sessions;
 
@@ -10553,6 +10560,7 @@ Internal.SessionRecord = function() {
                 throw new Error("Had open sessions on a record that had no registrationId set");
             }
         },
+
         getSessions: function() {
             // return an array of sessions ordered by time closed,
             // followed by the open session
@@ -10573,6 +10581,7 @@ Internal.SessionRecord = function() {
             }
             return list;
         },
+
         archiveCurrentState: function() {
             var open_session = this.getOpenSession();
             if (open_session !== undefined) {
@@ -10580,12 +10589,11 @@ Internal.SessionRecord = function() {
                 this.updateSessionState(open_session);
             }
         },
+
         closeSession: function(session) {
             if (session.indexInfo.closed > -1) {
                 return;
             }
-            console.log('closing session', session.indexInfo.baseKey);
-
             // After this has run, we can still receive messages on ratchet chains which
             // were already open (unless we know we dont need them),
             // but we cannot send messages or step the ratchet
@@ -10603,6 +10611,7 @@ Internal.SessionRecord = function() {
             session.indexInfo.closed = Date.now();
             this.removeOldChains(session);
         },
+
         removeOldChains: function(session) {
             // Sending ratchets are always removed when we step because we never need them again
             // Receiving ratchets are added to the oldRatchetList, which we parse
@@ -10616,13 +10625,12 @@ Internal.SessionRecord = function() {
                         index = i;
                     }
                 }
-                console.log("Deleting chain closed at", oldest.added);
                 delete session[util.toString(oldest.ephemeralKey)];
                 session.oldRatchetList.splice(index, 1);
             }
         },
+
         removeOldSessions: function() {
-            // Retain only the last 20 sessions
             var sessions = this._sessions;
             var oldestBaseKey, oldestSession;
             while (Object.keys(sessions).length > ARCHIVED_STATES_MAX_LENGTH) {
@@ -10634,10 +10642,9 @@ Internal.SessionRecord = function() {
                         oldestSession = session;
                     }
                 }
-                console.log("Deleting session closed at", oldestSession.indexInfo.closed);
                 delete sessions[util.toString(oldestBaseKey)];
             }
-        },
+        }
     };
 
     return SessionRecord;
