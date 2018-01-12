@@ -89,7 +89,9 @@ SessionCipher.prototype = {
               preKeyMsg.registrationId = myRegistrationId;
 
               preKeyMsg.baseKey = util.toArrayBuffer(session.pendingPreKey.baseKey);
-              preKeyMsg.preKeyId = session.pendingPreKey.preKeyId;
+              if (session.pendingPreKey.preKeyId) {
+                  preKeyMsg.preKeyId = session.pendingPreKey.preKeyId;
+              }
               preKeyMsg.signedPreKeyId = session.pendingPreKey.signedKeyId;
 
               preKeyMsg.message = message;
@@ -97,14 +99,14 @@ SessionCipher.prototype = {
               return {
                   type           : 3,
                   body           : result,
-                  registrationId : record.registrationId
+                  registrationId : session.registrationId
               };
 
           } else {
               return {
                   type           : 1,
                   body           : util.toString(message),
-                  registrationId : record.registrationId
+                  registrationId : session.registrationId
               };
           }
       });
@@ -122,6 +124,10 @@ SessionCipher.prototype = {
     return this.doDecryptWhisperMessage(buffer, session).then(function(plaintext) {
         return { plaintext: plaintext, session: session };
     }).catch(function(e) {
+        if (e.name === 'MessageCounterError') {
+            return Promise.reject(e);
+        }
+
         errors.push(e);
         return this.decryptWithSessionList(buffer, sessionList, errors);
     }.bind(this));
@@ -137,6 +143,10 @@ SessionCipher.prototype = {
             var errors = [];
             return this.decryptWithSessionList(buffer, record.getSessions(), errors).then(function(result) {
                 return this.getRecord(address).then(function(record) {
+                    if (result.session.indexInfo.baseKey !== record.getOpenSession().indexInfo.baseKey) {
+                        record.archiveCurrentState();
+                        record.promoteState(result.session);
+                    }
                     record.updateSessionState(result.session);
                     return this.storage.storeSession(address, record.serialize()).then(function() {
                         return result.plaintext;
@@ -161,7 +171,6 @@ SessionCipher.prototype = {
                       throw new Error("No registrationId");
                   }
                   record = new Internal.SessionRecord(
-                      util.toString(preKeyProto.identityKey),
                       preKeyProto.registrationId
                   );
               }
@@ -173,7 +182,7 @@ SessionCipher.prototype = {
                   ).then(function(plaintext) {
                       record.updateSessionState(session);
                       return this.storage.storeSession(address, record.serialize()).then(function() {
-                          if (preKeyId !== undefined) {
+                          if (preKeyId !== undefined && preKeyId !== null) {
                               return this.storage.removePreKey(preKeyId);
                           }
                       }.bind(this)).then(function() {
@@ -330,7 +339,11 @@ SessionCipher.prototype = {
           if (record === undefined) {
               return undefined;
           }
-          return record.registrationId;
+          var openSession = record.getOpenSession();
+          if (openSession === undefined) {
+              return null;
+          }
+          return openSession.registrationId;
       });
     }.bind(this));
   },
