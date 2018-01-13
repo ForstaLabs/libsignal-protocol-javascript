@@ -195,7 +195,7 @@ SessionCipher.prototype = {
                       preKeyProto.registrationId
                   );
               }
-              var builder = new SessionBuilder(this.storage, this.remoteAddress);
+              var builder = new libsignal.SessionBuilder(this.storage, this.remoteAddress);
               // isTrustedIdentity is called within processV3, no need to call it here
               return builder.processV3(record, preKeyProto).then(function(preKeyId) {
                   var session = record.getSessionByBaseKey(preKeyProto.baseKey);
@@ -216,7 +216,7 @@ SessionCipher.prototype = {
       }.bind(this));
   },
   doDecryptWhisperMessage: function(messageBytes, session) {
-    if (!messageBytes instanceof ArrayBuffer) {
+    if (!(messageBytes instanceof ArrayBuffer)) {
         throw new Error("Expected messageBytes to be an ArrayBuffer");
     }
     var version = (new Uint8Array(messageBytes))[0];

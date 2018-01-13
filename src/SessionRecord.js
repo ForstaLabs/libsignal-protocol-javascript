@@ -17,7 +17,6 @@ Internal.ChainType = {
 
 Internal.SessionRecord = function() {
     'use strict';
-    var MESSAGE_LOST_THRESHOLD_MS = 1000*60*60*24*7;
     var ARCHIVED_STATES_MAX_LENGTH = 40;
     var OLD_RATCHETS_MAX_LENGTH = 10;
     var SESSION_RECORD_VERSION = 'v1';
