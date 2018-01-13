@@ -10240,10 +10240,7 @@ var util = (function() {
                 }
             }
 
-            var str;
-            if (typeof thing == "string") {
-                str = thing;
-            } else {
+            if (typeof thing !== "string") {
                 throw new Error("Tried to convert a non-string of type " + typeof thing + " to an array buffer");
             }
             return new dcodeIO.ByteBuffer.wrap(thing, 'binary').toArrayBuffer();
@@ -10386,7 +10383,6 @@ Internal.ChainType = {
 
 Internal.SessionRecord = function() {
     'use strict';
-    var MESSAGE_LOST_THRESHOLD_MS = 1000*60*60*24*7;
     var ARCHIVED_STATES_MAX_LENGTH = 40;
     var OLD_RATCHETS_MAX_LENGTH = 10;
     var SESSION_RECORD_VERSION = 'v1';
@@ -11100,7 +11096,7 @@ SessionCipher.prototype = {
                       preKeyProto.registrationId
                   );
               }
-              var builder = new SessionBuilder(this.storage, this.remoteAddress);
+              var builder = new libsignal.SessionBuilder(this.storage, this.remoteAddress);
               // isTrustedIdentity is called within processV3, no need to call it here
               return builder.processV3(record, preKeyProto).then(function(preKeyId) {
                   var session = record.getSessionByBaseKey(preKeyProto.baseKey);
@@ -11121,7 +11117,7 @@ SessionCipher.prototype = {
       }.bind(this));
   },
   doDecryptWhisperMessage: function(messageBytes, session) {
-    if (!messageBytes instanceof ArrayBuffer) {
+    if (!(messageBytes instanceof ArrayBuffer)) {
         throw new Error("Expected messageBytes to be an ArrayBuffer");
     }
     var version = (new Uint8Array(messageBytes))[0];
@@ -11321,29 +11317,60 @@ libsignal.SessionCipher = function(storage, remoteAddress) {
   * jobQueue manages multiple queues indexed by device to serialize
   * session io ops on the database.
   */
-;(function() {
+(function() {
     'use strict';
 
-    Internal.SessionLock = {};
-    const jobQueue = {};
+    const _queueAsyncBuckets = new Map();
+    const _gcLimit = 10000;
 
-    Internal.SessionLock.queueJobForNumber = async function queueJobForNumber(number, job) {
-        const running = jobQueue[number];
-        jobQueue[number] = job;
-        try {
-            // Wait for current job to finish first...
-            if (running) {
-                await running;
-            }
-        } finally {
-            try {
-                return await job();
-            } finally {
-                if (jobQueue[number] === job) {
-                    delete jobQueue[number];  // We're the last one, do cleanup.
+    async function _asyncQueueExecutor(queue, cleanup) {
+        let offt = 0;
+        while (true) {
+            let limit = Math.min(queue.length, _gcLimit); // Break up thundering hurds for GC duty.
+            for (let i = offt; i < limit; i++) {
+                const job = queue[i];
+                try {
+                    job.resolve(await job.awaitable());
+                } catch(e) {
+                    job.reject(e);
                 }
             }
+            if (limit < queue.length) {
+                /* Perform lazy GC of queue for faster iteration. */
+                if (limit >= _gcLimit) {
+                    queue.splice(0, limit);
+                    offt = 0;
+                } else {
+                    offt = limit;
+                }
+            } else {
+                break;
+            }
         }
+        cleanup();
+    }
+
+    Internal.SessionLock = {};
+    Internal.SessionLock.queueJobForNumber = function queueJobForNumber(bucket, awaitable) {
+        /* Run the async awaitable only when all other async calls registered
+         * here have completed (or thrown).  The bucket argument is a hashable
+         * key representing the task queue to use. */
+        let inactive;
+        if (!_queueAsyncBuckets.has(bucket)) {
+            _queueAsyncBuckets.set(bucket, []);
+            inactive = true;
+        }
+        const queue = _queueAsyncBuckets.get(bucket);
+        const job = new Promise((resolve, reject) => queue.push({
+            awaitable,
+            resolve,
+            reject
+        }));
+        if (inactive) {
+            /* An executor is not currently active; Start one now. */
+            _asyncQueueExecutor(queue, () => _queueAsyncBuckets.delete(bucket));
+        }
+        return job;
     };
 })();
 
