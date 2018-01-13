@@ -2,28 +2,59 @@
   * jobQueue manages multiple queues indexed by device to serialize
   * session io ops on the database.
   */
-;(function() {
+(function() {
     'use strict';
 
-    Internal.SessionLock = {};
-    const jobQueue = {};
+    const _queueAsyncBuckets = new Map();
+    const _gcLimit = 10000;
 
-    Internal.SessionLock.queueJobForNumber = async function queueJobForNumber(number, job) {
-        const running = jobQueue[number];
-        jobQueue[number] = job;
-        try {
-            // Wait for current job to finish first...
-            if (running) {
-                await running;
-            }
-        } finally {
-            try {
-                return await job();
-            } finally {
-                if (jobQueue[number] === job) {
-                    delete jobQueue[number];  // We're the last one, do cleanup.
+    async function _asyncQueueExecutor(queue, cleanup) {
+        let offt = 0;
+        while (true) {
+            let limit = Math.min(queue.length, _gcLimit); // Break up thundering hurds for GC duty.
+            for (let i = offt; i < limit; i++) {
+                const job = queue[i];
+                try {
+                    job.resolve(await job.awaitable());
+                } catch(e) {
+                    job.reject(e);
                 }
             }
+            if (limit < queue.length) {
+                /* Perform lazy GC of queue for faster iteration. */
+                if (limit >= _gcLimit) {
+                    queue.splice(0, limit);
+                    offt = 0;
+                } else {
+                    offt = limit;
+                }
+            } else {
+                break;
+            }
         }
+        cleanup();
+    }
+
+    Internal.SessionLock = {};
+    Internal.SessionLock.queueJobForNumber = function queueJobForNumber(bucket, awaitable) {
+        /* Run the async awaitable only when all other async calls registered
+         * here have completed (or thrown).  The bucket argument is a hashable
+         * key representing the task queue to use. */
+        let inactive;
+        if (!_queueAsyncBuckets.has(bucket)) {
+            _queueAsyncBuckets.set(bucket, []);
+            inactive = true;
+        }
+        const queue = _queueAsyncBuckets.get(bucket);
+        const job = new Promise((resolve, reject) => queue.push({
+            awaitable,
+            resolve,
+            reject
+        }));
+        if (inactive) {
+            /* An executor is not currently active; Start one now. */
+            _asyncQueueExecutor(queue, () => _queueAsyncBuckets.delete(bucket));
+        }
+        return job;
     };
 })();
