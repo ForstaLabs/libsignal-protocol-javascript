@@ -10181,8 +10181,6 @@ var Internal = Internal || {};
                 result = result | (a[i] ^ b[i]);
             }
             if (result !== 0) {
-                console.log('Our MAC  ', dcodeIO.ByteBuffer.wrap(calculated_mac).toHex());
-                console.log('Their MAC', dcodeIO.ByteBuffer.wrap(mac).toHex());
                 throw new Error("Bad MAC");
             }
         });
@@ -10440,7 +10438,7 @@ Internal.SessionRecord = function() {
             } else {
                 for (key in sessions) {
                     if (sessions[key].indexInfo.closed === -1) {
-                        console.log('V1 session storage migration error: registrationId',
+                        console.error('V1 session storage migration error: registrationId',
                             data.registrationId, 'for open session version',
                             data.version);
                     }
@@ -10496,7 +10494,7 @@ Internal.SessionRecord = function() {
         getSessionByBaseKey: function(baseKey) {
             var session = this.sessions[util.toString(baseKey)];
             if (session && session.indexInfo.baseKeyType === Internal.BaseKeyType.OURS) {
-                console.log("Tried to lookup a session using our basekey");
+                console.warn("Tried to lookup a session using our basekey");
                 return undefined;
             }
             return session;
@@ -10750,7 +10748,7 @@ SessionBuilder.prototype = {
     }.bind(this)).then(function() {
         session = record.getSessionByBaseKey(message.baseKey);
         if (session) {
-          console.log("Duplicate PreKeyMessage for session");
+          console.debug("Duplicate PreKeyMessage for session");
           return;
         }
 
@@ -10771,7 +10769,7 @@ SessionBuilder.prototype = {
             record.archiveCurrentState();
         }
         if (message.preKeyId && !preKeyPair) {
-            console.log('Invalid prekey id', message.preKeyId);
+            console.error('Invalid prekey id', message.preKeyId);
         }
         return this.initSession(false, preKeyPair, signedPreKeyPair,
             message.identityKey.toArrayBuffer(),
@@ -11134,7 +11132,7 @@ SessionCipher.prototype = {
         return Promise.reject(new Error("No session found to decrypt message from " + this.remoteAddress.toString()));
     }
     if (session.indexInfo.closed != -1) {
-        console.log('decrypting message for closed session');
+        console.warn('decrypting message for closed session');
     }
 
     return this.maybeStepRatchet(session, remoteEphemeralKey, message.previousCounter).then(function() {
@@ -11172,13 +11170,12 @@ SessionCipher.prototype = {
     });
   },
   fillMessageKeys: function(chain, counter) {
-      if (Object.keys(chain.messageKeys).length >= 1000) {
-          console.log("Too many message keys for chain");
-          return Promise.resolve(); // Stalker, much?
-      }
-
       if (chain.chainKey.counter >= counter) {
           return Promise.resolve(); // Already calculated
+      }
+
+      if (counter - chain.chainKey.counter > 2000) {
+          throw new Error('Over 2000 messages into the future!');
       }
 
       if (chain.chainKey.key === undefined) {
@@ -11203,7 +11200,6 @@ SessionCipher.prototype = {
           return Promise.resolve();
       }
 
-      console.log('New remote ephemeral key');
       var ratchet = session.currentRatchet;
 
       return Promise.resolve().then(function() {
