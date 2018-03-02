@@ -74,7 +74,7 @@ Internal.SessionRecord = function() {
             } else {
                 for (key in sessions) {
                     if (sessions[key].indexInfo.closed === -1) {
-                        console.log('V1 session storage migration error: registrationId',
+                        console.error('V1 session storage migration error: registrationId',
                             data.registrationId, 'for open session version',
                             data.version);
                     }
@@ -130,7 +130,7 @@ Internal.SessionRecord = function() {
         getSessionByBaseKey: function(baseKey) {
             var session = this.sessions[util.toString(baseKey)];
             if (session && session.indexInfo.baseKeyType === Internal.BaseKeyType.OURS) {
-                console.log("Tried to lookup a session using our basekey");
+                console.warn("Tried to lookup a session using our basekey");
                 return undefined;
             }
             return session;
