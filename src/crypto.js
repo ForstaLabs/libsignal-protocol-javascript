@@ -7,7 +7,7 @@ var Internal = Internal || {};
 (function() {
     'use strict';
 
-    var crypto = self.crypto;
+    const crypto = self.crypto;
 
     if (!crypto || !crypto.subtle || typeof crypto.getRandomValues !== 'function') {
         throw new Error('WebCrypto not found');
@@ -15,50 +15,54 @@ var Internal = Internal || {};
 
     Internal.crypto = {
         getRandomBytes: function(size) {
-            var array = new Uint8Array(size);
+            const array = new Uint8Array(size);
             crypto.getRandomValues(array);
             return array.buffer;
         },
-        encrypt: function(key, data, iv) {
-            return crypto.subtle.importKey('raw', key, {name: 'AES-CBC'}, false, ['encrypt']).then(function(key) {
-                return crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
-            });
-        },
-        decrypt: function(key, data, iv) {
-            return crypto.subtle.importKey('raw', key, {name: 'AES-CBC'}, false, ['decrypt']).then(function(key) {
-                return crypto.subtle.decrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
-            });
-        },
-        sign: function(key, data) {
-            return crypto.subtle.importKey('raw', key, {name: 'HMAC', hash: {name: 'SHA-256'}}, false, ['sign']).then(function(key) {
-                return crypto.subtle.sign( {name: 'HMAC', hash: 'SHA-256'}, key, data);
-            });
+
+        encrypt: async function(keyData, data, iv) {
+            const key = await crypto.subtle.importKey('raw', keyData, {name: 'AES-CBC'}, false, ['encrypt']);
+            return await crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
         },
 
-        hash: function(data) {
-            return crypto.subtle.digest({name: 'SHA-512'}, data);
+        decrypt: async function(keyData, data, iv) {
+            const key = await crypto.subtle.importKey('raw', keyData, {name: 'AES-CBC'}, false, ['decrypt']);
+            return await crypto.subtle.decrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
         },
 
-        HKDF: function(input, salt, info) {
+        sign: async function(keyData, data) {
+            const key = await crypto.subtle.importKey('raw', keyData, {
+                name: 'HMAC',
+                hash: {name: 'SHA-256'}
+            }, false, ['sign']);
+            return await crypto.subtle.sign({name: 'HMAC', hash: 'SHA-256'}, key, data);
+        },
+
+        hash: async function(data) {
+            return await crypto.subtle.digest({name: 'SHA-512'}, data);
+        },
+
+        HKDF: async function(input, salt, info, chunks) {
             // Specific implementation of RFC 5869 that only returns the first 3 32-byte chunks
-            // TODO: We dont always need the third chunk, we might skip it
-            return Internal.crypto.sign(salt, input).then(function(PRK) {
-                var infoBuffer = new ArrayBuffer(info.byteLength + 1 + 32);
-                var infoArray = new Uint8Array(infoBuffer);
-                infoArray.set(new Uint8Array(info), 32);
-                infoArray[infoArray.length - 1] = 1;
-                return Internal.crypto.sign(PRK, infoBuffer.slice(32)).then(function(T1) {
-                    infoArray.set(new Uint8Array(T1));
-                    infoArray[infoArray.length - 1] = 2;
-                    return Internal.crypto.sign(PRK, infoBuffer).then(function(T2) {
-                        infoArray.set(new Uint8Array(T2));
-                        infoArray[infoArray.length - 1] = 3;
-                        return Internal.crypto.sign(PRK, infoBuffer).then(function(T3) {
-                            return [ T1, T2, T3 ];
-                        });
-                    });
-                });
-            });
+            chunks = chunks || 3;
+            console.assert(chunks >= 1 && chunks <= 3);
+            const PRK = await Internal.crypto.sign(salt, input);
+            const infoBuffer = new ArrayBuffer(info.byteLength + 1 + 32);
+            const infoArray = new Uint8Array(infoBuffer);
+            infoArray.set(new Uint8Array(info), 32);
+            infoArray[infoArray.length - 1] = 1;
+            const signed = [await Internal.crypto.sign(PRK, infoBuffer.slice(32))];
+            if (chunks > 1) {
+                infoArray.set(new Uint8Array(signed[signed.length - 1]));
+                infoArray[infoArray.length - 1] = 2;
+                signed.push(await Internal.crypto.sign(PRK, infoBuffer));
+            }
+            if (chunks > 2) {
+                infoArray.set(new Uint8Array(signed[signed.length - 1]));
+                infoArray[infoArray.length - 1] = 3;
+                signed.push(await Internal.crypto.sign(PRK, infoBuffer));
+            }
+            return signed;
         },
 
         // Curve 25519 crypto
@@ -89,45 +93,31 @@ var Internal = Internal || {};
         return Internal.crypto.HKDF(input, salt,  util.toArrayBuffer(info));
     };
 
-    Internal.verifyMAC = function(data, key, mac, length) {
-        return Internal.crypto.sign(key, data).then(function(calculated_mac) {
-            if (mac.byteLength != length  || calculated_mac.byteLength < length) {
-                throw new Error("Bad MAC length");
-            }
-            var a = new Uint8Array(calculated_mac);
-            var b = new Uint8Array(mac);
-            var result = 0;
-            for (var i=0; i < mac.byteLength; ++i) {
-                result = result | (a[i] ^ b[i]);
-            }
-            if (result !== 0) {
-                throw new Error("Bad MAC");
-            }
-        });
+    Internal.verifyMAC = async function(data, key, mac, length) {
+        const calculatedMac = await Internal.crypto.sign(key, data);
+        if (mac.byteLength != length  || calculatedMac.byteLength < length) {
+            throw new Error("Bad MAC length");
+        }
+        const a = new Uint8Array(calculatedMac);
+        const b = new Uint8Array(mac);
+        let result = 0;
+        for (let i = 0; i < mac.byteLength; ++i) {
+            result = result | (a[i] ^ b[i]);
+        }
+        if (result !== 0) {
+            throw new Error("Bad MAC");
+        }
     };
 
     libsignal.HKDF = {
-        deriveSecrets: function(input, salt, info) {
-            return Internal.HKDF(input, salt, info);
-        }
+        deriveSecrets: Internal.HKDF
     };
 
     libsignal.crypto = {
-        encrypt: function(key, data, iv) {
-            return Internal.crypto.encrypt(key, data, iv);
-        },
-        decrypt: function(key, data, iv) {
-            return Internal.crypto.decrypt(key, data, iv);
-        },
-        calculateMAC: function(key, data) {
-            return Internal.crypto.sign(key, data);
-        },
-        verifyMAC: function(data, key, mac, length) {
-            return Internal.verifyMAC(data, key, mac, length);
-        },
-        getRandomBytes: function(size) {
-            return Internal.crypto.getRandomBytes(size);
-        }
+        encrypt: Internal.crypto.encrypt,
+        decrypt: Internal.crypto.decrypt,
+        calculateMAC: Internal.crypto.sign,
+        verifyMAC: Internal.verifyMAC,
+        getRandomBytes: Internal.crypto.getRandomBytes
     };
-
 })();
