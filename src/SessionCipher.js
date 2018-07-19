@@ -11,115 +11,80 @@ SessionCipher.prototype = {
     return serialized && Internal.SessionRecord.deserialize(serialized);
   },
 
-  encrypt: function(buffer, encoding) {
+  encrypt: async function(buffer, encoding) {
     buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding).toArrayBuffer();
-    return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-      if (!(buffer instanceof ArrayBuffer)) {
-          throw new Error("Expected buffer to be an ArrayBuffer");
+    if (!(buffer instanceof ArrayBuffer)) {
+        throw new Error("Expected buffer to be an ArrayBuffer");
+    }
+    const address = this.remoteAddress.toString();
+    const ourIdentityKey = await this.storage.getIdentityKeyPair();
+    return await Internal.SessionLock.queueJobForNumber(address, async () => {
+      const record = await this.getRecord(address);
+      if (!record) {
+          throw new Error("No record for " + address);
       }
-
-      var address = this.remoteAddress.toString();
-      var ourIdentityKey, myRegistrationId, record, session, chain;
-
-      var msg = new Internal.protobuf.WhisperMessage();
-
-      return Promise.all([
-          this.storage.getIdentityKeyPair(),
-          this.storage.getLocalRegistrationId(),
-          this.getRecord(address)
-      ]).then(function(results) {
-          ourIdentityKey   = results[0];
-          myRegistrationId = results[1];
-          record           = results[2];
-          if (!record) {
-              throw new Error("No record for " + address);
-          }
-          session = record.getOpenSession();
-          if (!session) {
-              throw new Error("No session to encrypt message for " + address);
-          }
-
-          msg.ephemeralKey = util.toArrayBuffer(
-              session.currentRatchet.ephemeralKeyPair.pubKey
-          );
-          chain = session[util.toString(msg.ephemeralKey)];
-          if (chain.chainType === Internal.ChainType.RECEIVING) {
-              throw new Error("Tried to encrypt on a receiving chain");
-          }
-
-          return this.fillMessageKeys(chain, chain.chainKey.counter + 1);
-      }.bind(this)).then(function() {
-          return Internal.HKDF(
-              util.toArrayBuffer(chain.messageKeys[chain.chainKey.counter]),
-              new ArrayBuffer(32), "WhisperMessageKeys");
-      }).then(function(keys) {
-          delete chain.messageKeys[chain.chainKey.counter];
-          msg.counter = chain.chainKey.counter;
-          msg.previousCounter = session.currentRatchet.previousCounter;
-
-          return Internal.crypto.encrypt(
-              keys[0], buffer, keys[2].slice(0, 16)
-          ).then(function(ciphertext) {
-              msg.ciphertext = ciphertext;
-              var encodedMsg = msg.toArrayBuffer();
-
-              var macInput = new Uint8Array(encodedMsg.byteLength + 33*2 + 1);
-              macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)));
-              macInput.set(new Uint8Array(util.toArrayBuffer(session.indexInfo.remoteIdentityKey)), 33);
-              macInput[33*2] = (3 << 4) | 3;
-              macInput.set(new Uint8Array(encodedMsg), 33*2 + 1);
-
-              return Internal.crypto.sign(keys[1], macInput.buffer).then(function(mac) {
-                  var result = new Uint8Array(encodedMsg.byteLength + 9);
-                  result[0] = (3 << 4) | 3;
-                  result.set(new Uint8Array(encodedMsg), 1);
-                  result.set(new Uint8Array(mac, 0, 8), encodedMsg.byteLength + 1);
-
-                  return this.storage.isTrustedIdentity(
-                      this.remoteAddress.getName(), util.toArrayBuffer(session.indexInfo.remoteIdentityKey)
-                  ).then(function(trusted) {
-                      if (!trusted) {
-                          throw new Error('Identity key changed');
-                      }
-                  }).then(function() {
-                      return this.storage.saveIdentity(this.remoteAddress.toString(), session.indexInfo.remoteIdentityKey);
-                  }.bind(this)).then(function() {
-                      record.updateSessionState(session);
-                      return this.storage.storeSession(address, record.serialize()).then(function() {
-                          return result;
-                      });
-                  }.bind(this));
-              }.bind(this));
-          }.bind(this));
-      }.bind(this)).then(function(message) {
-          if (session.pendingPreKey !== undefined) {
-              var preKeyMsg = new Internal.protobuf.PreKeyWhisperMessage();
-              preKeyMsg.identityKey = util.toArrayBuffer(ourIdentityKey.pubKey);
-              preKeyMsg.registrationId = myRegistrationId;
-
-              preKeyMsg.baseKey = util.toArrayBuffer(session.pendingPreKey.baseKey);
-              if (session.pendingPreKey.preKeyId) {
-                  preKeyMsg.preKeyId = session.pendingPreKey.preKeyId;
-              }
-              preKeyMsg.signedPreKeyId = session.pendingPreKey.signedKeyId;
-
-              preKeyMsg.message = message;
-              var result = String.fromCharCode((3 << 4) | 3) + util.toString(preKeyMsg.encode());
-              return {
-                  type           : 3,
-                  body           : result,
-                  registrationId : session.registrationId
-              };
-
-          } else {
-              return {
-                  type           : 1,
-                  body           : util.toString(message),
-                  registrationId : session.registrationId
-              };
-          }
-      });
-    }.bind(this));
+      const session = record.getOpenSession();
+      if (!session) {
+        throw new Error("No session to encrypt message for " + address);
+      }
+      const msg = new Internal.protobuf.WhisperMessage();
+      msg.ephemeralKey = util.toArrayBuffer(
+        session.currentRatchet.ephemeralKeyPair.pubKey
+      );
+      const chain = session[util.toString(msg.ephemeralKey)];
+      if (chain.chainType === Internal.ChainType.RECEIVING) {
+        throw new Error("Tried to encrypt on a receiving chain");
+      }
+      await this.fillMessageKeys(chain, chain.chainKey.counter + 1);
+      const keys = await Internal.HKDF(util.toArrayBuffer(chain.messageKeys[chain.chainKey.counter]),
+                                       new ArrayBuffer(32), "WhisperMessageKeys");
+      delete chain.messageKeys[chain.chainKey.counter];
+      msg.counter = chain.chainKey.counter;
+      msg.previousCounter = session.currentRatchet.previousCounter;
+      const ciphertext = await Internal.crypto.encrypt(keys[0], buffer, keys[2].slice(0, 16));
+      msg.ciphertext = ciphertext;
+      const encodedMsg = msg.toArrayBuffer();
+      const macInput = new Uint8Array(encodedMsg.byteLength + 33 * 2 + 1);
+      macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)));
+      macInput.set(new Uint8Array(util.toArrayBuffer(session.indexInfo.remoteIdentityKey)), 33);
+      macInput[33 * 2] = (3 << 4) | 3;
+      macInput.set(new Uint8Array(encodedMsg), 33*2 + 1);
+      const mac = await Internal.crypto.sign(keys[1], macInput.buffer);
+      const result = new Uint8Array(encodedMsg.byteLength + 9);
+      result[0] = (3 << 4) | 3;
+      result.set(new Uint8Array(encodedMsg), 1);
+      result.set(new Uint8Array(mac, 0, 8), encodedMsg.byteLength + 1);
+      const trusted = await this.storage.isTrustedIdentity(this.remoteAddress.getName(),
+                                                           util.toArrayBuffer(session.indexInfo.remoteIdentityKey));
+      if (!trusted) {
+        throw new Error('Identity key changed');
+      }
+      await this.storage.saveIdentity(address, session.indexInfo.remoteIdentityKey);
+      record.updateSessionState(session);
+      await this.storage.storeSession(address, record.serialize());
+      let type, body;
+      if (session.pendingPreKey !== undefined) {
+        type = 3;  // prekey bundle
+        const preKeyMsg = new Internal.protobuf.PreKeyWhisperMessage();
+        preKeyMsg.identityKey = util.toArrayBuffer(ourIdentityKey.pubKey);
+        preKeyMsg.registrationId = await this.storage.getLocalRegistrationId();
+        preKeyMsg.baseKey = util.toArrayBuffer(session.pendingPreKey.baseKey);
+        if (session.pendingPreKey.preKeyId) {
+          preKeyMsg.preKeyId = session.pendingPreKey.preKeyId;
+        }
+        preKeyMsg.signedPreKeyId = session.pendingPreKey.signedKeyId;
+        preKeyMsg.message = result;
+        body = String.fromCharCode((3 << 4) | 3) + util.toString(preKeyMsg.encode());
+      } else {
+        type = 1;  // normal
+        body = util.toString(result);
+      }
+      return {
+        type,
+        body,
+        registrationId: session.registrationId
+      };
+    });
   },
 
   decryptWithSessionList: async function(buffer, sessionList, errors) {
@@ -145,103 +110,94 @@ SessionCipher.prototype = {
 
   decryptWhisperMessage: async function(buffer, encoding) {
     buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding).toArrayBuffer();
-    return await Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), async () => {
-      const address = this.remoteAddress.toString();
+    const address = this.remoteAddress.toString();
+    return await Internal.SessionLock.queueJobForNumber(address, async () => {
       let record = await this.getRecord(address);
       if (!record) {
         throw new Error("No record for device " + address);
       }
       const result = await this.decryptWithSessionList(buffer, record.getSessions());
-      record = await this.getRecord(address); // Why twice?
+      record = await this.getRecord(address);  // Get ratcheted record.
       if (result.session.indexInfo.baseKey !== record.getOpenSession().indexInfo.baseKey) {
         record.archiveCurrentState();
         record.promoteState(result.session);
       }
       const trusted = await this.storage.isTrustedIdentity(this.remoteAddress.getName(),
-                                                           util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey));
+        util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey));
       if (!trusted) {
         throw new Error('Identity key changed');
       }
-      await this.storage.saveIdentity(this.remoteAddress.toString(), result.session.indexInfo.remoteIdentityKey);
+      await this.storage.saveIdentity(address, result.session.indexInfo.remoteIdentityKey);
       record.updateSessionState(result.session);
       await this.storage.storeSession(address, record.serialize());
       return result.plaintext;
     });
   },
 
-  decryptPreKeyWhisperMessage: function(buffer, encoding) {
-      buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding);
-      var version = buffer.readUint8();
-      if ((version & 0xF) > 3 || (version >> 4) < 3) {  // min version > 3 or max version < 3
-          throw new Error("Incompatible version number on PreKeyWhisperMessage");
+  decryptPreKeyWhisperMessage: async function(buffer, encoding) {
+    buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding);
+    const version = buffer.readUint8();
+    if ((version & 0xF) > 3 || (version >> 4) < 3) {  // min version > 3 or max version < 3
+        throw new Error("Incompatible version number on PreKeyWhisperMessage");
+    }
+    const address = this.remoteAddress.toString();
+    return await Internal.SessionLock.queueJobForNumber(address, async () => {
+      let record = await this.getRecord(address);
+      const preKeyProto = Internal.protobuf.PreKeyWhisperMessage.decode(buffer);
+      if (!record) {
+        if (preKeyProto.registrationId === undefined) {
+          throw new Error("No registrationId");
+        }
+        record = new Internal.SessionRecord(preKeyProto.registrationId);
       }
-      return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-          var address = this.remoteAddress.toString();
-          return this.getRecord(address).then(function(record) {
-              var preKeyProto = Internal.protobuf.PreKeyWhisperMessage.decode(buffer);
-              if (!record) {
-                  if (preKeyProto.registrationId === undefined) {
-                      throw new Error("No registrationId");
-                  }
-                  record = new Internal.SessionRecord(
-                      preKeyProto.registrationId
-                  );
-              }
-              var builder = new libsignal.SessionBuilder(this.storage, this.remoteAddress);
-              // isTrustedIdentity is called within processV3, no need to call it here
-              return builder.processV3(record, preKeyProto).then(function(preKeyId) {
-                  var session = record.getSessionByBaseKey(preKeyProto.baseKey);
-                  return this.doDecryptWhisperMessage(
-                      preKeyProto.message.toArrayBuffer(), session
-                  ).then(function(plaintext) {
-                      record.updateSessionState(session);
-                      return this.storage.storeSession(address, record.serialize()).then(function() {
-                          if (preKeyId !== undefined && preKeyId !== null) {
-                              return this.storage.removePreKey(preKeyId);
-                          }
-                      }.bind(this)).then(function() {
-                          return plaintext;
-                      });
-                  }.bind(this));
-              }.bind(this));
-          }.bind(this));
-      }.bind(this));
+      const builder = new libsignal.SessionBuilder(this.storage, this.remoteAddress);
+      // isTrustedIdentity is called within processV3, no need to call it here
+      const preKeyId = await builder.processV3(record, preKeyProto);
+      const session = record.getSessionByBaseKey(preKeyProto.baseKey);
+      const plaintext = await this.doDecryptWhisperMessage(preKeyProto.message.toArrayBuffer(), session);
+      record.updateSessionState(session);
+      await this.storage.storeSession(address, record.serialize());
+      if (preKeyId !== undefined && preKeyId !== null) {
+        await this.storage.removePreKey(preKeyId);
+      }
+      return plaintext;
+    });
   },
 
   doDecryptWhisperMessage: async function(messageBytes, session) {
     if (!(messageBytes instanceof ArrayBuffer)) {
         throw new Error("Expected messageBytes to be an ArrayBuffer");
     }
-    var version = (new Uint8Array(messageBytes))[0];
+    const version = (new Uint8Array(messageBytes))[0];
     if ((version & 0xF) > 3 || (version >> 4) < 3) {  // min version > 3 or max version < 3
         throw new Error("Incompatible version number on WhisperMessage");
     }
-    var messageProto = messageBytes.slice(1, messageBytes.byteLength- 8);
-    var mac = messageBytes.slice(messageBytes.byteLength - 8, messageBytes.byteLength);
-    var message = Internal.protobuf.WhisperMessage.decode(messageProto);
-    var remoteEphemeralKey = message.ephemeralKey.toArrayBuffer();
+    const messageProto = messageBytes.slice(1, messageBytes.byteLength- 8);
+    const mac = messageBytes.slice(messageBytes.byteLength - 8, messageBytes.byteLength);
+    const message = Internal.protobuf.WhisperMessage.decode(messageProto);
+    const remoteEphemeralKey = message.ephemeralKey.toArrayBuffer();
     if (session === undefined) {
-        return Promise.reject(new Error("No session found to decrypt message from " + this.remoteAddress.toString()));
+        throw new Error("No session found to decrypt message from " + this.remoteAddress.toString());
     }
     if (session.indexInfo.closed != -1) {
         console.warn('decrypting message for closed session');
     }
     await this.maybeStepRatchet(session, remoteEphemeralKey, message.previousCounter);
-    var chain = session[util.toString(message.ephemeralKey)];
+    const chain = session[util.toString(message.ephemeralKey)];
     if (chain.chainType === Internal.ChainType.SENDING) {
       throw new Error("Tried to decrypt on a sending chain");
     }
     await this.fillMessageKeys(chain, message.counter);
-    var messageKey = chain.messageKeys[message.counter];
+    const messageKey = chain.messageKeys[message.counter];
     if (messageKey === undefined) {
-      var e = new Error("Message key not found. The counter was repeated or the key was not filled.");
+      const e = new Error("Message key not found. The counter was repeated or the key was not filled.");
       e.name = 'MessageCounterError';
       throw e;
     }
     delete chain.messageKeys[message.counter];
     const keys = await Internal.HKDF(util.toArrayBuffer(messageKey), new ArrayBuffer(32), "WhisperMessageKeys");
     const ourIdentityKey = await this.storage.getIdentityKeyPair();
-    var macInput = new Uint8Array(messageProto.byteLength + 33*2 + 1);
+    const macInput = new Uint8Array(messageProto.byteLength + 33*2 + 1);
     macInput.set(new Uint8Array(util.toArrayBuffer(session.indexInfo.remoteIdentityKey)));
     macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)), 33);
     macInput[33*2] = (3 << 4) | 3;
@@ -252,156 +208,133 @@ SessionCipher.prototype = {
     return plaintext;
   },
 
-  fillMessageKeys: function(chain, counter) {
-      if (chain.chainKey.counter >= counter) {
-          return Promise.resolve(); // Already calculated
+  fillMessageKeys: async function(chain, counter) {
+    if (chain.chainKey.counter >= counter) {
+      return;
+    }
+    if (chain.chainType !== Internal.ChainType.SENDING) {
+      console.error("FILL MSG KEYS", counter, chain.chainKey.counter);
+    }
+    if (counter - chain.chainKey.counter > 2000) {
+        throw new Error('Over 2000 messages into the future!');
+    }
+    if (chain.chainKey.key === undefined) {
+        throw new Error("Got invalid request to extend chain after it was already closed");
+    }
+    const key = util.toArrayBuffer(chain.chainKey.key);
+    const signed = await Promise.all([
+      Internal.crypto.sign(key, (new Uint8Array([1])).buffer),
+      Internal.crypto.sign(key, (new Uint8Array([2])).buffer)
+    ]);
+    chain.messageKeys[chain.chainKey.counter + 1] = signed[0];
+    chain.chainKey.key = signed[1];
+    chain.chainKey.counter += 1;
+    return await this.fillMessageKeys(chain, counter);
+  },
+
+  maybeStepRatchet: async function(session, remoteKey, previousCounter) {
+    if (session[util.toString(remoteKey)] !== undefined) {
+      return;
+    }
+    const ratchet = session.currentRatchet;
+    let previousRatchet = session[util.toString(ratchet.lastRemoteEphemeralKey)];
+    if (previousRatchet !== undefined) {
+      await this.fillMessageKeys(previousRatchet, previousCounter);
+      delete previousRatchet.chainKey.key;
+      session.oldRatchetList[session.oldRatchetList.length] = {
+        added: Date.now(),
+        ephemeralKey: ratchet.lastRemoteEphemeralKey
+      };
+    }
+    await this.calculateRatchet(session, remoteKey, false);
+    // Now swap the ephemeral key and calculate the new sending chain
+    previousRatchet = util.toString(ratchet.ephemeralKeyPair.pubKey);
+    if (session[previousRatchet] !== undefined) {
+      ratchet.previousCounter = session[previousRatchet].chainKey.counter;
+      delete session[previousRatchet];
+    }
+    const keyPair = await Internal.crypto.createKeyPair();
+    ratchet.ephemeralKeyPair = keyPair;
+    await this.calculateRatchet(session, remoteKey, true);
+    ratchet.lastRemoteEphemeralKey = remoteKey;
+  },
+
+  calculateRatchet: async function(session, remoteKey, sending) {
+    const ratchet = session.currentRatchet;
+    const sharedSecret = await Internal.crypto.ECDHE(remoteKey,
+                                                     util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
+    const masterKey = await Internal.HKDF(sharedSecret, util.toArrayBuffer(ratchet.rootKey),
+                                          "WhisperRatchet");
+    const ephemeralPublicKey = sending ? ratchet.ephemeralKeyPair.pubKey : remoteKey;
+    session[util.toString(ephemeralPublicKey)] = {
+        messageKeys: {},
+        chainKey: {
+          counter: -1,
+          key: masterKey[1]
+        },
+        chainType: sending ? Internal.ChainType.SENDING : Internal.ChainType.RECEIVING
+    };
+    ratchet.rootKey = masterKey[0];
+  },
+
+  getRemoteRegistrationId: async function() {
+    const address = this.remoteAddress.toString();
+    return await Internal.SessionLock.queueJobForNumber(address, async () => {
+      const record = await this.getRecord(address);
+      if (record === undefined) {
+          return undefined;
       }
-
-      if (counter - chain.chainKey.counter > 2000) {
-          throw new Error('Over 2000 messages into the future!');
+      const openSession = record.getOpenSession();
+      if (openSession === undefined) {
+          return null;
       }
+      return openSession.registrationId;
+    });
+  },
 
-      if (chain.chainKey.key === undefined) {
-          throw new Error("Got invalid request to extend chain after it was already closed");
+  hasOpenSession: async function() {
+    const address = this.remoteAddress.toString();
+    return await Internal.SessionLock.queueJobForNumber(address, async () => {
+      const record = await this.getRecord(address);
+      if (record === undefined) {
+          return false;
       }
-
-      var key = util.toArrayBuffer(chain.chainKey.key);
-      var byteArray = new Uint8Array(1);
-      byteArray[0] = 1;
-      return Internal.crypto.sign(key, byteArray.buffer).then(function(mac) {
-          byteArray[0] = 2;
-          return Internal.crypto.sign(key, byteArray.buffer).then(function(key) {
-              chain.messageKeys[chain.chainKey.counter + 1] = mac;
-              chain.chainKey.key = key;
-              chain.chainKey.counter += 1;
-              return this.fillMessageKeys(chain, counter);
-          }.bind(this));
-      }.bind(this));
+      return record.haveOpenSession();
+    });
   },
-  maybeStepRatchet: function(session, remoteKey, previousCounter) {
-      if (session[util.toString(remoteKey)] !== undefined) {
-          return Promise.resolve();
+
+  closeOpenSessionForDevice: async function() {
+    const address = this.remoteAddress.toString();
+    return await Internal.SessionLock.queueJobForNumber(address, async () => {
+      const record = await this.getRecord(address);
+      if (record === undefined || record.getOpenSession() === undefined) {
+        return;
       }
-
-      var ratchet = session.currentRatchet;
-
-      return Promise.resolve().then(function() {
-          var previousRatchet = session[util.toString(ratchet.lastRemoteEphemeralKey)];
-          if (previousRatchet !== undefined) {
-              return this.fillMessageKeys(previousRatchet, previousCounter).then(function() {
-                  delete previousRatchet.chainKey.key;
-                  session.oldRatchetList[session.oldRatchetList.length] = {
-                      added        : Date.now(),
-                      ephemeralKey : ratchet.lastRemoteEphemeralKey
-                  };
-              });
-          }
-      }.bind(this)).then(function() {
-          return this.calculateRatchet(session, remoteKey, false).then(function() {
-              // Now swap the ephemeral key and calculate the new sending chain
-              var previousRatchet = util.toString(ratchet.ephemeralKeyPair.pubKey);
-              if (session[previousRatchet] !== undefined) {
-                  ratchet.previousCounter = session[previousRatchet].chainKey.counter;
-                  delete session[previousRatchet];
-              }
-
-              return Internal.crypto.createKeyPair().then(function(keyPair) {
-                  ratchet.ephemeralKeyPair = keyPair;
-                  return this.calculateRatchet(session, remoteKey, true).then(function() {
-                      ratchet.lastRemoteEphemeralKey = remoteKey;
-                  }.bind(this));
-              }.bind(this));
-          }.bind(this));
-      }.bind(this));
-  },
-  calculateRatchet: function(session, remoteKey, sending) {
-      var ratchet = session.currentRatchet;
-
-      return Internal.crypto.ECDHE(remoteKey, util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey)).then(function(sharedSecret) {
-          return Internal.HKDF(sharedSecret, util.toArrayBuffer(ratchet.rootKey), "WhisperRatchet").then(function(masterKey) {
-              var ephemeralPublicKey;
-              if (sending) {
-                  ephemeralPublicKey = ratchet.ephemeralKeyPair.pubKey;
-              }
-              else {
-                  ephemeralPublicKey = remoteKey;
-              }
-              session[util.toString(ephemeralPublicKey)] = {
-                  messageKeys: {},
-                  chainKey: { counter: -1, key: masterKey[1] },
-                  chainType: sending ? Internal.ChainType.SENDING : Internal.ChainType.RECEIVING
-              };
-              ratchet.rootKey = masterKey[0];
-          });
-      });
-  },
-  getRemoteRegistrationId: function() {
-    return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-      return this.getRecord(this.remoteAddress.toString()).then(function(record) {
-          if (record === undefined) {
-              return undefined;
-          }
-          var openSession = record.getOpenSession();
-          if (openSession === undefined) {
-              return null;
-          }
-          return openSession.registrationId;
-      });
-    }.bind(this));
-  },
-  hasOpenSession: function() {
-    return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-      return this.getRecord(this.remoteAddress.toString()).then(function(record) {
-          if (record === undefined) {
-              return false;
-          }
-          return record.haveOpenSession();
-      });
-    }.bind(this));
-  },
-  closeOpenSessionForDevice: function() {
-    var address = this.remoteAddress.toString();
-    return Internal.SessionLock.queueJobForNumber(address, function() {
-      return this.getRecord(address).then(function(record) {
-        if (record === undefined || record.getOpenSession() === undefined) {
-            return;
-        }
-
-        record.archiveCurrentState();
-        return this.storage.storeSession(address, record.serialize());
-      }.bind(this));
-    }.bind(this));
+      record.archiveCurrentState();
+      await this.storage.storeSession(address, record.serialize());
+    });
   },
 
-  deleteAllSessionsForDevice: function() {
+  deleteAllSessionsForDevice: async function() {
     // Used in session reset scenarios, where we really need to delete
-    var address = this.remoteAddress.toString();
-    return Internal.SessionLock.queueJobForNumber(address, function() {
-      return this.getRecord(address).then(function(record) {
-        if (record === undefined) {
-            return;
-        }
-
-        record.deleteAllSessions();
-        return this.storage.storeSession(address, record.serialize());
-      }.bind(this));
-    }.bind(this));
+    const address = this.remoteAddress.toString();
+    await Internal.SessionLock.queueJobForNumber(address, async () => {
+      const record = await this.getRecord(address);
+      if (record === undefined) {
+          return;
+      }
+      record.deleteAllSessions();
+      await this.storage.storeSession(address, record.serialize());
+    });
   }
 };
 
+
 libsignal.SessionCipher = function(storage, remoteAddress) {
-    var cipher = new SessionCipher(storage, remoteAddress);
-
-    // returns a Promise that resolves to a ciphertext object
+    const cipher = new SessionCipher(storage, remoteAddress);
     this.encrypt = cipher.encrypt.bind(cipher);
-
-    // returns a Promise that inits a session if necessary and resolves
-    // to a decrypted plaintext array buffer
     this.decryptPreKeyWhisperMessage = cipher.decryptPreKeyWhisperMessage.bind(cipher);
-
-    // returns a Promise that resolves to decrypted plaintext array buffer
     this.decryptWhisperMessage = cipher.decryptWhisperMessage.bind(cipher);
-
     this.getRemoteRegistrationId = cipher.getRemoteRegistrationId.bind(cipher);
     this.hasOpenSession = cipher.hasOpenSession.bind(cipher);
     this.closeOpenSessionForDevice = cipher.closeOpenSessionForDevice.bind(cipher);
