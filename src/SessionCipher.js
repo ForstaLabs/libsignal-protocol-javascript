@@ -87,25 +87,25 @@ SessionCipher.prototype = {
     });
   },
 
-  decryptWithSessionList: async function(buffer, sessionList, errors) {
-    // Iterate recursively through the list, attempting to decrypt
-    // using each one at a time. Stop and return the result if we get
-    // a valid result
-    errors = errors || [];
-    if (sessionList.length === 0) {
-      throw errors[0];
-    }
-    const session = sessionList.pop();
-    try {
-      const plaintext = await this.doDecryptWhisperMessage(buffer, session);
-      return {plaintext, session};
-    } catch(e) {
-      if (e.name === 'MessageCounterError') {
-          throw e;
+  decryptWithSessionList: async function(buffer, sessions) {
+    // Iterate through the sessions, attempting to decrypt using each one.
+    // Stop and return the result if we get a valid result.
+    const errors = [];
+    for (const session of sessions) {
+      try {
+        return {
+          plaintext: await this.doDecryptWhisperMessage(buffer, session),
+          session
+        };
+      } catch(e) {
+        if (e.name === 'MessageCounterError') {
+          throw e;  // Dup;  Probably didn't dequeue the msg from the server successfully.
+        }
+        console.debug("Session decrypt failure:", e);
+        errors.push(e);
       }
-      errors.push(e);
-      return await this.decryptWithSessionList(buffer, sessionList, errors);
     }
+    throw (errors[0] || (new ReferenceError("No sessions to decrypt with")));
   },
 
   decryptWhisperMessage: async function(buffer, encoding) {
@@ -118,7 +118,8 @@ SessionCipher.prototype = {
       }
       const result = await this.decryptWithSessionList(buffer, record.getSessions());
       record = await this.getRecord(address);  // Get ratcheted record.
-      if (result.session.indexInfo.baseKey !== record.getOpenSession().indexInfo.baseKey) {
+      if (record.haveOpenSession() &&
+          result.session.indexInfo.baseKey !== record.getOpenSession().indexInfo.baseKey) {
         record.archiveCurrentState();
         record.promoteState(result.session);
       }
