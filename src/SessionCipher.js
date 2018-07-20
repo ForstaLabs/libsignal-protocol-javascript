@@ -118,8 +118,8 @@ SessionCipher.prototype = {
       }
       const result = await this.decryptWithSessionList(buffer, record.getSessions());
       record = await this.getRecord(address);  // Get ratcheted record.
-      if (record.haveOpenSession() &&
-          result.session.indexInfo.baseKey !== record.getOpenSession().indexInfo.baseKey) {
+      const openSession = record.getOpenSession();
+      if (openSession && result.session.indexInfo.baseKey !== openSession.indexInfo.baseKey) {
         record.archiveCurrentState();
         record.promoteState(result.session);
       }
