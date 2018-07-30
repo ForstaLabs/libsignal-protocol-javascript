@@ -2,21 +2,21 @@
  * vim: ts=4:sw=4
  */
 
-var Internal = Internal || {};
-
-Internal.BaseKeyType = {
-  OURS: 1,
-  THEIRS: 2
-};
-
-Internal.ChainType = {
-  SENDING: 1,
-  RECEIVING: 2
-};
-
-
-Internal.SessionRecord = function() {
+(function() {
     'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
+
+    ns.BaseKeyType = {
+        OURS: 1,
+        THEIRS: 2
+    };
+
+    ns.ChainType = {
+        SENDING: 1,
+        RECEIVING: 2
+    };
+
     var ARCHIVED_STATES_MAX_LENGTH = 40;
     var OLD_RATCHETS_MAX_LENGTH = 10;
     var SESSION_RECORD_VERSION = 'v1';
@@ -28,8 +28,8 @@ Internal.SessionRecord = function() {
     function isStringable(thing) {
         return (thing === Object(thing) &&
                 (thing.__proto__ == StaticArrayBufferProto ||
-                    thing.__proto__ == StaticUint8ArrayProto ||
-                    thing.__proto__ == StaticByteBufferProto));
+                 thing.__proto__ == StaticUint8ArrayProto ||
+                 thing.__proto__ == StaticByteBufferProto));
     }
 
     function ensureStringed(thing) {
@@ -97,111 +97,103 @@ Internal.SessionRecord = function() {
         }
     }
 
-    var SessionRecord = function() {
-        this.sessions = {};
-        this.version = SESSION_RECORD_VERSION;
-    };
 
-    SessionRecord.deserialize = function(serialized) {
-        var data = JSON.parse(serialized);
-        if (data.version !== SESSION_RECORD_VERSION) { migrate(data); }
+    ns.SessionRecord = class SessionRecord {
 
-        var record = new SessionRecord();
-        record.sessions = data.sessions;
-        if (record.sessions === undefined || record.sessions === null || typeof record.sessions !== "object" || Array.isArray(record.sessions)) {
-            throw new Error("Error deserializing SessionRecord");
+        consturctor() {
+            this.sessions = {};
+            this.version = SESSION_RECORD_VERSION;
         }
-        return record;
-    };
 
-    SessionRecord.prototype = {
-        serialize: function() {
+        static deserialize(serialized) {
+            const data = JSON.parse(serialized);
+            if (data.version !== SESSION_RECORD_VERSION) {
+                migrate(data);
+            }
+            const record = new this();
+            record.sessions = data.sessions;
+            if (record.sessions === undefined || record.sessions === null ||
+                typeof record.sessions !== "object" || Array.isArray(record.sessions)) {
+                throw new Error("Error deserializing SessionRecord");
+            }
+            return record;
+        }
+
+        serialize() {
             return jsonThing({
-                sessions       : this.sessions,
-                version        : this.version
+                sessions: this.sessions,
+                version: this.version
             });
-        },
+        }
 
-        haveOpenSession: function() {
+        haveOpenSession() {
             var openSession = this.getOpenSession();
             return (!!openSession && typeof openSession.registrationId === 'number');
-        },
+        }
 
-        getSessionByBaseKey: function(baseKey) {
-            var session = this.sessions[util.toString(baseKey)];
-            if (session && session.indexInfo.baseKeyType === Internal.BaseKeyType.OURS) {
+        getSessionByBaseKey(baseKey) {
+            const session = this.sessions[util.toString(baseKey)];
+            if (session && session.indexInfo.baseKeyType === ns.BaseKeyType.OURS) {
                 console.warn("Tried to lookup a session using our basekey");
                 return undefined;
             }
             return session;
-        },
+        }
 
-        getSessionByRemoteEphemeralKey: function(remoteEphemeralKey) {
+        getSessionByRemoteEphemeralKey(remoteEphemeralKey) {
             this.detectDuplicateOpenSessions();
-            var sessions = this.sessions;
-
             var searchKey = util.toString(remoteEphemeralKey);
-
             var openSession;
-            for (var key in sessions) {
-                if (sessions[key].indexInfo.closed == -1) {
-                    openSession = sessions[key];
+            for (var key in this.sessions) {
+                if (this.sessions[key].indexInfo.closed == -1) {
+                    openSession = this.sessions[key];
                 }
-                if (sessions[key][searchKey] !== undefined) {
-                    return sessions[key];
+                if (this.sessions[key][searchKey] !== undefined) {
+                    return this.sessions[key];
                 }
             }
             if (openSession !== undefined) {
                 return openSession;
             }
-
             return undefined;
-        },
+        }
 
-        getOpenSession: function() {
-            var sessions = this.sessions;
-            if (sessions === undefined) {
+        getOpenSession() {
+            if (this.sessions === undefined) {
                 return undefined;
             }
-
             this.detectDuplicateOpenSessions();
-
-            for (var key in sessions) {
-                if (sessions[key].indexInfo.closed == -1) {
-                    return sessions[key];
+            for (const key in this.sessions) {
+                if (this.sessions[key].indexInfo.closed == -1) {
+                    return this.sessions[key];
                 }
             }
             return undefined;
-        },
+        }
 
-        detectDuplicateOpenSessions: function() {
-            var openSession;
-            var sessions = this.sessions;
-            for (var key in sessions) {
-                if (sessions[key].indexInfo.closed == -1) {
+        detectDuplicateOpenSessions() {
+            let openSession;
+            for (const key in this.sessions) {
+                if (this.sessions[key].indexInfo.closed == -1) {
                     if (openSession !== undefined) {
                         throw new Error("Datastore inconsistensy: multiple open sessions");
                     }
-                    openSession = sessions[key];
+                    openSession = this.sessions[key];
                 }
             }
-        },
+        }
 
-        updateSessionState: function(session) {
-            var sessions = this.sessions;
-
+        updateSessionState(session) {
             this.removeOldChains(session);
-
-            sessions[util.toString(session.indexInfo.baseKey)] = session;
-
+            this.sessions[util.toString(session.indexInfo.baseKey)] = session;
             this.removeOldSessions();
-        },
+        }
 
-        getSessions: function() {
+        getSessions() {
             // return an array of sessions ordered by time closed,
             // followed by the open session
-            var list = [];
-            var openSession;
+            const list = [];
+            let openSession;
             for (var k in this.sessions) {
                 if (this.sessions[k].indexInfo.closed === -1) {
                     openSession = this.sessions[k];
@@ -209,35 +201,33 @@ Internal.SessionRecord = function() {
                     list.push(this.sessions[k]);
                 }
             }
-            list = list.sort(function(s1, s2) {
-                return s1.indexInfo.closed - s2.indexInfo.closed;
-            });
+            list.sort((s1, s2) => s1.indexInfo.closed - s2.indexInfo.closed);
             if (openSession) {
                 list.push(openSession);
             }
             return list;
-        },
+        }
 
-        archiveCurrentState: function() {
-            var open_session = this.getOpenSession();
-            if (open_session !== undefined) {
-                open_session.indexInfo.closed = Date.now();
-                this.updateSessionState(open_session);
+        archiveCurrentState() {
+            const openSession = this.getOpenSession();
+            if (openSession !== undefined) {
+                openSession.indexInfo.closed = Date.now();
+                this.updateSessionState(openSession);
             }
-        },
+        }
 
-        promoteState: function(session) {
+        promoteState(session) {
             session.indexInfo.closed = -1;
-        },
+        }
 
-        removeOldChains: function(session) {
+        removeOldChains(session) {
             // Sending ratchets are always removed when we step because we never need them again
             // Receiving ratchets are added to the oldRatchetList, which we parse
             // here and remove all but the last ten.
             while (session.oldRatchetList.length > OLD_RATCHETS_MAX_LENGTH) {
-                var index = 0;
-                var oldest = session.oldRatchetList[0];
-                for (var i = 0; i < session.oldRatchetList.length; i++) {
+                let index = 0;
+                let oldest = session.oldRatchetList[0];
+                for (let i = 0; i < session.oldRatchetList.length; i++) {
                     if (session.oldRatchetList[i].added < oldest.added) {
                         oldest = session.oldRatchetList[i];
                         index = i;
@@ -246,29 +236,27 @@ Internal.SessionRecord = function() {
                 delete session[util.toString(oldest.ephemeralKey)];
                 session.oldRatchetList.splice(index, 1);
             }
-        },
+        }
 
-        removeOldSessions: function() {
-            var sessions = this.sessions;
-            var oldestBaseKey, oldestSession;
-            while (Object.keys(sessions).length > ARCHIVED_STATES_MAX_LENGTH) {
-                for (var key in sessions) {
-                    var session = sessions[key];
+        removeOldSessions() {
+            let oldestBaseKey;
+            let oldestSession;
+            while (Object.keys(this.sessions).length > ARCHIVED_STATES_MAX_LENGTH) {
+                for (const key in this.sessions) {
+                    const session = this.sessions[key];
                     if (session.indexInfo.closed > -1 && // session is closed
                         (!oldestSession || session.indexInfo.closed < oldestSession.indexInfo.closed)) {
                         oldestBaseKey = key;
                         oldestSession = session;
                     }
                 }
-                delete sessions[util.toString(oldestBaseKey)];
+                delete this.sessions[util.toString(oldestBaseKey)];
             }
-        },
+        }
 
-        deleteAllSessions: function() {
+        deleteAllSessions() {
             // Used primarily in session reset scenarios, where we really delete sessions
             this.sessions = {};
         }
     };
-
-    return SessionRecord;
-}();
+})();

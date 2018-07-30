@@ -1,9 +1,14 @@
- /*
-  * jobQueue manages multiple queues indexed by device to serialize
-  * session io ops on the database.
-  */
+// vim: ts=4:sw=4:expandtab
+
+/*
+ * jobQueue manages multiple queues indexed by device to serialize
+ * session io ops on the database.
+ */
+
 (function() {
     'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
 
     const _queueAsyncBuckets = new Map();
     const _gcLimit = 10000;
@@ -35,8 +40,7 @@
         cleanup();
     }
 
-    Internal.SessionLock = {};
-    Internal.SessionLock.queueJobForNumber = function queueJobForNumber(bucket, awaitable) {
+    ns.queueJob = function(bucket, awaitable) {
         /* Run the async awaitable only when all other async calls registered
          * here have completed (or thrown).  The bucket argument is a hashable
          * key representing the task queue to use. */

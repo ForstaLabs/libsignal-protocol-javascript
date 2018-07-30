@@ -1,9 +1,15 @@
+// vim: ts=4:sw=4:expandtab
+
 (function() {
+    'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
+
     var VERSION = 0;
 
     function iterateHash(data, key, count) {
         data = dcodeIO.ByteBuffer.concat([data, key]).toArrayBuffer();
-        return Internal.crypto.hash(data).then(function(result) {
+        return ns.crypto.hash(data).then(function(result) {
             if (--count === 0) {
                 return result;
             } else {
@@ -44,10 +50,11 @@
         });
     }
 
-    libsignal.FingerprintGenerator = function(iterations) {
+    ns.FingerprintGenerator = function(iterations) {
         this.iterations = iterations;
     };
-    libsignal.FingerprintGenerator.prototype = {
+
+    ns.FingerprintGenerator.prototype = {
         createFor: function(localIdentifier, localIdentityKey,
                             remoteIdentifier, remoteIdentityKey) {
             if (typeof localIdentifier !== 'string' ||
@@ -66,6 +73,4 @@
             });
         }
     };
-
 })();
-
