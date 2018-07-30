@@ -37,6 +37,11 @@
 
     ns.deriveSecrets = async function(input, salt, info, chunks) {
         // Specific implementation of RFC 5869 that only returns the first 3 32-byte chunks
+        if (!(input instanceof ArrayBuffer) ||
+            !(salt instanceof ArrayBuffer) ||
+            !(info instanceof ArrayBuffer)) {
+            throw new TypeError('ArrayBuffer types required');
+        }
         chunks = chunks || 3;
         console.assert(chunks >= 1 && chunks <= 3);
         const PRK = await ns.calculateMAC(salt, input);

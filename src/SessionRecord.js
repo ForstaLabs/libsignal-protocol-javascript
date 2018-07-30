@@ -36,7 +36,7 @@
         if (typeof thing == "string" || typeof thing == "number" || typeof thing == "boolean") {
             return thing;
         } else if (isStringable(thing)) {
-            return util.toString(thing);
+            return ns.util.toString(thing);
         } else if (thing instanceof Array) {
             var array = [];
             for (var i = 0; i < thing.length; i++) {
@@ -100,7 +100,7 @@
 
     ns.SessionRecord = class SessionRecord {
 
-        consturctor() {
+        constructor() {
             this.sessions = {};
             this.version = SESSION_RECORD_VERSION;
         }
@@ -132,7 +132,7 @@
         }
 
         getSessionByBaseKey(baseKey) {
-            const session = this.sessions[util.toString(baseKey)];
+            const session = this.sessions[ns.util.toString(baseKey)];
             if (session && session.indexInfo.baseKeyType === ns.BaseKeyType.OURS) {
                 console.warn("Tried to lookup a session using our basekey");
                 return undefined;
@@ -142,7 +142,7 @@
 
         getSessionByRemoteEphemeralKey(remoteEphemeralKey) {
             this.detectDuplicateOpenSessions();
-            var searchKey = util.toString(remoteEphemeralKey);
+            var searchKey = ns.util.toString(remoteEphemeralKey);
             var openSession;
             for (var key in this.sessions) {
                 if (this.sessions[key].indexInfo.closed == -1) {
@@ -185,7 +185,7 @@
 
         updateSessionState(session) {
             this.removeOldChains(session);
-            this.sessions[util.toString(session.indexInfo.baseKey)] = session;
+            this.sessions[ns.util.toString(session.indexInfo.baseKey)] = session;
             this.removeOldSessions();
         }
 
@@ -233,7 +233,7 @@
                         index = i;
                     }
                 }
-                delete session[util.toString(oldest.ephemeralKey)];
+                delete session[ns.util.toString(oldest.ephemeralKey)];
                 session.oldRatchetList.splice(index, 1);
             }
         }
@@ -250,7 +250,7 @@
                         oldestSession = session;
                     }
                 }
-                delete this.sessions[util.toString(oldestBaseKey)];
+                delete this.sessions[ns.util.toString(oldestBaseKey)];
             }
         }
 

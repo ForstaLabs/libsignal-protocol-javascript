@@ -26,21 +26,19 @@
         }
     }
 
-    function processKeys(raw_keys) {
+    ns.createKeyPair = function(privKey) {
+        validatePrivKey(privKey);
+        const keys = libsignal.curve25519.keyPair(privKey);
         // prepend version byte
-        var origPub = new Uint8Array(raw_keys.pubKey);
-        var pub = new Uint8Array(33);
+        const origPub = new Uint8Array(keys.pubKey);
+        const pub = new Uint8Array(33);
         pub.set(origPub, 1);
         pub[0] = 5;
         return {
             pubKey: pub.buffer,
-            privKey: raw_keys.privKey
+            privKey: keys.privKey
         };
-    }
 
-    ns.createKeyPair = function(privKey) {
-        validatePrivKey(privKey);
-        return processKeys(libsignal.curve25519.keyPair(privKey));
     },
 
     ns.calculateAgreement = function(pubKey, privKey) {
@@ -60,7 +58,7 @@
         return libsignal.curve25519.sign(privKey, message);
     };
 
-    ns.verifySignautre = function(pubKey, msg, sig) {
+    ns.verifySignature = function(pubKey, msg, sig) {
         pubKey = validatePubKeyFormat(pubKey);
         if (pubKey === undefined || pubKey.byteLength != 32) {
             throw new Error("Invalid public key");
@@ -75,7 +73,7 @@
     };
 
     ns.generateKeyPair = function() {
-        var privKey = ns.crypto.getRandomBytes(32);
+        var privKey = libsignal.crypto.getRandomBytes(32);
         return ns.createKeyPair(privKey);
     };
 })();

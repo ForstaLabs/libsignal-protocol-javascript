@@ -20,10 +20,9 @@
                 if (!trusted) {
                     throw new ns.UntrustedIdentityKeyError({addr, identityKey: device.identityKey});
                 }
-                await ns.crypto.Ed25519Verify(device.identityKey,
-                                                    device.signedPreKey.publicKey,
-                                                    device.signedPreKey.signature);
-                const baseKey = await ns.crypto.createKeyPair();
+                ns.curve.verifySignature(device.identityKey, device.signedPreKey.publicKey,
+                                         device.signedPreKey.signature);
+                const baseKey = ns.curve.generateKeyPair();
                 let devicePreKey;
                 if (device.preKey) {
                     devicePreKey = device.preKey.publicKey;
@@ -117,11 +116,11 @@
                 sharedSecret[i] = 0xff;
             }
             const ourIdentityKey = await this.storage.getIdentityKeyPair();
-            const ecRes = await Promise.all([
-                ns.crypto.ECDHE(theirSignedPubKey, ourIdentityKey.privKey),
-                ns.crypto.ECDHE(theirIdentityPubKey, ourSignedKey.privKey),
-                ns.crypto.ECDHE(theirSignedPubKey, ourSignedKey.privKey)
-            ]);
+            const ecRes = [
+                ns.curve.calculateAgreement(theirSignedPubKey, ourIdentityKey.privKey),
+                ns.curve.calculateAgreement(theirIdentityPubKey, ourSignedKey.privKey),
+                ns.curve.calculateAgreement(theirSignedPubKey, ourSignedKey.privKey)
+            ];
             if (isInitiator) {
                 sharedSecret.set(new Uint8Array(ecRes[0]), 32);
                 sharedSecret.set(new Uint8Array(ecRes[1]), 32 * 2);
@@ -131,11 +130,12 @@
             }
             sharedSecret.set(new Uint8Array(ecRes[2]), 32 * 3);
             if (ourEphemeralKey !== undefined && theirEphemeralPubKey !== undefined) {
-                const ecRes4 = await ns.crypto.ECDHE(theirEphemeralPubKey,
+                const ecRes4 = ns.curve.calculateAgreement(theirEphemeralPubKey,
                                                            ourEphemeralKey.privKey);
                 sharedSecret.set(new Uint8Array(ecRes4), 32 * 4);
             }
-            const masterKey = await ns.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32), "WhisperText");
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32),
+                                                            ns.util.toArrayBuffer("WhisperText"));
             const session = {
                 registrationId: registrationId,
                 currentRatchet: {
@@ -154,7 +154,7 @@
             if (isInitiator) {
                 session.indexInfo.baseKey = ourEphemeralKey.pubKey;
                 session.indexInfo.baseKeyType = ns.BaseKeyType.OURS;
-                const ourSendingEphemeralKey = await ns.crypto.createKeyPair();
+                const ourSendingEphemeralKey = ns.curve.generateKeyPair();
                 session.currentRatchet.ephemeralKeyPair = ourSendingEphemeralKey;
                 await this.calculateSendingRatchet(session, theirSignedPubKey);
             } else {
@@ -167,11 +167,12 @@
 
         async calculateSendingRatchet(session, remoteKey) {
             const ratchet = session.currentRatchet;
-            const sharedSecret = await ns.crypto.ECDHE(remoteKey,
-                util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
-            const masterKey = await ns.deriveSecrets(sharedSecret,
-                util.toArrayBuffer(ratchet.rootKey), "WhisperRatchet");
-            session[util.toString(ratchet.ephemeralKeyPair.pubKey)] = {
+            const sharedSecret = ns.curve.calculateAgreement(remoteKey,
+                ns.util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret,
+                                                            ns.util.toArrayBuffer(ratchet.rootKey),
+                                                            ns.util.toArrayBuffer("WhisperRatchet"));
+            session[ns.util.toString(ratchet.ephemeralKeyPair.pubKey)] = {
                 messageKeys: {},
                 chainKey: {
                     counter: -1,

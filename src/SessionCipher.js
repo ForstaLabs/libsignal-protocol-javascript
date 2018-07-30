@@ -33,7 +33,7 @@
                 if (!session) {
                     throw new ns.SessionError("No session to encrypt message for " + addr);
                 }
-                const remoteIdentityKey = util.toArrayBuffer(session.indexInfo.remoteIdentityKey);
+                const remoteIdentityKey = ns.util.toArrayBuffer(session.indexInfo.remoteIdentityKey);
                 const trusted = await this.storage.isTrustedIdentity(this.remoteAddress.getName(),
                                                                      remoteIdentityKey);
                 if (!trusted) {
@@ -41,14 +41,14 @@
                 }
                 await this.storage.saveIdentity(addr, session.indexInfo.remoteIdentityKey);
                 const msg = new ns.protobuf.WhisperMessage();
-                msg.ephemeralKey = util.toArrayBuffer(session.currentRatchet.ephemeralKeyPair.pubKey);
-                const chain = session[util.toString(msg.ephemeralKey)];
+                msg.ephemeralKey = ns.util.toArrayBuffer(session.currentRatchet.ephemeralKeyPair.pubKey);
+                const chain = session[ns.util.toString(msg.ephemeralKey)];
                 if (chain.chainType === ns.ChainType.RECEIVING) {
                     throw new ns.SessionError("Tried to encrypt on a receiving chain");
                 }
                 await this.fillMessageKeys(chain, chain.chainKey.counter + 1);
-                const keys = await ns.deriveSecrets(util.toArrayBuffer(chain.messageKeys[chain.chainKey.counter]),
-                                                    new ArrayBuffer(32), "WhisperMessageKeys");
+                const keys = await ns.crypto.deriveSecrets(ns.util.toArrayBuffer(chain.messageKeys[chain.chainKey.counter]),
+                                                           new ArrayBuffer(32), ns.util.toArrayBuffer("WhisperMessageKeys"));
                 delete chain.messageKeys[chain.chainKey.counter];
                 msg.counter = chain.chainKey.counter;
                 msg.previousCounter = session.currentRatchet.previousCounter;
@@ -56,7 +56,7 @@
                 msg.ciphertext = ciphertext;
                 const encodedMsg = msg.toArrayBuffer();
                 const macInput = new Uint8Array(encodedMsg.byteLength + 33 * 2 + 1);
-                macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)));
+                macInput.set(new Uint8Array(ns.util.toArrayBuffer(ourIdentityKey.pubKey)));
                 macInput.set(new Uint8Array(remoteIdentityKey), 33);
                 macInput[33 * 2] = (3 << 4) | 3;
                 macInput.set(new Uint8Array(encodedMsg), 33*2 + 1);
@@ -72,18 +72,18 @@
                 if (session.pendingPreKey !== undefined) {
                     type = 3;  // prekey bundle
                     const preKeyMsg = new ns.protobuf.PreKeyWhisperMessage();
-                    preKeyMsg.identityKey = util.toArrayBuffer(ourIdentityKey.pubKey);
+                    preKeyMsg.identityKey = ns.util.toArrayBuffer(ourIdentityKey.pubKey);
                     preKeyMsg.registrationId = await this.storage.getLocalRegistrationId();
-                    preKeyMsg.baseKey = util.toArrayBuffer(session.pendingPreKey.baseKey);
+                    preKeyMsg.baseKey = ns.util.toArrayBuffer(session.pendingPreKey.baseKey);
                     if (session.pendingPreKey.preKeyId) {
                         preKeyMsg.preKeyId = session.pendingPreKey.preKeyId;
                     }
                     preKeyMsg.signedPreKeyId = session.pendingPreKey.signedKeyId;
                     preKeyMsg.message = result;
-                    body = String.fromCharCode((3 << 4) | 3) + util.toString(preKeyMsg.encode());
+                    body = String.fromCharCode((3 << 4) | 3) + ns.util.toString(preKeyMsg.encode());
                 } else {
                     type = 1;  // normal
-                    body = util.toString(result);
+                    body = ns.util.toString(result);
                 }
                 return {
                     type,
@@ -130,7 +130,7 @@
                     record.promoteState(result.session);
                 }
                 const trusted = await this.storage.isTrustedIdentity(this.remoteAddress.getName(),
-                    util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey));
+                    ns.util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey));
                 if (!trusted) {
                     throw new Error('Identity key changed');
                 }
@@ -190,7 +190,7 @@
                 console.warn('decrypting message for closed session');
             }
             await this.maybeStepRatchet(session, remoteEphemeralKey, message.previousCounter);
-            const chain = session[util.toString(message.ephemeralKey)];
+            const chain = session[ns.util.toString(message.ephemeralKey)];
             if (chain.chainType === ns.ChainType.SENDING) {
                 throw new Error("Tried to decrypt on a sending chain");
             }
@@ -202,12 +202,12 @@
                 throw e;
             }
             delete chain.messageKeys[message.counter];
-            const keys = await ns.deriveSecrets(util.toArrayBuffer(messageKey), new ArrayBuffer(32),
-                                                "WhisperMessageKeys");
+            const keys = await ns.crypto.deriveSecrets(ns.util.toArrayBuffer(messageKey), new ArrayBuffer(32),
+                                                       ns.util.toArrayBuffer("WhisperMessageKeys"));
             const ourIdentityKey = await this.storage.getIdentityKeyPair();
             const macInput = new Uint8Array(messageProto.byteLength + 33*2 + 1);
-            macInput.set(new Uint8Array(util.toArrayBuffer(session.indexInfo.remoteIdentityKey)));
-            macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)), 33);
+            macInput.set(new Uint8Array(ns.util.toArrayBuffer(session.indexInfo.remoteIdentityKey)));
+            macInput.set(new Uint8Array(ns.util.toArrayBuffer(ourIdentityKey.pubKey)), 33);
             macInput[33*2] = (3 << 4) | 3;
             macInput.set(new Uint8Array(messageProto), 33*2 + 1);
             await ns.verifyMAC(macInput.buffer, keys[1], mac, 8);
@@ -227,7 +227,7 @@
             if (chain.chainKey.key === undefined) {
                 throw new Error("Got invalid request to extend chain after it was already closed");
             }
-            const key = util.toArrayBuffer(chain.chainKey.key);
+            const key = ns.util.toArrayBuffer(chain.chainKey.key);
             const signed = await Promise.all([
                 ns.crypto.calculateMAC(key, (new Uint8Array([1])).buffer),
                 ns.crypto.calculateMAC(key, (new Uint8Array([2])).buffer)
@@ -239,11 +239,11 @@
         }
 
         async maybeStepRatchet(session, remoteKey, previousCounter) {
-            if (session[util.toString(remoteKey)] !== undefined) {
+            if (session[ns.util.toString(remoteKey)] !== undefined) {
                 return;
             }
             const ratchet = session.currentRatchet;
-            let previousRatchet = session[util.toString(ratchet.lastRemoteEphemeralKey)];
+            let previousRatchet = session[ns.util.toString(ratchet.lastRemoteEphemeralKey)];
             if (previousRatchet !== undefined) {
                 await this.fillMessageKeys(previousRatchet, previousCounter);
                 delete previousRatchet.chainKey.key;
@@ -254,12 +254,12 @@
             }
             await this.calculateRatchet(session, remoteKey, false);
             // Now swap the ephemeral key and calculate the new sending chain
-            previousRatchet = util.toString(ratchet.ephemeralKeyPair.pubKey);
+            previousRatchet = ns.util.toString(ratchet.ephemeralKeyPair.pubKey);
             if (session[previousRatchet] !== undefined) {
                 ratchet.previousCounter = session[previousRatchet].chainKey.counter;
                 delete session[previousRatchet];
             }
-            const keyPair = await ns.crypto.createKeyPair();
+            const keyPair = ns.curve.generateKeyPair();
             ratchet.ephemeralKeyPair = keyPair;
             await this.calculateRatchet(session, remoteKey, true);
             ratchet.lastRemoteEphemeralKey = remoteKey;
@@ -268,11 +268,11 @@
         async calculateRatchet(session, remoteKey, sending) {
             const ratchet = session.currentRatchet;
             const sharedSecret = await ns.crypto.ECDHE(remoteKey,
-                util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
-            const masterKey = await ns.deriveSecrets(sharedSecret, util.toArrayBuffer(ratchet.rootKey),
-                                                     "WhisperRatchet");
+                ns.util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret, ns.util.toArrayBuffer(ratchet.rootKey),
+                                                            ns.util.toArrayBuffer("WhisperRatchet"));
             const ephemeralPublicKey = sending ? ratchet.ephemeralKeyPair.pubKey : remoteKey;
-            session[util.toString(ephemeralPublicKey)] = {
+            session[ns.util.toString(ephemeralPublicKey)] = {
                 messageKeys: {},
                 chainKey: {
                     counter: -1,
