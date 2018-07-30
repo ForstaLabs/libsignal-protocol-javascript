@@ -1,7 +1,6 @@
-var Internal = Internal || {};
-
-Internal.protoText = function() {
-	var protoText = {};
+self.libsignal = self.libsignal || {};
+self.libsignal.protoText = function() {
+	const protoText = {};
 
 	protoText['protos/WhisperTextProtocol.proto'] = 
 		'package textsecure;\n' +

@@ -1,7 +1,6 @@
-var Internal = Internal || {};
-
-Internal.protoText = function() {
-	var protoText = {};
+self.libsignal = self.libsignal || {};
+self.libsignal.protoText = function() {
+	const protoText = {};
 
 	protoText['protos/WhisperTextProtocol.proto'] = 
 		'package textsecure;\n' +
@@ -32,20 +31,19 @@ Internal.protoText = function() {
 
 	return protoText;
 }();
-/* vim: ts=4:sw=4 */
-var Internal = Internal || {};
+// vim: ts=4:sw=4:expandtab
 
-Internal.protobuf = function() {
+(function() {
     'use strict';
 
+    self.libsignal = self.libsignal || {};
+    const ns = self.libsignal.protobuf = {};
+
     function loadProtoBufs(filename) {
-        return dcodeIO.ProtoBuf.loadProto(Internal.protoText['protos/' + filename]).build('textsecure');
+        return dcodeIO.ProtoBuf.loadProto(libsignal.protoText['protos/' + filename]).build('textsecure');
     }
 
-    var protocolMessages = loadProtoBufs('WhisperTextProtocol.proto');
-
-    return {
-        WhisperMessage            : protocolMessages.WhisperMessage,
-        PreKeyWhisperMessage      : protocolMessages.PreKeyWhisperMessage
-    };
-}();
+    const protocolMessages = loadProtoBufs('WhisperTextProtocol.proto');
+    ns.WhisperMessage = protocolMessages.WhisperMessage;
+    ns.PreKeyWhisperMessage = protocolMessages.PreKeyWhisperMessage;
+})();

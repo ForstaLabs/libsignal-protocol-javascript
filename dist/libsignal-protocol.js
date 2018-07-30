@@ -1,6 +1,3 @@
-;(function(){
-var Internal = {};
-self.libsignal = {};
 if (self.crypto && !self.crypto.subtle && self.crypto.webkitSubtle) {
     self.crypto.subtle = self.crypto.webkitSubtle;
 }
@@ -23,11 +20,13 @@ var ha=[wc,Vb];var ia=[xc,Wb,Xb,ac];return{stackSave:ka,getTempRet0:pa,setThrew:
 
 
 
-/* vim: ts=4:sw=4:expandtab */
-var Internal = Internal || {};
+// vim: ts=4:sw=4:expandtab
+/* global Module */
 
 (function() {
     'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
 
     // Insert some bytes into the emscripten memory and return a pointer
     function _allocate(bytes) {
@@ -44,7 +43,7 @@ var Internal = Internal || {};
     var basepoint = new Uint8Array(32);
     basepoint[0] = 9;
 
-    Internal.curve25519 = {
+    ns.curve25519 = {
         keyPair: function(privKey) {
             var priv = new Uint8Array(privKey);
             priv[0]  &= 248;
@@ -61,9 +60,7 @@ var Internal = Internal || {};
             var basepoint_ptr = _allocate(basepoint);
 
             // The return value is just 0, the operation is done in place
-            var err = Module._curve25519_donna(publicKey_ptr,
-                                            privateKey_ptr,
-                                            basepoint_ptr);
+            Module._curve25519_donna(publicKey_ptr, privateKey_ptr, basepoint_ptr);
 
             var res = new Uint8Array(32);
             _readBytes(publicKey_ptr, 32, res);
@@ -72,8 +69,12 @@ var Internal = Internal || {};
             Module._free(privateKey_ptr);
             Module._free(basepoint_ptr);
 
-            return { pubKey: res.buffer, privKey: priv.buffer };
+            return {
+                pubKey: res.buffer,
+                privKey: priv.buffer
+            };
         },
+
         sharedSecret: function(pubKey, privKey) {
             // Where to store the result
             var sharedKey_ptr = Module._malloc(32);
@@ -86,9 +87,7 @@ var Internal = Internal || {};
             var basepoint_ptr = _allocate(new Uint8Array(pubKey));
 
             // Return value is 0 here too of course
-            var err = Module._curve25519_donna(sharedKey_ptr,
-                                               privateKey_ptr,
-                                               basepoint_ptr);
+            Module._curve25519_donna(sharedKey_ptr, privateKey_ptr, basepoint_ptr);
 
             var res = new Uint8Array(32);
             _readBytes(sharedKey_ptr, 32, res);
@@ -99,6 +98,7 @@ var Internal = Internal || {};
 
             return res.buffer;
         },
+
         sign: function(privKey, message) {
             // Where to store the result
             var signature_ptr = Module._malloc(64);
@@ -109,10 +109,7 @@ var Internal = Internal || {};
             // Get a pointer to the message
             var message_ptr = _allocate(new Uint8Array(message));
 
-            var err = Module._curve25519_sign(signature_ptr,
-                                              privateKey_ptr,
-                                              message_ptr,
-                                              message.byteLength);
+            Module._curve25519_sign(signature_ptr, privateKey_ptr, message_ptr, message.byteLength);
 
             var res = new Uint8Array(64);
             _readBytes(signature_ptr, 64, res);
@@ -123,6 +120,7 @@ var Internal = Internal || {};
 
             return res.buffer;
         },
+
         verify: function(pubKey, message, sig) {
             // Get a pointer to their public key
             var publicKey_ptr = _allocate(new Uint8Array(pubKey));
@@ -142,102 +140,11 @@ var Internal = Internal || {};
             Module._free(signature_ptr);
             Module._free(message_ptr);
 
-            return res !== 0;
+            if (res !== 0) {
+                throw new Error("Invalid signature");
+            }
         }
     };
-
-    Internal.curve25519_async = {
-        keyPair: function(privKey) {
-            return new Promise(function(resolve) {
-                resolve(Internal.curve25519.keyPair(privKey));
-            });
-        },
-        sharedSecret: function(pubKey, privKey) {
-            return new Promise(function(resolve) {
-                resolve(Internal.curve25519.sharedSecret(pubKey, privKey));
-            });
-        },
-        sign: function(privKey, message) {
-            return new Promise(function(resolve) {
-                resolve(Internal.curve25519.sign(privKey, message));
-            });
-        },
-        verify: function(pubKey, message, sig) {
-            return new Promise(function(resolve, reject) {
-                if (Internal.curve25519.verify(pubKey, message, sig)) {
-                    reject(new Error("Invalid signature"));
-                } else {
-                    resolve();
-                }
-            });
-        },
-    };
-
-})();
-
-;(function() {
-
-'use strict';
-
-// I am the...workee?
-var origCurve25519 = Internal.curve25519_async;
-
-Internal.startWorker = function(url) {
-    Internal.stopWorker(); // there can be only one
-    Internal.curve25519_async = new Curve25519Worker(url);
-};
-
-Internal.stopWorker = function() {
-    if (Internal.curve25519_async instanceof Curve25519Worker) {
-        var worker = Internal.curve25519_async.worker;
-        Internal.curve25519_async = origCurve25519;
-        worker.terminate();
-    }
-};
-
-libsignal.worker = {
-  startWorker: Internal.startWorker,
-  stopWorker: Internal.stopWorker,
-};
-
-function Curve25519Worker(url) {
-    this.jobs = {};
-    this.jobId = 0;
-    this.worker = new Worker(url);
-    this.worker.onmessage = function(e) {
-        var job = this.jobs[e.data.id];
-        if (e.data.error && typeof job.onerror === 'function') {
-            job.onerror(new Error(e.data.error));
-        } else if (typeof job.onsuccess === 'function') {
-            job.onsuccess(e.data.result);
-        }
-        delete this.jobs[e.data.id];
-    }.bind(this);
-}
-
-Curve25519Worker.prototype = {
-    constructor: Curve25519Worker,
-    postMessage: function(methodName, args, onsuccess, onerror) {
-        return new Promise(function(resolve, reject) {
-          this.jobs[this.jobId] = { onsuccess: resolve, onerror: reject };
-          this.worker.postMessage({ id: this.jobId, methodName: methodName, args: args });
-          this.jobId++;
-        }.bind(this));
-    },
-    keyPair: function(privKey) {
-        return this.postMessage('keyPair', [privKey]);
-    },
-    sharedSecret: function(pubKey, privKey) {
-        return this.postMessage('sharedSecret', [pubKey, privKey]);
-    },
-    sign: function(privKey, message) {
-        return this.postMessage('sign', [privKey, message]);
-    },
-    verify: function(pubKey, message, sig) {
-        return this.postMessage('verify', [pubKey, message, sig]);
-    }
-};
-
 })();
 
 /*
@@ -9968,22 +9875,62 @@ Curve25519Worker.prototype = {
     return ProtoBuf;
 });
 
+// vim: ts=4:sw=4:expandtab
+
 (function() {
     'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
+
+    ns.SignalError = class SignalError extends Error {};
+
+    ns.UntrustedIdentityKeyError = class UntrustedIdentityKeyError extends ns.SignalError {
+        constructor(props) {
+            super();
+            this.name = 'IdentityKeyError';
+            Object.assign(this, props);
+        }
+    };
+
+    ns.SessionError = class SessionError extends ns.SignalError {
+        constructor(message) {
+            super(message);
+            this.name = 'SessionError';
+        }
+    };
+
+    ns.PreKeyError = class PreKeyError extends ns.SignalError {
+        constructor(message) {
+            super(message);
+            this.name = 'PreKeyError';
+        }
+    };
+})();
+
+// vim: ts=4:sw=4:expandtab
+
+(function() {
+    'use strict';
+
+    self.libsignal = self.libsignal || {};
+    const ns = self.libsignal.curve = {};
 
     function validatePrivKey(privKey) {
         if (privKey === undefined || !(privKey instanceof ArrayBuffer) || privKey.byteLength != 32) {
             throw new Error("Invalid private key");
         }
     }
+
     function validatePubKeyFormat(pubKey) {
-        if (pubKey === undefined || ((pubKey.byteLength != 33 || new Uint8Array(pubKey)[0] != 5) && pubKey.byteLength != 32)) {
+        if (pubKey === undefined ||
+            ((pubKey.byteLength != 33 || new Uint8Array(pubKey)[0] != 5) &&
+             pubKey.byteLength != 32)) {
             throw new Error("Invalid public key");
         }
         if (pubKey.byteLength == 33) {
             return pubKey.slice(1);
         } else {
-            console.error("WARNING: Expected pubkey of length 33, please report the ST and client that generated the pubkey");
+            console.error("WARNING: Expected pubkey of length 33");
             return pubKey;
         }
     }
@@ -9994,222 +9941,129 @@ Curve25519Worker.prototype = {
         var pub = new Uint8Array(33);
         pub.set(origPub, 1);
         pub[0] = 5;
-
-        return { pubKey: pub.buffer, privKey: raw_keys.privKey };
-    }
-
-    function wrapCurve25519(curve25519) {
         return {
-            // Curve 25519 crypto
-            createKeyPair: function(privKey) {
-                validatePrivKey(privKey);
-                var raw_keys = curve25519.keyPair(privKey);
-                if (raw_keys instanceof Promise) {
-                    return raw_keys.then(processKeys);
-                } else {
-                    return processKeys(raw_keys);
-                }
-            },
-            ECDHE: function(pubKey, privKey) {
-                pubKey = validatePubKeyFormat(pubKey);
-                validatePrivKey(privKey);
-
-                if (pubKey === undefined || pubKey.byteLength != 32) {
-                    throw new Error("Invalid public key");
-                }
-
-                return curve25519.sharedSecret(pubKey, privKey);
-            },
-            Ed25519Sign: function(privKey, message) {
-                validatePrivKey(privKey);
-
-                if (message === undefined) {
-                    throw new Error("Invalid message");
-                }
-
-                return curve25519.sign(privKey, message);
-            },
-            Ed25519Verify: function(pubKey, msg, sig) {
-                pubKey = validatePubKeyFormat(pubKey);
-
-                if (pubKey === undefined || pubKey.byteLength != 32) {
-                    throw new Error("Invalid public key");
-                }
-
-                if (msg === undefined) {
-                    throw new Error("Invalid message");
-                }
-
-                if (sig === undefined || sig.byteLength != 64) {
-                    throw new Error("Invalid signature");
-                }
-
-                return curve25519.verify(pubKey, msg, sig);
-            }
+            pubKey: pub.buffer,
+            privKey: raw_keys.privKey
         };
     }
 
-    Internal.Curve       = wrapCurve25519(Internal.curve25519);
-    Internal.Curve.async = wrapCurve25519(Internal.curve25519_async);
+    ns.createKeyPair = function(privKey) {
+        validatePrivKey(privKey);
+        return processKeys(libsignal.curve25519.keyPair(privKey));
+    },
 
-    function wrapCurve(curve) {
-        return {
-            generateKeyPair: function() {
-                var privKey = Internal.crypto.getRandomBytes(32);
-                return curve.createKeyPair(privKey);
-            },
-            createKeyPair: function(privKey) {
-                return curve.createKeyPair(privKey);
-            },
-            calculateAgreement: function(pubKey, privKey) {
-                return curve.ECDHE(pubKey, privKey);
-            },
-            verifySignature: function(pubKey, msg, sig) {
-                return curve.Ed25519Verify(pubKey, msg, sig);
-            },
-            calculateSignature: function(privKey, message) {
-                return curve.Ed25519Sign(privKey, message);
-            }
-        };
-    }
+    ns.calculateAgreement = function(pubKey, privKey) {
+        pubKey = validatePubKeyFormat(pubKey);
+        validatePrivKey(privKey);
+        if (pubKey === undefined || pubKey.byteLength != 32) {
+            throw new Error("Invalid public key");
+        }
+        return libsignal.curve25519.sharedSecret(pubKey, privKey);
+    };
 
-    libsignal.Curve       = wrapCurve(Internal.Curve);
-    libsignal.Curve.async = wrapCurve(Internal.Curve.async);
+    ns.calculateSignature = function(privKey, message) {
+        validatePrivKey(privKey);
+        if (message === undefined) {
+            throw new Error("Invalid message");
+        }
+        return libsignal.curve25519.sign(privKey, message);
+    };
 
+    ns.verifySignautre = function(pubKey, msg, sig) {
+        pubKey = validatePubKeyFormat(pubKey);
+        if (pubKey === undefined || pubKey.byteLength != 32) {
+            throw new Error("Invalid public key");
+        }
+        if (msg === undefined) {
+            throw new Error("Invalid message");
+        }
+        if (sig === undefined || sig.byteLength != 64) {
+            throw new Error("Invalid signature");
+        }
+        libsignal.curve25519.verify(pubKey, msg, sig);
+    };
+
+    ns.generateKeyPair = function() {
+        var privKey = ns.crypto.getRandomBytes(32);
+        return ns.createKeyPair(privKey);
+    };
 })();
 
-/*
- * vim: ts=4:sw=4
- */
-
-var Internal = Internal || {};
+// vim: ts=4:sw=4:expandtab
 
 (function() {
     'use strict';
 
-    var crypto = self.crypto;
+    self.libsignal = self.libsignal || {};
+    const ns = self.libsignal.crypto = {};
+    const subtle = self.crypto && self.crypto.subtle;
 
-    if (!crypto || !crypto.subtle || typeof crypto.getRandomValues !== 'function') {
-        throw new Error('WebCrypto not found');
-    }
+    ns.getRandomBytes = function(size) {
+        const array = new Uint8Array(size);
+        crypto.getRandomValues(array);
+        return array.buffer;
+    };
 
-    Internal.crypto = {
-        getRandomBytes: function(size) {
-            var array = new Uint8Array(size);
-            crypto.getRandomValues(array);
-            return array.buffer;
-        },
-        encrypt: function(key, data, iv) {
-            return crypto.subtle.importKey('raw', key, {name: 'AES-CBC'}, false, ['encrypt']).then(function(key) {
-                return crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
-            });
-        },
-        decrypt: function(key, data, iv) {
-            return crypto.subtle.importKey('raw', key, {name: 'AES-CBC'}, false, ['decrypt']).then(function(key) {
-                return crypto.subtle.decrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
-            });
-        },
-        sign: function(key, data) {
-            return crypto.subtle.importKey('raw', key, {name: 'HMAC', hash: {name: 'SHA-256'}}, false, ['sign']).then(function(key) {
-                return crypto.subtle.sign( {name: 'HMAC', hash: 'SHA-256'}, key, data);
-            });
-        },
+    ns.encrypt = async function(keyData, data, iv) {
+        const key = await subtle.importKey('raw', keyData, {name: 'AES-CBC'}, false, ['encrypt']);
+        return await subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
+    };
 
-        hash: function(data) {
-            return crypto.subtle.digest({name: 'SHA-512'}, data);
-        },
+    ns.decrypt = async function(keyData, data, iv) {
+        const key = await subtle.importKey('raw', keyData, {name: 'AES-CBC'}, false, ['decrypt']);
+        return await subtle.decrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
+    };
 
-        HKDF: function(input, salt, info) {
-            // Specific implementation of RFC 5869 that only returns the first 3 32-byte chunks
-            // TODO: We dont always need the third chunk, we might skip it
-            return Internal.crypto.sign(salt, input).then(function(PRK) {
-                var infoBuffer = new ArrayBuffer(info.byteLength + 1 + 32);
-                var infoArray = new Uint8Array(infoBuffer);
-                infoArray.set(new Uint8Array(info), 32);
-                infoArray[infoArray.length - 1] = 1;
-                return Internal.crypto.sign(PRK, infoBuffer.slice(32)).then(function(T1) {
-                    infoArray.set(new Uint8Array(T1));
-                    infoArray[infoArray.length - 1] = 2;
-                    return Internal.crypto.sign(PRK, infoBuffer).then(function(T2) {
-                        infoArray.set(new Uint8Array(T2));
-                        infoArray[infoArray.length - 1] = 3;
-                        return Internal.crypto.sign(PRK, infoBuffer).then(function(T3) {
-                            return [ T1, T2, T3 ];
-                        });
-                    });
-                });
-            });
-        },
+    ns.calculateMAC = async function(keyData, data) {
+        const key = await subtle.importKey('raw', keyData, {
+            name: 'HMAC',
+            hash: {name: 'SHA-256'}
+        }, false, ['sign']);
+        return await subtle.sign({name: 'HMAC', hash: 'SHA-256'}, key, data);
+    };
 
-        // Curve 25519 crypto
-        createKeyPair: function(privKey) {
-            if (privKey === undefined) {
-                privKey = Internal.crypto.getRandomBytes(32);
-            }
-            return Internal.Curve.async.createKeyPair(privKey);
-        },
-        ECDHE: function(pubKey, privKey) {
-            return Internal.Curve.async.ECDHE(pubKey, privKey);
-        },
-        Ed25519Sign: function(privKey, message) {
-            return Internal.Curve.async.Ed25519Sign(privKey, message);
-        },
-        Ed25519Verify: function(pubKey, msg, sig) {
-            return Internal.Curve.async.Ed25519Verify(pubKey, msg, sig);
+    ns.hash = async function(data) {
+        return await subtle.digest({name: 'SHA-512'}, data);
+    };
+
+    ns.deriveSecrets = async function(input, salt, info, chunks) {
+        // Specific implementation of RFC 5869 that only returns the first 3 32-byte chunks
+        chunks = chunks || 3;
+        console.assert(chunks >= 1 && chunks <= 3);
+        const PRK = await ns.calculateMAC(salt, input);
+        const infoBuffer = new ArrayBuffer(info.byteLength + 1 + 32);
+        const infoArray = new Uint8Array(infoBuffer);
+        infoArray.set(new Uint8Array(info), 32);
+        infoArray[infoArray.length - 1] = 1;
+        const signed = [await ns.calculateMAC(PRK, infoBuffer.slice(32))];
+        if (chunks > 1) {
+            infoArray.set(new Uint8Array(signed[signed.length - 1]));
+            infoArray[infoArray.length - 1] = 2;
+            signed.push(await ns.calculateMAC(PRK, infoBuffer));
+        }
+        if (chunks > 2) {
+            infoArray.set(new Uint8Array(signed[signed.length - 1]));
+            infoArray[infoArray.length - 1] = 3;
+            signed.push(await ns.calculateMAC(PRK, infoBuffer));
+        }
+        return signed;
+    };
+
+    ns.verifyMAC = async function(data, key, mac, length) {
+        const calculatedMac = await ns.calculateMAC(key, data);
+        if (mac.byteLength != length  || calculatedMac.byteLength < length) {
+            throw new Error("Bad MAC length");
+        }
+        const a = new Uint8Array(calculatedMac);
+        const b = new Uint8Array(mac);
+        let result = 0;
+        for (let i = 0; i < mac.byteLength; ++i) {
+            result = result | (a[i] ^ b[i]);
+        }
+        if (result !== 0) {
+            throw new Error("Bad MAC");
         }
     };
-
-
-    // HKDF for TextSecure has a bit of additional handling - salts always end up being 32 bytes
-    Internal.HKDF = function(input, salt, info) {
-        if (salt.byteLength != 32) {
-            throw new Error("Got salt of incorrect length");
-        }
-
-        return Internal.crypto.HKDF(input, salt,  util.toArrayBuffer(info));
-    };
-
-    Internal.verifyMAC = function(data, key, mac, length) {
-        return Internal.crypto.sign(key, data).then(function(calculated_mac) {
-            if (mac.byteLength != length  || calculated_mac.byteLength < length) {
-                throw new Error("Bad MAC length");
-            }
-            var a = new Uint8Array(calculated_mac);
-            var b = new Uint8Array(mac);
-            var result = 0;
-            for (var i=0; i < mac.byteLength; ++i) {
-                result = result | (a[i] ^ b[i]);
-            }
-            if (result !== 0) {
-                throw new Error("Bad MAC");
-            }
-        });
-    };
-
-    libsignal.HKDF = {
-        deriveSecrets: function(input, salt, info) {
-            return Internal.HKDF(input, salt, info);
-        }
-    };
-
-    libsignal.crypto = {
-        encrypt: function(key, data, iv) {
-            return Internal.crypto.encrypt(key, data, iv);
-        },
-        decrypt: function(key, data, iv) {
-            return Internal.crypto.decrypt(key, data, iv);
-        },
-        calculateMAC: function(key, data) {
-            return Internal.crypto.sign(key, data);
-        },
-        verifyMAC: function(data, key, mac, length) {
-            return Internal.verifyMAC(data, key, mac, length);
-        },
-        getRandomBytes: function(size) {
-            return Internal.crypto.getRandomBytes(size);
-        }
-    };
-
 })();
 
 /*
@@ -10259,61 +10113,59 @@ var util = (function() {
     };
 })();
 
-function isNonNegativeInteger(n) {
-    return (typeof n === 'number' && (n % 1) === 0  && n >= 0);
-}
+// vim: ts=4:sw=4:expandtab
 
-var KeyHelper = {
-    generateIdentityKeyPair: function() {
-        return Internal.crypto.createKeyPair();
-    },
+(function() {
+    'use strict';
 
-    generateRegistrationId: function() {
-        var registrationId = new Uint16Array(Internal.crypto.getRandomBytes(2))[0];
+    self.libsignal = self.libsignal || {};
+    const ns = self.libsignal.keyhelper = {};
+
+    function isNonNegativeInteger(n) {
+        return (typeof n === 'number' && (n % 1) === 0  && n >= 0);
+    }
+
+    ns.generateIdentityKeyPair = libsignal.curve.generateKeyPair;
+
+    ns.generateRegistrationId = function() {
+        var registrationId = new Uint16Array(libsignal.crypto.getRandomBytes(2))[0];
         return registrationId & 0x3fff;
-    },
+    };
 
-    generateSignedPreKey: function (identityKeyPair, signedKeyId) {
+    ns.generateSignedPreKey = async function(identityKeyPair, keyId) {
         if (!(identityKeyPair.privKey instanceof ArrayBuffer) ||
             identityKeyPair.privKey.byteLength != 32 ||
             !(identityKeyPair.pubKey instanceof ArrayBuffer) ||
             identityKeyPair.pubKey.byteLength != 33) {
             throw new TypeError('Invalid argument for identityKeyPair');
         }
-        if (!isNonNegativeInteger(signedKeyId)) {
-            throw new TypeError(
-                'Invalid argument for signedKeyId: ' + signedKeyId
-            );
-        }
-
-        return Internal.crypto.createKeyPair().then(function(keyPair) {
-            return Internal.crypto.Ed25519Sign(identityKeyPair.privKey, keyPair.pubKey).then(function(sig) {
-                return {
-                    keyId      : signedKeyId,
-                    keyPair    : keyPair,
-                    signature  : sig
-                };
-            });
-        });
-    },
-
-    generatePreKey: function(keyId) {
         if (!isNonNegativeInteger(keyId)) {
             throw new TypeError('Invalid argument for keyId: ' + keyId);
         }
+        const keyPair = await libsignal.curve.generateKeyPair();
+        const signature = await libsignal.curve.calculateSignature(identityKeyPair.privKey, keyPair.pubKey);
+        return {
+            keyId,
+            keyPair,
+            signature
+        };
+    };
 
-        return Internal.crypto.createKeyPair().then(function(keyPair) {
-            return { keyId: keyId, keyPair: keyPair };
-        });
-    }
-};
+    ns.generatePreKey = async function(keyId) {
+        if (!isNonNegativeInteger(keyId)) {
+            throw new TypeError('Invalid argument for keyId: ' + keyId);
+        }
+        const keyPair = await libsignal.curve.generateKeyPair();
+        return {
+            keyId,
+            keyPair
+        };
+    };
+})();
 
-libsignal.KeyHelper = KeyHelper;
-
-var Internal = Internal || {};
-
-Internal.protoText = function() {
-	var protoText = {};
+self.libsignal = self.libsignal || {};
+self.libsignal.protoText = function() {
+	const protoText = {};
 
 	protoText['protos/WhisperTextProtocol.proto'] = 
 		'package textsecure;\n' +
@@ -10344,43 +10196,42 @@ Internal.protoText = function() {
 
 	return protoText;
 }();
-/* vim: ts=4:sw=4 */
-var Internal = Internal || {};
+// vim: ts=4:sw=4:expandtab
 
-Internal.protobuf = function() {
+(function() {
     'use strict';
 
+    self.libsignal = self.libsignal || {};
+    const ns = self.libsignal.protobuf = {};
+
     function loadProtoBufs(filename) {
-        return dcodeIO.ProtoBuf.loadProto(Internal.protoText['protos/' + filename]).build('textsecure');
+        return dcodeIO.ProtoBuf.loadProto(libsignal.protoText['protos/' + filename]).build('textsecure');
     }
 
-    var protocolMessages = loadProtoBufs('WhisperTextProtocol.proto');
-
-    return {
-        WhisperMessage            : protocolMessages.WhisperMessage,
-        PreKeyWhisperMessage      : protocolMessages.PreKeyWhisperMessage
-    };
-}();
+    const protocolMessages = loadProtoBufs('WhisperTextProtocol.proto');
+    ns.WhisperMessage = protocolMessages.WhisperMessage;
+    ns.PreKeyWhisperMessage = protocolMessages.PreKeyWhisperMessage;
+})();
 
 /*
  * vim: ts=4:sw=4
  */
 
-var Internal = Internal || {};
-
-Internal.BaseKeyType = {
-  OURS: 1,
-  THEIRS: 2
-};
-
-Internal.ChainType = {
-  SENDING: 1,
-  RECEIVING: 2
-};
-
-
-Internal.SessionRecord = function() {
+(function() {
     'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
+
+    ns.BaseKeyType = {
+        OURS: 1,
+        THEIRS: 2
+    };
+
+    ns.ChainType = {
+        SENDING: 1,
+        RECEIVING: 2
+    };
+
     var ARCHIVED_STATES_MAX_LENGTH = 40;
     var OLD_RATCHETS_MAX_LENGTH = 10;
     var SESSION_RECORD_VERSION = 'v1';
@@ -10392,8 +10243,8 @@ Internal.SessionRecord = function() {
     function isStringable(thing) {
         return (thing === Object(thing) &&
                 (thing.__proto__ == StaticArrayBufferProto ||
-                    thing.__proto__ == StaticUint8ArrayProto ||
-                    thing.__proto__ == StaticByteBufferProto));
+                 thing.__proto__ == StaticUint8ArrayProto ||
+                 thing.__proto__ == StaticByteBufferProto));
     }
 
     function ensureStringed(thing) {
@@ -10461,111 +10312,103 @@ Internal.SessionRecord = function() {
         }
     }
 
-    var SessionRecord = function() {
-        this.sessions = {};
-        this.version = SESSION_RECORD_VERSION;
-    };
 
-    SessionRecord.deserialize = function(serialized) {
-        var data = JSON.parse(serialized);
-        if (data.version !== SESSION_RECORD_VERSION) { migrate(data); }
+    ns.SessionRecord = class SessionRecord {
 
-        var record = new SessionRecord();
-        record.sessions = data.sessions;
-        if (record.sessions === undefined || record.sessions === null || typeof record.sessions !== "object" || Array.isArray(record.sessions)) {
-            throw new Error("Error deserializing SessionRecord");
+        consturctor() {
+            this.sessions = {};
+            this.version = SESSION_RECORD_VERSION;
         }
-        return record;
-    };
 
-    SessionRecord.prototype = {
-        serialize: function() {
+        static deserialize(serialized) {
+            const data = JSON.parse(serialized);
+            if (data.version !== SESSION_RECORD_VERSION) {
+                migrate(data);
+            }
+            const record = new this();
+            record.sessions = data.sessions;
+            if (record.sessions === undefined || record.sessions === null ||
+                typeof record.sessions !== "object" || Array.isArray(record.sessions)) {
+                throw new Error("Error deserializing SessionRecord");
+            }
+            return record;
+        }
+
+        serialize() {
             return jsonThing({
-                sessions       : this.sessions,
-                version        : this.version
+                sessions: this.sessions,
+                version: this.version
             });
-        },
+        }
 
-        haveOpenSession: function() {
+        haveOpenSession() {
             var openSession = this.getOpenSession();
             return (!!openSession && typeof openSession.registrationId === 'number');
-        },
+        }
 
-        getSessionByBaseKey: function(baseKey) {
-            var session = this.sessions[util.toString(baseKey)];
-            if (session && session.indexInfo.baseKeyType === Internal.BaseKeyType.OURS) {
+        getSessionByBaseKey(baseKey) {
+            const session = this.sessions[util.toString(baseKey)];
+            if (session && session.indexInfo.baseKeyType === ns.BaseKeyType.OURS) {
                 console.warn("Tried to lookup a session using our basekey");
                 return undefined;
             }
             return session;
-        },
+        }
 
-        getSessionByRemoteEphemeralKey: function(remoteEphemeralKey) {
+        getSessionByRemoteEphemeralKey(remoteEphemeralKey) {
             this.detectDuplicateOpenSessions();
-            var sessions = this.sessions;
-
             var searchKey = util.toString(remoteEphemeralKey);
-
             var openSession;
-            for (var key in sessions) {
-                if (sessions[key].indexInfo.closed == -1) {
-                    openSession = sessions[key];
+            for (var key in this.sessions) {
+                if (this.sessions[key].indexInfo.closed == -1) {
+                    openSession = this.sessions[key];
                 }
-                if (sessions[key][searchKey] !== undefined) {
-                    return sessions[key];
+                if (this.sessions[key][searchKey] !== undefined) {
+                    return this.sessions[key];
                 }
             }
             if (openSession !== undefined) {
                 return openSession;
             }
-
             return undefined;
-        },
+        }
 
-        getOpenSession: function() {
-            var sessions = this.sessions;
-            if (sessions === undefined) {
+        getOpenSession() {
+            if (this.sessions === undefined) {
                 return undefined;
             }
-
             this.detectDuplicateOpenSessions();
-
-            for (var key in sessions) {
-                if (sessions[key].indexInfo.closed == -1) {
-                    return sessions[key];
+            for (const key in this.sessions) {
+                if (this.sessions[key].indexInfo.closed == -1) {
+                    return this.sessions[key];
                 }
             }
             return undefined;
-        },
+        }
 
-        detectDuplicateOpenSessions: function() {
-            var openSession;
-            var sessions = this.sessions;
-            for (var key in sessions) {
-                if (sessions[key].indexInfo.closed == -1) {
+        detectDuplicateOpenSessions() {
+            let openSession;
+            for (const key in this.sessions) {
+                if (this.sessions[key].indexInfo.closed == -1) {
                     if (openSession !== undefined) {
                         throw new Error("Datastore inconsistensy: multiple open sessions");
                     }
-                    openSession = sessions[key];
+                    openSession = this.sessions[key];
                 }
             }
-        },
+        }
 
-        updateSessionState: function(session) {
-            var sessions = this.sessions;
-
+        updateSessionState(session) {
             this.removeOldChains(session);
-
-            sessions[util.toString(session.indexInfo.baseKey)] = session;
-
+            this.sessions[util.toString(session.indexInfo.baseKey)] = session;
             this.removeOldSessions();
-        },
+        }
 
-        getSessions: function() {
+        getSessions() {
             // return an array of sessions ordered by time closed,
             // followed by the open session
-            var list = [];
-            var openSession;
+            const list = [];
+            let openSession;
             for (var k in this.sessions) {
                 if (this.sessions[k].indexInfo.closed === -1) {
                     openSession = this.sessions[k];
@@ -10573,35 +10416,33 @@ Internal.SessionRecord = function() {
                     list.push(this.sessions[k]);
                 }
             }
-            list = list.sort(function(s1, s2) {
-                return s1.indexInfo.closed - s2.indexInfo.closed;
-            });
+            list.sort((s1, s2) => s1.indexInfo.closed - s2.indexInfo.closed);
             if (openSession) {
                 list.push(openSession);
             }
             return list;
-        },
+        }
 
-        archiveCurrentState: function() {
-            var open_session = this.getOpenSession();
-            if (open_session !== undefined) {
-                open_session.indexInfo.closed = Date.now();
-                this.updateSessionState(open_session);
+        archiveCurrentState() {
+            const openSession = this.getOpenSession();
+            if (openSession !== undefined) {
+                openSession.indexInfo.closed = Date.now();
+                this.updateSessionState(openSession);
             }
-        },
+        }
 
-        promoteState: function(session) {
+        promoteState(session) {
             session.indexInfo.closed = -1;
-        },
+        }
 
-        removeOldChains: function(session) {
+        removeOldChains(session) {
             // Sending ratchets are always removed when we step because we never need them again
             // Receiving ratchets are added to the oldRatchetList, which we parse
             // here and remove all but the last ten.
             while (session.oldRatchetList.length > OLD_RATCHETS_MAX_LENGTH) {
-                var index = 0;
-                var oldest = session.oldRatchetList[0];
-                for (var i = 0; i < session.oldRatchetList.length; i++) {
+                let index = 0;
+                let oldest = session.oldRatchetList[0];
+                for (let i = 0; i < session.oldRatchetList.length; i++) {
                     if (session.oldRatchetList[i].added < oldest.added) {
                         oldest = session.oldRatchetList[i];
                         index = i;
@@ -10610,27 +10451,30 @@ Internal.SessionRecord = function() {
                 delete session[util.toString(oldest.ephemeralKey)];
                 session.oldRatchetList.splice(index, 1);
             }
-        },
+        }
 
-        removeOldSessions: function() {
-            var sessions = this.sessions;
-            var oldestBaseKey, oldestSession;
-            while (Object.keys(sessions).length > ARCHIVED_STATES_MAX_LENGTH) {
-                for (var key in sessions) {
-                    var session = sessions[key];
+        removeOldSessions() {
+            let oldestBaseKey;
+            let oldestSession;
+            while (Object.keys(this.sessions).length > ARCHIVED_STATES_MAX_LENGTH) {
+                for (const key in this.sessions) {
+                    const session = this.sessions[key];
                     if (session.indexInfo.closed > -1 && // session is closed
                         (!oldestSession || session.indexInfo.closed < oldestSession.indexInfo.closed)) {
                         oldestBaseKey = key;
                         oldestSession = session;
                     }
                 }
-                delete sessions[util.toString(oldestBaseKey)];
+                delete this.sessions[util.toString(oldestBaseKey)];
             }
-        },
-    };
+        }
 
-    return SessionRecord;
-}();
+        deleteAllSessions() {
+            // Used primarily in session reset scenarios, where we really delete sessions
+            this.sessions = {};
+        }
+    };
+})();
 
 function SignalProtocolAddress(name, deviceId) {
   this.name = name;
@@ -10669,154 +10513,130 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
   return new libsignal.SignalProtocolAddress(parts[0], parseInt(parts[1]));
 };
 
-function SessionBuilder(storage, remoteAddress) {
-  this.remoteAddress = remoteAddress;
-  this.storage = storage;
-}
+// vim: ts=4:sw=4:expandtab
 
-SessionBuilder.prototype = {
-  processPreKey: function(device) {
-    return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-      return this.storage.isTrustedIdentity(
-          this.remoteAddress.toString(), device.identityKey
-      ).then(function(trusted) {
-        if (!trusted) {
-          throw new Error('Identity key changed');
+(function() {
+    'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
+
+
+    ns.SessionBuilder = class SessionBuilder {
+
+        constructor(storage, remoteAddress) {
+            this.remoteAddress = remoteAddress;
+            this.storage = storage;
         }
 
-        return Internal.crypto.Ed25519Verify(
-          device.identityKey,
-          device.signedPreKey.publicKey,
-          device.signedPreKey.signature
-        );
-      }).then(function() {
-        return Internal.crypto.createKeyPair();
-      }).then(function(baseKey) {
-        var devicePreKey;
-        if (device.preKey) {
-            devicePreKey = device.preKey.publicKey;
+        async processPreKey(device) {
+            const addr = this.remoteAddress.toString();
+            return await ns.queueJob(addr, async () => {
+                const trusted = await this.storage.isTrustedIdentity(addr, device.identityKey);
+                if (!trusted) {
+                    throw new ns.UntrustedIdentityKeyError({addr, identityKey: device.identityKey});
+                }
+                await ns.crypto.Ed25519Verify(device.identityKey,
+                                                    device.signedPreKey.publicKey,
+                                                    device.signedPreKey.signature);
+                const baseKey = await ns.crypto.createKeyPair();
+                let devicePreKey;
+                if (device.preKey) {
+                    devicePreKey = device.preKey.publicKey;
+                }
+                const session = await this.initSession(true, baseKey, undefined, device.identityKey,
+                                                       devicePreKey, device.signedPreKey.publicKey,
+                                                       device.registrationId);
+                session.pendingPreKey = {
+                    signedKeyId: device.signedPreKey.keyId,
+                    baseKey: baseKey.pubKey
+                };
+                if (device.preKey) {
+                    session.pendingPreKey.preKeyId = device.preKey.keyId;
+                }
+                const serialized = await this.storage.loadSession(addr);
+                let record;
+                if (serialized !== undefined) {
+                    record = ns.SessionRecord.deserialize(serialized);
+                } else {
+                    record = new ns.SessionRecord();
+                }
+                record.archiveCurrentState();
+                record.updateSessionState(session);
+                await this.storage.storeSession(addr, record.serialize());
+                await this.storage.saveIdentity(addr, session.indexInfo.remoteIdentityKey);
+            });
         }
-        return this.initSession(true, baseKey, undefined, device.identityKey,
-          devicePreKey, device.signedPreKey.publicKey, device.registrationId
-        ).then(function(session) {
-            session.pendingPreKey = {
-                signedKeyId : device.signedPreKey.keyId,
-                baseKey     : baseKey.pubKey
-            };
-            if (device.preKey) {
-                session.pendingPreKey.preKeyId = device.preKey.keyId;
+
+        async processV3(record, message) {
+            const addr = this.remoteAddress.toString();
+            const msgIdentityKey = message.identityKey.toArrayBuffer();
+            const trusted = await this.storage.isTrustedIdentity(addr, msgIdentityKey);
+            if (!trusted) {
+                throw new ns.UntrustedIdentityKeyError({addr, message, identityKey: msgIdentityKey});
             }
-            return session;
-        });
-      }.bind(this)).then(function(session) {
-        var address = this.remoteAddress.toString();
-        return this.storage.loadSession(address).then(function(serialized) {
-          var record;
-          if (serialized !== undefined) {
-            record = Internal.SessionRecord.deserialize(serialized);
-          } else {
-            record = new Internal.SessionRecord();
-          }
-
-          record.archiveCurrentState();
-          record.updateSessionState(session);
-          return Promise.all([
-            this.storage.storeSession(address, record.serialize()),
-            this.storage.saveIdentity(this.remoteAddress.toString(), session.indexInfo.remoteIdentityKey)
-          ]);
-        }.bind(this));
-      }.bind(this));
-    }.bind(this));
-  },
-  processV3: function(record, message) {
-    var preKeyPair, signedPreKeyPair, session;
-    return this.storage.isTrustedIdentity(
-        this.remoteAddress.toString(), message.identityKey.toArrayBuffer()
-    ).then(function(trusted) {
-        if (!trusted) {
-            var e = new Error('Unknown identity key');
-            e.identityKey = message.identityKey.toArrayBuffer();
-            throw e;
-        }
-        return Promise.all([
-            this.storage.loadPreKey(message.preKeyId),
-            this.storage.loadSignedPreKey(message.signedPreKeyId),
-        ]).then(function(results) {
-            preKeyPair       = results[0];
-            signedPreKeyPair = results[1];
-        });
-    }.bind(this)).then(function() {
-        session = record.getSessionByBaseKey(message.baseKey);
-        if (session) {
-          console.debug("Duplicate PreKeyMessage for session");
-          return;
-        }
-
-        session = record.getOpenSession();
-
-        if (signedPreKeyPair === undefined) {
-            // Session may or may not be the right one, but if its not, we
-            // can't do anything about it ...fall through and let
-            // decryptWhisperMessage handle that case
-            if (session !== undefined && session.currentRatchet !== undefined) {
+            const preKeyPair = await this.storage.loadPreKey(message.preKeyId);
+            const signedPreKeyPair = await this.storage.loadSignedPreKey(message.signedPreKeyId);
+            let session = record.getSessionByBaseKey(message.baseKey);
+            if (session) {
+                console.debug("Duplicate PreKeyMessage for session");
                 return;
-            } else {
-                throw new Error("Missing Signed PreKey for PreKeyWhisperMessage");
             }
-        }
-
-        if (session !== undefined) {
-            record.archiveCurrentState();
-        }
-        if (message.preKeyId && !preKeyPair) {
-            console.error('Invalid prekey id', message.preKeyId);
-        }
-        return this.initSession(false, preKeyPair, signedPreKeyPair,
-            message.identityKey.toArrayBuffer(),
-            message.baseKey.toArrayBuffer(), undefined, message.registrationId
-        ).then(function(new_session) {
+            session = record.getOpenSession();
+            if (signedPreKeyPair === undefined) {
+                // Session may or may not be the right one, but if its not, we
+                // can't do anything about it ...fall through and let
+                // decryptWhisperMessage handle that case
+                if (session !== undefined && session.currentRatchet !== undefined) {
+                    return;
+                } else {
+                    throw new ns.PreKeyError("Missing SignedPreKey");
+                }
+            }
+            if (session !== undefined) {
+                record.archiveCurrentState();
+            }
+            if (message.preKeyId && !preKeyPair) {
+                throw new ns.PreKeyError('Invalid PreKey ID');
+            }
+            const newSession = await this.initSession(false, preKeyPair, signedPreKeyPair,
+                                                      msgIdentityKey, message.baseKey.toArrayBuffer(),
+                                                      undefined, message.registrationId);
             // Note that the session is not actually saved until the very
             // end of decryptWhisperMessage ... to ensure that the sender
             // actually holds the private keys for all reported pubkeys
-            record.updateSessionState(new_session);
-            return this.storage.saveIdentity(this.remoteAddress.toString(), message.identityKey.toArrayBuffer()).then(function() {
-              return message.preKeyId;
-            });
-        }.bind(this));
-    }.bind(this));
-  },
-  initSession: function(isInitiator, ourEphemeralKey, ourSignedKey,
-                   theirIdentityPubKey, theirEphemeralPubKey,
-                   theirSignedPubKey, registrationId) {
-    return this.storage.getIdentityKeyPair().then(function(ourIdentityKey) {
-        if (isInitiator) {
-            if (ourSignedKey !== undefined) {
-                throw new Error("Invalid call to initSession");
+            record.updateSessionState(newSession);
+            await this.storage.saveIdentity(addr, msgIdentityKey);
+            return message.preKeyId;
+        }
+
+        async initSession(isInitiator, ourEphemeralKey, ourSignedKey, theirIdentityPubKey,
+                          theirEphemeralPubKey, theirSignedPubKey, registrationId) {
+            if (isInitiator) {
+                if (ourSignedKey !== undefined) {
+                    throw new Error("Invalid call to initSession");
+                }
+                ourSignedKey = ourEphemeralKey;
+            } else {
+                if (theirSignedPubKey !== undefined) {
+                    throw new Error("Invalid call to initSession");
+                }
+                theirSignedPubKey = theirEphemeralPubKey;
             }
-            ourSignedKey = ourEphemeralKey;
-        } else {
-            if (theirSignedPubKey !== undefined) {
-                throw new Error("Invalid call to initSession");
+            let sharedSecret;
+            if (ourEphemeralKey === undefined || theirEphemeralPubKey === undefined) {
+                sharedSecret = new Uint8Array(32 * 4);
+            } else {
+                sharedSecret = new Uint8Array(32 * 5);
             }
-            theirSignedPubKey = theirEphemeralPubKey;
-        }
-
-        var sharedSecret;
-        if (ourEphemeralKey === undefined || theirEphemeralPubKey === undefined) {
-            sharedSecret = new Uint8Array(32 * 4);
-        } else {
-            sharedSecret = new Uint8Array(32 * 5);
-        }
-
-        for (var i = 0; i < 32; i++) {
-            sharedSecret[i] = 0xff;
-        }
-
-        return Promise.all([
-            Internal.crypto.ECDHE(theirSignedPubKey, ourIdentityKey.privKey),
-            Internal.crypto.ECDHE(theirIdentityPubKey, ourSignedKey.privKey),
-            Internal.crypto.ECDHE(theirSignedPubKey, ourSignedKey.privKey)
-        ]).then(function(ecRes) {
+            for (let i = 0; i < 32; i++) {
+                sharedSecret[i] = 0xff;
+            }
+            const ourIdentityKey = await this.storage.getIdentityKeyPair();
+            const ecRes = await Promise.all([
+                ns.crypto.ECDHE(theirSignedPubKey, ourIdentityKey.privKey),
+                ns.crypto.ECDHE(theirIdentityPubKey, ourSignedKey.privKey),
+                ns.crypto.ECDHE(theirSignedPubKey, ourSignedKey.privKey)
+            ]);
             if (isInitiator) {
                 sharedSecret.set(new Uint8Array(ecRes[0]), 32);
                 sharedSecret.set(new Uint8Array(ecRes[1]), 32 * 2);
@@ -10825,496 +10645,409 @@ SessionBuilder.prototype = {
                 sharedSecret.set(new Uint8Array(ecRes[1]), 32);
             }
             sharedSecret.set(new Uint8Array(ecRes[2]), 32 * 3);
-
             if (ourEphemeralKey !== undefined && theirEphemeralPubKey !== undefined) {
-                return Internal.crypto.ECDHE(
-                    theirEphemeralPubKey, ourEphemeralKey.privKey
-                ).then(function(ecRes4) {
-                    sharedSecret.set(new Uint8Array(ecRes4), 32 * 4);
-                });
+                const ecRes4 = await ns.crypto.ECDHE(theirEphemeralPubKey,
+                                                           ourEphemeralKey.privKey);
+                sharedSecret.set(new Uint8Array(ecRes4), 32 * 4);
             }
-        }).then(function() {
-            return Internal.HKDF(sharedSecret.buffer, new ArrayBuffer(32), "WhisperText");
-        }).then(function(masterKey) {
-            var session = {
+            const masterKey = await ns.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32), "WhisperText");
+            const session = {
                 registrationId: registrationId,
                 currentRatchet: {
-                    rootKey                : masterKey[0],
-                    lastRemoteEphemeralKey : theirSignedPubKey,
-                    previousCounter        : 0
+                    rootKey: masterKey[0],
+                    lastRemoteEphemeralKey: theirSignedPubKey,
+                    previousCounter: 0
                 },
                 indexInfo: {
-                    remoteIdentityKey : theirIdentityPubKey,
-                    closed            : -1
+                    remoteIdentityKey: theirIdentityPubKey,
+                    closed: -1
                 },
                 oldRatchetList: []
             };
-
             // If we're initiating we go ahead and set our first sending ephemeral key now,
             // otherwise we figure it out when we first maybeStepRatchet with the remote's ephemeral key
             if (isInitiator) {
                 session.indexInfo.baseKey = ourEphemeralKey.pubKey;
-                session.indexInfo.baseKeyType = Internal.BaseKeyType.OURS;
-                return Internal.crypto.createKeyPair().then(function(ourSendingEphemeralKey) {
-                    session.currentRatchet.ephemeralKeyPair = ourSendingEphemeralKey;
-                    return this.calculateSendingRatchet(session, theirSignedPubKey).then(function() {
-                        return session;
-                    });
-                }.bind(this));
+                session.indexInfo.baseKeyType = ns.BaseKeyType.OURS;
+                const ourSendingEphemeralKey = await ns.crypto.createKeyPair();
+                session.currentRatchet.ephemeralKeyPair = ourSendingEphemeralKey;
+                await this.calculateSendingRatchet(session, theirSignedPubKey);
             } else {
                 session.indexInfo.baseKey = theirEphemeralPubKey;
-                session.indexInfo.baseKeyType = Internal.BaseKeyType.THEIRS;
+                session.indexInfo.baseKeyType = ns.BaseKeyType.THEIRS;
                 session.currentRatchet.ephemeralKeyPair = ourSignedKey;
-                return session;
             }
-        }.bind(this));
-    }.bind(this));
-  },
-  calculateSendingRatchet: function(session, remoteKey) {
-      var ratchet = session.currentRatchet;
-
-      return Internal.crypto.ECDHE(
-          remoteKey, util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey)
-      ).then(function(sharedSecret) {
-          return Internal.HKDF(
-              sharedSecret, util.toArrayBuffer(ratchet.rootKey), "WhisperRatchet"
-          );
-      }).then(function(masterKey) {
-          session[util.toString(ratchet.ephemeralKeyPair.pubKey)] = {
-              messageKeys : {},
-              chainKey    : { counter : -1, key : masterKey[1] },
-              chainType   : Internal.ChainType.SENDING
-          };
-          ratchet.rootKey = masterKey[0];
-      });
-  }
-
-};
-
-libsignal.SessionBuilder = function (storage, remoteAddress) {
-  var builder = new SessionBuilder(storage, remoteAddress);
-  this.processPreKey = builder.processPreKey.bind(builder);
-  this.processV3 = builder.processV3.bind(builder);
-};
-
-function SessionCipher(storage, remoteAddress) {
-  this.remoteAddress = remoteAddress;
-  this.storage = storage;
-}
-
-SessionCipher.prototype = {
-  getRecord: function(encodedNumber) {
-      return this.storage.loadSession(encodedNumber).then(function(serialized) {
-          if (serialized === undefined) {
-              return undefined;
-          }
-          return Internal.SessionRecord.deserialize(serialized);
-      });
-  },
-  encrypt: function(buffer, encoding) {
-    buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding).toArrayBuffer();
-    return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-      if (!(buffer instanceof ArrayBuffer)) {
-          throw new Error("Expected buffer to be an ArrayBuffer");
-      }
-
-      var address = this.remoteAddress.toString();
-      var ourIdentityKey, myRegistrationId, record, session, chain;
-
-      var msg = new Internal.protobuf.WhisperMessage();
-
-      return Promise.all([
-          this.storage.getIdentityKeyPair(),
-          this.storage.getLocalRegistrationId(),
-          this.getRecord(address)
-      ]).then(function(results) {
-          ourIdentityKey   = results[0];
-          myRegistrationId = results[1];
-          record           = results[2];
-          if (!record) {
-              throw new Error("No record for " + address);
-          }
-          session = record.getOpenSession();
-          if (!session) {
-              throw new Error("No session to encrypt message for " + address);
-          }
-
-          msg.ephemeralKey = util.toArrayBuffer(
-              session.currentRatchet.ephemeralKeyPair.pubKey
-          );
-          chain = session[util.toString(msg.ephemeralKey)];
-          if (chain.chainType === Internal.ChainType.RECEIVING) {
-              throw new Error("Tried to encrypt on a receiving chain");
-          }
-
-          return this.fillMessageKeys(chain, chain.chainKey.counter + 1);
-      }.bind(this)).then(function() {
-          return Internal.HKDF(
-              util.toArrayBuffer(chain.messageKeys[chain.chainKey.counter]),
-              new ArrayBuffer(32), "WhisperMessageKeys");
-      }).then(function(keys) {
-          delete chain.messageKeys[chain.chainKey.counter];
-          msg.counter = chain.chainKey.counter;
-          msg.previousCounter = session.currentRatchet.previousCounter;
-
-          return Internal.crypto.encrypt(
-              keys[0], buffer, keys[2].slice(0, 16)
-          ).then(function(ciphertext) {
-              msg.ciphertext = ciphertext;
-              var encodedMsg = msg.toArrayBuffer();
-
-              var macInput = new Uint8Array(encodedMsg.byteLength + 33*2 + 1);
-              macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)));
-              macInput.set(new Uint8Array(util.toArrayBuffer(session.indexInfo.remoteIdentityKey)), 33);
-              macInput[33*2] = (3 << 4) | 3;
-              macInput.set(new Uint8Array(encodedMsg), 33*2 + 1);
-
-              return Internal.crypto.sign(keys[1], macInput.buffer).then(function(mac) {
-                  var result = new Uint8Array(encodedMsg.byteLength + 9);
-                  result[0] = (3 << 4) | 3;
-                  result.set(new Uint8Array(encodedMsg), 1);
-                  result.set(new Uint8Array(mac, 0, 8), encodedMsg.byteLength + 1);
-
-                  return this.storage.isTrustedIdentity(
-                      this.remoteAddress.getName(), util.toArrayBuffer(session.indexInfo.remoteIdentityKey)
-                  ).then(function(trusted) {
-                      if (!trusted) {
-                          throw new Error('Identity key changed');
-                      }
-                  }).then(function() {
-                      return this.storage.saveIdentity(this.remoteAddress.toString(), session.indexInfo.remoteIdentityKey);
-                  }.bind(this)).then(function() {
-                      record.updateSessionState(session);
-                      return this.storage.storeSession(address, record.serialize()).then(function() {
-                          return result;
-                      });
-                  }.bind(this));
-              }.bind(this));
-          }.bind(this));
-      }.bind(this)).then(function(message) {
-          if (session.pendingPreKey !== undefined) {
-              var preKeyMsg = new Internal.protobuf.PreKeyWhisperMessage();
-              preKeyMsg.identityKey = util.toArrayBuffer(ourIdentityKey.pubKey);
-              preKeyMsg.registrationId = myRegistrationId;
-
-              preKeyMsg.baseKey = util.toArrayBuffer(session.pendingPreKey.baseKey);
-              if (session.pendingPreKey.preKeyId) {
-                  preKeyMsg.preKeyId = session.pendingPreKey.preKeyId;
-              }
-              preKeyMsg.signedPreKeyId = session.pendingPreKey.signedKeyId;
-
-              preKeyMsg.message = message;
-              var result = String.fromCharCode((3 << 4) | 3) + util.toString(preKeyMsg.encode());
-              return {
-                  type           : 3,
-                  body           : result,
-                  registrationId : session.registrationId
-              };
-
-          } else {
-              return {
-                  type           : 1,
-                  body           : util.toString(message),
-                  registrationId : session.registrationId
-              };
-          }
-      });
-    }.bind(this));
-  },
-  decryptWithSessionList: function(buffer, sessionList, errors) {
-    // Iterate recursively through the list, attempting to decrypt
-    // using each one at a time. Stop and return the result if we get
-    // a valid result
-    if (sessionList.length === 0) {
-        return Promise.reject(errors[0]);
-    }
-
-    var session = sessionList.pop();
-    return this.doDecryptWhisperMessage(buffer, session).then(function(plaintext) {
-        return { plaintext: plaintext, session: session };
-    }).catch(function(e) {
-        if (e.name === 'MessageCounterError') {
-            return Promise.reject(e);
+            return session;
         }
 
-        errors.push(e);
-        return this.decryptWithSessionList(buffer, sessionList, errors);
-    }.bind(this));
-  },
-  decryptWhisperMessage: function(buffer, encoding) {
-      buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding).toArrayBuffer();
-      return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-        var address = this.remoteAddress.toString();
-        return this.getRecord(address).then(function(record) {
-            if (!record) {
-                throw new Error("No record for device " + address);
+        async calculateSendingRatchet(session, remoteKey) {
+            const ratchet = session.currentRatchet;
+            const sharedSecret = await ns.crypto.ECDHE(remoteKey,
+                util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
+            const masterKey = await ns.deriveSecrets(sharedSecret,
+                util.toArrayBuffer(ratchet.rootKey), "WhisperRatchet");
+            session[util.toString(ratchet.ephemeralKeyPair.pubKey)] = {
+                messageKeys: {},
+                chainKey: {
+                    counter: -1,
+                    key: masterKey[1]
+                },
+                chainType: ns.ChainType.SENDING
+            };
+            ratchet.rootKey = masterKey[0];
+        }
+    };
+})();
+
+// vim: ts=4:sw=4:expandtab
+
+(function() {
+    'use strict';
+    
+    const ns = self.libsignal = self.libsignal || {};
+
+    ns.SessionCipher = class SessionCipher {
+
+        constructor(storage, remoteAddress) {
+            this.remoteAddress = remoteAddress;
+            this.storage = storage;
+        }
+
+        async getRecord(encodedNumber) {
+            const serialized = await this.storage.loadSession(encodedNumber);
+            return serialized && ns.SessionRecord.deserialize(serialized);
+        }
+
+        async encrypt(buffer, encoding) {
+            buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding).toArrayBuffer();
+            if (!(buffer instanceof ArrayBuffer)) {
+                throw new Error("Expected buffer to be an ArrayBuffer");
             }
-            var errors = [];
-            return this.decryptWithSessionList(buffer, record.getSessions(), errors).then(function(result) {
-                return this.getRecord(address).then(function(record) {
-                    if (result.session.indexInfo.baseKey !== record.getOpenSession().indexInfo.baseKey) {
-                        record.archiveCurrentState();
-                        record.promoteState(result.session);
+            const addr = this.remoteAddress.toString();
+            const ourIdentityKey = await this.storage.getIdentityKeyPair();
+            return await ns.queueJob(addr, async () => {
+                const record = await this.getRecord(addr);
+                if (!record) {
+                    throw new ns.SessionError("No record for " + addr);
+                }
+                const session = record.getOpenSession();
+                if (!session) {
+                    throw new ns.SessionError("No session to encrypt message for " + addr);
+                }
+                const remoteIdentityKey = util.toArrayBuffer(session.indexInfo.remoteIdentityKey);
+                const trusted = await this.storage.isTrustedIdentity(this.remoteAddress.getName(),
+                                                                     remoteIdentityKey);
+                if (!trusted) {
+                    throw new ns.UntrustedIdentityKeyError({addr, identityKey: remoteIdentityKey});
+                }
+                await this.storage.saveIdentity(addr, session.indexInfo.remoteIdentityKey);
+                const msg = new ns.protobuf.WhisperMessage();
+                msg.ephemeralKey = util.toArrayBuffer(session.currentRatchet.ephemeralKeyPair.pubKey);
+                const chain = session[util.toString(msg.ephemeralKey)];
+                if (chain.chainType === ns.ChainType.RECEIVING) {
+                    throw new ns.SessionError("Tried to encrypt on a receiving chain");
+                }
+                await this.fillMessageKeys(chain, chain.chainKey.counter + 1);
+                const keys = await ns.deriveSecrets(util.toArrayBuffer(chain.messageKeys[chain.chainKey.counter]),
+                                                    new ArrayBuffer(32), "WhisperMessageKeys");
+                delete chain.messageKeys[chain.chainKey.counter];
+                msg.counter = chain.chainKey.counter;
+                msg.previousCounter = session.currentRatchet.previousCounter;
+                const ciphertext = await ns.crypto.encrypt(keys[0], buffer, keys[2].slice(0, 16));
+                msg.ciphertext = ciphertext;
+                const encodedMsg = msg.toArrayBuffer();
+                const macInput = new Uint8Array(encodedMsg.byteLength + 33 * 2 + 1);
+                macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)));
+                macInput.set(new Uint8Array(remoteIdentityKey), 33);
+                macInput[33 * 2] = (3 << 4) | 3;
+                macInput.set(new Uint8Array(encodedMsg), 33*2 + 1);
+                const mac = await ns.crypto.calculateMAC(keys[1], macInput.buffer);
+                const result = new Uint8Array(encodedMsg.byteLength + 9);
+                result[0] = (3 << 4) | 3;
+                result.set(new Uint8Array(encodedMsg), 1);
+                result.set(new Uint8Array(mac, 0, 8), encodedMsg.byteLength + 1);
+                await this.storage.saveIdentity(addr, session.indexInfo.remoteIdentityKey);
+                record.updateSessionState(session);
+                await this.storage.storeSession(addr, record.serialize());
+                let type, body;
+                if (session.pendingPreKey !== undefined) {
+                    type = 3;  // prekey bundle
+                    const preKeyMsg = new ns.protobuf.PreKeyWhisperMessage();
+                    preKeyMsg.identityKey = util.toArrayBuffer(ourIdentityKey.pubKey);
+                    preKeyMsg.registrationId = await this.storage.getLocalRegistrationId();
+                    preKeyMsg.baseKey = util.toArrayBuffer(session.pendingPreKey.baseKey);
+                    if (session.pendingPreKey.preKeyId) {
+                        preKeyMsg.preKeyId = session.pendingPreKey.preKeyId;
                     }
-
-                    return this.storage.isTrustedIdentity(
-                        this.remoteAddress.getName(), util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey)
-                    ).then(function(trusted) {
-                        if (!trusted) {
-                            throw new Error('Identity key changed');
-                        }
-                    }).then(function() {
-                        return this.storage.saveIdentity(this.remoteAddress.toString(), result.session.indexInfo.remoteIdentityKey);
-                    }.bind(this)).then(function() {
-                        record.updateSessionState(result.session);
-                        return this.storage.storeSession(address, record.serialize()).then(function() {
-                            return result.plaintext;
-                        });
-                    }.bind(this));
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
-      }.bind(this));
-  },
-  decryptPreKeyWhisperMessage: function(buffer, encoding) {
-      buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding);
-      var version = buffer.readUint8();
-      if ((version & 0xF) > 3 || (version >> 4) < 3) {  // min version > 3 or max version < 3
-          throw new Error("Incompatible version number on PreKeyWhisperMessage");
-      }
-      return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-          var address = this.remoteAddress.toString();
-          return this.getRecord(address).then(function(record) {
-              var preKeyProto = Internal.protobuf.PreKeyWhisperMessage.decode(buffer);
-              if (!record) {
-                  if (preKeyProto.registrationId === undefined) {
-                      throw new Error("No registrationId");
-                  }
-                  record = new Internal.SessionRecord(
-                      preKeyProto.registrationId
-                  );
-              }
-              var builder = new libsignal.SessionBuilder(this.storage, this.remoteAddress);
-              // isTrustedIdentity is called within processV3, no need to call it here
-              return builder.processV3(record, preKeyProto).then(function(preKeyId) {
-                  var session = record.getSessionByBaseKey(preKeyProto.baseKey);
-                  return this.doDecryptWhisperMessage(
-                      preKeyProto.message.toArrayBuffer(), session
-                  ).then(function(plaintext) {
-                      record.updateSessionState(session);
-                      return this.storage.storeSession(address, record.serialize()).then(function() {
-                          if (preKeyId !== undefined && preKeyId !== null) {
-                              return this.storage.removePreKey(preKeyId);
-                          }
-                      }.bind(this)).then(function() {
-                          return plaintext;
-                      });
-                  }.bind(this));
-              }.bind(this));
-          }.bind(this));
-      }.bind(this));
-  },
-  doDecryptWhisperMessage: function(messageBytes, session) {
-    if (!(messageBytes instanceof ArrayBuffer)) {
-        throw new Error("Expected messageBytes to be an ArrayBuffer");
-    }
-    var version = (new Uint8Array(messageBytes))[0];
-    if ((version & 0xF) > 3 || (version >> 4) < 3) {  // min version > 3 or max version < 3
-        throw new Error("Incompatible version number on WhisperMessage");
-    }
-    var messageProto = messageBytes.slice(1, messageBytes.byteLength- 8);
-    var mac = messageBytes.slice(messageBytes.byteLength - 8, messageBytes.byteLength);
-
-    var message = Internal.protobuf.WhisperMessage.decode(messageProto);
-    var remoteEphemeralKey = message.ephemeralKey.toArrayBuffer();
-
-    if (session === undefined) {
-        return Promise.reject(new Error("No session found to decrypt message from " + this.remoteAddress.toString()));
-    }
-    if (session.indexInfo.closed != -1) {
-        console.warn('decrypting message for closed session');
-    }
-
-    return this.maybeStepRatchet(session, remoteEphemeralKey, message.previousCounter).then(function() {
-        var chain = session[util.toString(message.ephemeralKey)];
-        if (chain.chainType === Internal.ChainType.SENDING) {
-            throw new Error("Tried to decrypt on a sending chain");
+                    preKeyMsg.signedPreKeyId = session.pendingPreKey.signedKeyId;
+                    preKeyMsg.message = result;
+                    body = String.fromCharCode((3 << 4) | 3) + util.toString(preKeyMsg.encode());
+                } else {
+                    type = 1;  // normal
+                    body = util.toString(result);
+                }
+                return {
+                    type,
+                    body,
+                    registrationId: session.registrationId
+                };
+            });
         }
 
-        return this.fillMessageKeys(chain, message.counter).then(function() {
-            var messageKey = chain.messageKeys[message.counter];
+        async decryptWithSessionList(buffer, sessions) {
+            // Iterate through the sessions, attempting to decrypt using each one.
+            // Stop and return the result if we get a valid result.
+            const errors = [];
+            for (const session of sessions) {
+                try {
+                    return {
+                        plaintext: await this.doDecryptWhisperMessage(buffer, session),
+                        session
+                    };
+                } catch(e) {
+                    if (e.name === 'MessageCounterError') {
+                        throw e;  // Dup;  Probably didn't dequeue the msg from the server successfully.
+                    }
+                    console.debug("Session decrypt failure:", e);
+                    errors.push(e);
+                }
+            }
+            throw (errors[0] || (new ReferenceError("No sessions to decrypt with")));
+        }
+
+        async decryptWhisperMessage(buffer, encoding) {
+            buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding).toArrayBuffer();
+            const addr = this.remoteAddress.toString();
+            return await ns.queueJob(addr, async () => {
+                let record = await this.getRecord(addr);
+                if (!record) {
+                    throw new Error("No record for device " + addr);
+                }
+                const result = await this.decryptWithSessionList(buffer, record.getSessions());
+                record = await this.getRecord(addr);  // Get ratcheted record.
+                const openSession = record.getOpenSession();
+                if (openSession && result.session.indexInfo.baseKey !== openSession.indexInfo.baseKey) {
+                    record.archiveCurrentState();
+                    record.promoteState(result.session);
+                }
+                const trusted = await this.storage.isTrustedIdentity(this.remoteAddress.getName(),
+                    util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey));
+                if (!trusted) {
+                    throw new Error('Identity key changed');
+                }
+                await this.storage.saveIdentity(addr, result.session.indexInfo.remoteIdentityKey);
+                record.updateSessionState(result.session);
+                await this.storage.storeSession(addr, record.serialize());
+                return result.plaintext;
+            });
+        }
+
+        async decryptPreKeyWhisperMessage(buffer, encoding) {
+            buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding);
+            const version = buffer.readUint8();
+            if ((version & 0xF) > 3 || (version >> 4) < 3) {  // min version > 3 or max version < 3
+                throw new Error("Incompatible version number on PreKeyWhisperMessage");
+            }
+            const addr = this.remoteAddress.toString();
+            return await ns.queueJob(addr, async () => {
+                let record = await this.getRecord(addr);
+                const preKeyProto = ns.protobuf.PreKeyWhisperMessage.decode(buffer);
+                if (!record) {
+                    if (preKeyProto.registrationId === undefined) {
+                        throw new Error("No registrationId");
+                    }
+                    record = new ns.SessionRecord(preKeyProto.registrationId);
+                }
+                const builder = new libsignal.SessionBuilder(this.storage, this.remoteAddress);
+                // isTrustedIdentity is called within processV3, no need to call it here
+                const preKeyId = await builder.processV3(record, preKeyProto);
+                const session = record.getSessionByBaseKey(preKeyProto.baseKey);
+                const plaintext = await this.doDecryptWhisperMessage(preKeyProto.message.toArrayBuffer(), session);
+                record.updateSessionState(session);
+                await this.storage.storeSession(addr, record.serialize());
+                if (preKeyId !== undefined && preKeyId !== null) {
+                    await this.storage.removePreKey(preKeyId);
+                }
+                return plaintext;
+            });
+        }
+
+        async doDecryptWhisperMessage(messageBytes, session) {
+            if (!(messageBytes instanceof ArrayBuffer)) {
+                throw new Error("Expected messageBytes to be an ArrayBuffer");
+            }
+            const version = (new Uint8Array(messageBytes))[0];
+            if ((version & 0xF) > 3 || (version >> 4) < 3) {  // min version > 3 or max version < 3
+                throw new Error("Incompatible version number on WhisperMessage");
+            }
+            const messageProto = messageBytes.slice(1, messageBytes.byteLength- 8);
+            const mac = messageBytes.slice(messageBytes.byteLength - 8, messageBytes.byteLength);
+            const message = ns.protobuf.WhisperMessage.decode(messageProto);
+            const remoteEphemeralKey = message.ephemeralKey.toArrayBuffer();
+            if (session === undefined) {
+                throw new Error("No session found to decrypt message from " + this.remoteAddress.toString());
+            }
+            if (session.indexInfo.closed != -1) {
+                console.warn('decrypting message for closed session');
+            }
+            await this.maybeStepRatchet(session, remoteEphemeralKey, message.previousCounter);
+            const chain = session[util.toString(message.ephemeralKey)];
+            if (chain.chainType === ns.ChainType.SENDING) {
+                throw new Error("Tried to decrypt on a sending chain");
+            }
+            await this.fillMessageKeys(chain, message.counter);
+            const messageKey = chain.messageKeys[message.counter];
             if (messageKey === undefined) {
-                var e = new Error("Message key not found. The counter was repeated or the key was not filled.");
+                const e = new Error("Message key not found. The counter was repeated or the key was not filled.");
                 e.name = 'MessageCounterError';
                 throw e;
             }
             delete chain.messageKeys[message.counter];
-            return Internal.HKDF(util.toArrayBuffer(messageKey), new ArrayBuffer(32), "WhisperMessageKeys");
-        });
-    }.bind(this)).then(function(keys) {
-        return this.storage.getIdentityKeyPair().then(function(ourIdentityKey) {
-
-            var macInput = new Uint8Array(messageProto.byteLength + 33*2 + 1);
+            const keys = await ns.deriveSecrets(util.toArrayBuffer(messageKey), new ArrayBuffer(32),
+                                                "WhisperMessageKeys");
+            const ourIdentityKey = await this.storage.getIdentityKeyPair();
+            const macInput = new Uint8Array(messageProto.byteLength + 33*2 + 1);
             macInput.set(new Uint8Array(util.toArrayBuffer(session.indexInfo.remoteIdentityKey)));
             macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)), 33);
             macInput[33*2] = (3 << 4) | 3;
             macInput.set(new Uint8Array(messageProto), 33*2 + 1);
-
-            return Internal.verifyMAC(macInput.buffer, keys[1], mac, 8);
-        }.bind(this)).then(function() {
-            return Internal.crypto.decrypt(keys[0], message.ciphertext.toArrayBuffer(), keys[2].slice(0, 16));
-        });
-    }.bind(this)).then(function(plaintext) {
-        delete session.pendingPreKey;
-        return plaintext;
-    });
-  },
-  fillMessageKeys: function(chain, counter) {
-      if (chain.chainKey.counter >= counter) {
-          return Promise.resolve(); // Already calculated
-      }
-
-      if (counter - chain.chainKey.counter > 2000) {
-          throw new Error('Over 2000 messages into the future!');
-      }
-
-      if (chain.chainKey.key === undefined) {
-          throw new Error("Got invalid request to extend chain after it was already closed");
-      }
-
-      var key = util.toArrayBuffer(chain.chainKey.key);
-      var byteArray = new Uint8Array(1);
-      byteArray[0] = 1;
-      return Internal.crypto.sign(key, byteArray.buffer).then(function(mac) {
-          byteArray[0] = 2;
-          return Internal.crypto.sign(key, byteArray.buffer).then(function(key) {
-              chain.messageKeys[chain.chainKey.counter + 1] = mac;
-              chain.chainKey.key = key;
-              chain.chainKey.counter += 1;
-              return this.fillMessageKeys(chain, counter);
-          }.bind(this));
-      }.bind(this));
-  },
-  maybeStepRatchet: function(session, remoteKey, previousCounter) {
-      if (session[util.toString(remoteKey)] !== undefined) {
-          return Promise.resolve();
-      }
-
-      var ratchet = session.currentRatchet;
-
-      return Promise.resolve().then(function() {
-          var previousRatchet = session[util.toString(ratchet.lastRemoteEphemeralKey)];
-          if (previousRatchet !== undefined) {
-              return this.fillMessageKeys(previousRatchet, previousCounter).then(function() {
-                  delete previousRatchet.chainKey.key;
-                  session.oldRatchetList[session.oldRatchetList.length] = {
-                      added        : Date.now(),
-                      ephemeralKey : ratchet.lastRemoteEphemeralKey
-                  };
-              });
-          }
-      }.bind(this)).then(function() {
-          return this.calculateRatchet(session, remoteKey, false).then(function() {
-              // Now swap the ephemeral key and calculate the new sending chain
-              var previousRatchet = util.toString(ratchet.ephemeralKeyPair.pubKey);
-              if (session[previousRatchet] !== undefined) {
-                  ratchet.previousCounter = session[previousRatchet].chainKey.counter;
-                  delete session[previousRatchet];
-              }
-
-              return Internal.crypto.createKeyPair().then(function(keyPair) {
-                  ratchet.ephemeralKeyPair = keyPair;
-                  return this.calculateRatchet(session, remoteKey, true).then(function() {
-                      ratchet.lastRemoteEphemeralKey = remoteKey;
-                  }.bind(this));
-              }.bind(this));
-          }.bind(this));
-      }.bind(this));
-  },
-  calculateRatchet: function(session, remoteKey, sending) {
-      var ratchet = session.currentRatchet;
-
-      return Internal.crypto.ECDHE(remoteKey, util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey)).then(function(sharedSecret) {
-          return Internal.HKDF(sharedSecret, util.toArrayBuffer(ratchet.rootKey), "WhisperRatchet").then(function(masterKey) {
-              var ephemeralPublicKey;
-              if (sending) {
-                  ephemeralPublicKey = ratchet.ephemeralKeyPair.pubKey;
-              }
-              else {
-                  ephemeralPublicKey = remoteKey;
-              }
-              session[util.toString(ephemeralPublicKey)] = {
-                  messageKeys: {},
-                  chainKey: { counter: -1, key: masterKey[1] },
-                  chainType: sending ? Internal.ChainType.SENDING : Internal.ChainType.RECEIVING
-              };
-              ratchet.rootKey = masterKey[0];
-          });
-      });
-  },
-  getRemoteRegistrationId: function() {
-    return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-      return this.getRecord(this.remoteAddress.toString()).then(function(record) {
-          if (record === undefined) {
-              return undefined;
-          }
-          var openSession = record.getOpenSession();
-          if (openSession === undefined) {
-              return null;
-          }
-          return openSession.registrationId;
-      });
-    }.bind(this));
-  },
-  hasOpenSession: function() {
-    return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-      return this.getRecord(this.remoteAddress.toString()).then(function(record) {
-          if (record === undefined) {
-              return false;
-          }
-          return record.haveOpenSession();
-      });
-    }.bind(this));
-  },
-  closeOpenSessionForDevice: function() {
-    var address = this.remoteAddress.toString();
-    return Internal.SessionLock.queueJobForNumber(address, function() {
-      return this.getRecord(address).then(function(record) {
-        if (record === undefined || record.getOpenSession() === undefined) {
-            return;
+            await ns.verifyMAC(macInput.buffer, keys[1], mac, 8);
+            const plaintext = await ns.crypto.decrypt(keys[0], message.ciphertext.toArrayBuffer(),
+                                                      keys[2].slice(0, 16));
+            delete session.pendingPreKey;
+            return plaintext;
         }
 
-        record.archiveCurrentState();
-        return this.storage.storeSession(address, record.serialize());
-      }.bind(this));
-    }.bind(this));
-  }
-};
+        async fillMessageKeys(chain, counter) {
+            if (chain.chainKey.counter >= counter) {
+                return;
+            }
+            if (counter - chain.chainKey.counter > 2000) {
+                throw new Error('Over 2000 messages into the future!');
+            }
+            if (chain.chainKey.key === undefined) {
+                throw new Error("Got invalid request to extend chain after it was already closed");
+            }
+            const key = util.toArrayBuffer(chain.chainKey.key);
+            const signed = await Promise.all([
+                ns.crypto.calculateMAC(key, (new Uint8Array([1])).buffer),
+                ns.crypto.calculateMAC(key, (new Uint8Array([2])).buffer)
+            ]);
+            chain.messageKeys[chain.chainKey.counter + 1] = signed[0];
+            chain.chainKey.key = signed[1];
+            chain.chainKey.counter += 1;
+            return await this.fillMessageKeys(chain, counter);
+        }
 
-libsignal.SessionCipher = function(storage, remoteAddress) {
-    var cipher = new SessionCipher(storage, remoteAddress);
+        async maybeStepRatchet(session, remoteKey, previousCounter) {
+            if (session[util.toString(remoteKey)] !== undefined) {
+                return;
+            }
+            const ratchet = session.currentRatchet;
+            let previousRatchet = session[util.toString(ratchet.lastRemoteEphemeralKey)];
+            if (previousRatchet !== undefined) {
+                await this.fillMessageKeys(previousRatchet, previousCounter);
+                delete previousRatchet.chainKey.key;
+                session.oldRatchetList[session.oldRatchetList.length] = {
+                    added: Date.now(),
+                    ephemeralKey: ratchet.lastRemoteEphemeralKey
+                };
+            }
+            await this.calculateRatchet(session, remoteKey, false);
+            // Now swap the ephemeral key and calculate the new sending chain
+            previousRatchet = util.toString(ratchet.ephemeralKeyPair.pubKey);
+            if (session[previousRatchet] !== undefined) {
+                ratchet.previousCounter = session[previousRatchet].chainKey.counter;
+                delete session[previousRatchet];
+            }
+            const keyPair = await ns.crypto.createKeyPair();
+            ratchet.ephemeralKeyPair = keyPair;
+            await this.calculateRatchet(session, remoteKey, true);
+            ratchet.lastRemoteEphemeralKey = remoteKey;
+        }
 
-    // returns a Promise that resolves to a ciphertext object
-    this.encrypt = cipher.encrypt.bind(cipher);
+        async calculateRatchet(session, remoteKey, sending) {
+            const ratchet = session.currentRatchet;
+            const sharedSecret = await ns.crypto.ECDHE(remoteKey,
+                util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
+            const masterKey = await ns.deriveSecrets(sharedSecret, util.toArrayBuffer(ratchet.rootKey),
+                                                     "WhisperRatchet");
+            const ephemeralPublicKey = sending ? ratchet.ephemeralKeyPair.pubKey : remoteKey;
+            session[util.toString(ephemeralPublicKey)] = {
+                messageKeys: {},
+                chainKey: {
+                    counter: -1,
+                    key: masterKey[1]
+                },
+                chainType: sending ? ns.ChainType.SENDING : ns.ChainType.RECEIVING
+            };
+            ratchet.rootKey = masterKey[0];
+        }
 
-    // returns a Promise that inits a session if necessary and resolves
-    // to a decrypted plaintext array buffer
-    this.decryptPreKeyWhisperMessage = cipher.decryptPreKeyWhisperMessage.bind(cipher);
+        async getRemoteRegistrationId() {
+            const addr = this.remoteAddress.toString();
+            return await ns.queueJob(addr, async () => {
+                const record = await this.getRecord(addr);
+                if (record === undefined) {
+                    return undefined;
+                }
+                const openSession = record.getOpenSession();
+                if (openSession === undefined) {
+                    return null;
+                }
+                return openSession.registrationId;
+            });
+        }
 
-    // returns a Promise that resolves to decrypted plaintext array buffer
-    this.decryptWhisperMessage = cipher.decryptWhisperMessage.bind(cipher);
+        async hasOpenSession() {
+            const addr = this.remoteAddress.toString();
+            return await ns.queueJob(addr, async () => {
+                const record = await this.getRecord(addr);
+                if (record === undefined) {
+                    return false;
+                }
+                return record.haveOpenSession();
+            });
+        }
 
-    this.getRemoteRegistrationId = cipher.getRemoteRegistrationId.bind(cipher);
-    this.hasOpenSession = cipher.hasOpenSession.bind(cipher);
-    this.closeOpenSessionForDevice = cipher.closeOpenSessionForDevice.bind(cipher);
-};
+        async closeOpenSessionForDevice() {
+            const addr = this.remoteAddress.toString();
+            return await ns.queueJob(addr, async () => {
+                const record = await this.getRecord(addr);
+                if (record === undefined || record.getOpenSession() === undefined) {
+                    return;
+                }
+                record.archiveCurrentState();
+                await this.storage.storeSession(addr, record.serialize());
+            });
+        }
 
- /*
-  * jobQueue manages multiple queues indexed by device to serialize
-  * session io ops on the database.
-  */
+        async deleteAllSessionsForDevice() {
+            // Used in session reset scenarios, where we really need to delete
+            const addr = this.remoteAddress.toString();
+            await ns.queueJob(addr, async () => {
+                const record = await this.getRecord(addr);
+                if (record === undefined) {
+                    return;
+                }
+                record.deleteAllSessions();
+                await this.storage.storeSession(addr, record.serialize());
+            });
+        }
+    };
+})();
+
+// vim: ts=4:sw=4:expandtab
+
+/*
+ * jobQueue manages multiple queues indexed by device to serialize
+ * session io ops on the database.
+ */
+
 (function() {
     'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
 
     const _queueAsyncBuckets = new Map();
     const _gcLimit = 10000;
@@ -11346,11 +11079,19 @@ libsignal.SessionCipher = function(storage, remoteAddress) {
         cleanup();
     }
 
-    Internal.SessionLock = {};
-    Internal.SessionLock.queueJobForNumber = function queueJobForNumber(bucket, awaitable) {
+    ns.queueJob = function(bucket, awaitable) {
         /* Run the async awaitable only when all other async calls registered
          * here have completed (or thrown).  The bucket argument is a hashable
          * key representing the task queue to use. */
+        if (!awaitable.name) {
+            // Make debuging easier by adding a name to this function.
+            Object.defineProperty(awaitable, 'name', {writable: true});
+            if (typeof bucket === 'string') {
+                awaitable.name = bucket;
+            } else {
+                console.warn("Unhandled bucket type (for naming):", typeof bucket, bucket);
+            }
+        }
         let inactive;
         if (!_queueAsyncBuckets.has(bucket)) {
             _queueAsyncBuckets.set(bucket, []);
@@ -11370,12 +11111,18 @@ libsignal.SessionCipher = function(storage, remoteAddress) {
     };
 })();
 
+// vim: ts=4:sw=4:expandtab
+
 (function() {
+    'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
+
     var VERSION = 0;
 
     function iterateHash(data, key, count) {
         data = dcodeIO.ByteBuffer.concat([data, key]).toArrayBuffer();
-        return Internal.crypto.hash(data).then(function(result) {
+        return ns.crypto.hash(data).then(function(result) {
             if (--count === 0) {
                 return result;
             } else {
@@ -11416,10 +11163,11 @@ libsignal.SessionCipher = function(storage, remoteAddress) {
         });
     }
 
-    libsignal.FingerprintGenerator = function(iterations) {
+    ns.FingerprintGenerator = function(iterations) {
         this.iterations = iterations;
     };
-    libsignal.FingerprintGenerator.prototype = {
+
+    ns.FingerprintGenerator.prototype = {
         createFor: function(localIdentifier, localIdentityKey,
                             remoteIdentifier, remoteIdentityKey) {
             if (typeof localIdentifier !== 'string' ||
@@ -11438,8 +11186,4 @@ libsignal.SessionCipher = function(storage, remoteAddress) {
             });
         }
     };
-
-})();
-
-
 })();
