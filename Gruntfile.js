@@ -15,13 +15,6 @@ module.exports = function(grunt) {
         ],
         dest: 'build/components_concat.js',
       },
-      curve25519: {
-        src: [
-          'build/curve25519_compiled.js',
-          'src/curve25519_wrapper.js',
-        ],
-        dest: 'build/curve25519_concat.js'
-      },
       protos: {
         src: [
           'protos/WhisperTextProtocol.proto'
@@ -51,13 +44,14 @@ module.exports = function(grunt) {
       libsignalprotocol: {
         src: [
           'src/compat.js',
-          'build/curve25519_concat.js',
+          'build/curve25519.js',
           'build/components_concat.js',
           'src/errors.js',
-          'src/Curve.js',
+          'src/curve25519_wrapper.js',
+          'src/curve.js',
           'src/crypto.js',
-          'src/helpers.js',
-          'src/KeyHelper.js',
+          'src/util.js',
+          'src/keyhelper.js',
           'build/protobufs_concat.js',
           'src/SessionRecord.js',
           'src/SignalProtocolAddress.js',
@@ -80,7 +74,7 @@ module.exports = function(grunt) {
       }
     },
     compile: {
-        curve25519_compiled: {
+        curve25519: {
             src_files: [
               'native/ed25519/additions/*.c',
               'native/curve25519-donna.c',
@@ -175,6 +169,8 @@ module.exports = function(grunt) {
           '--memory-init-file 0',
           '-Qunused-arguments',
           '-s INLINING_LIMIT=1',
+          '-s WASM=0',
+          '--minify 0',
           '-o',  outfile,
           '-Inative/ed25519/nacl_includes -Inative/ed25519 -Inative/ed25519/sha512',
           '-s', "EXPORTED_FUNCTIONS=\"[" + exported_functions.join(',') + "]\""];

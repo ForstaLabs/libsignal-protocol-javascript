@@ -2,150 +2,10486 @@ if (self.crypto && !self.crypto.subtle && self.crypto.webkitSubtle) {
     self.crypto.subtle = self.crypto.webkitSubtle;
 }
 
-var Module;if(!Module)Module=(typeof Module!=="undefined"?Module:null)||{};var moduleOverrides={};for(var key in Module){if(Module.hasOwnProperty(key)){moduleOverrides[key]=Module[key]}}var ENVIRONMENT_IS_WEB=false;var ENVIRONMENT_IS_WORKER=false;var ENVIRONMENT_IS_NODE=false;var ENVIRONMENT_IS_SHELL=false;if(Module["ENVIRONMENT"]){if(Module["ENVIRONMENT"]==="WEB"){ENVIRONMENT_IS_WEB=true}else if(Module["ENVIRONMENT"]==="WORKER"){ENVIRONMENT_IS_WORKER=true}else if(Module["ENVIRONMENT"]==="NODE"){ENVIRONMENT_IS_NODE=true}else if(Module["ENVIRONMENT"]==="SHELL"){ENVIRONMENT_IS_SHELL=true}else{throw new Error("The provided Module['ENVIRONMENT'] value is not valid. It must be one of: WEB|WORKER|NODE|SHELL.")}}else{ENVIRONMENT_IS_WEB=typeof window==="object";ENVIRONMENT_IS_WORKER=typeof importScripts==="function";ENVIRONMENT_IS_NODE=typeof process==="object"&&typeof require==="function"&&!ENVIRONMENT_IS_WEB&&!ENVIRONMENT_IS_WORKER;ENVIRONMENT_IS_SHELL=!ENVIRONMENT_IS_WEB&&!ENVIRONMENT_IS_NODE&&!ENVIRONMENT_IS_WORKER}if(ENVIRONMENT_IS_NODE){if(!Module["print"])Module["print"]=console.log;if(!Module["printErr"])Module["printErr"]=console.warn;var nodeFS;var nodePath;Module["read"]=function shell_read(filename,binary){if(!nodeFS)nodeFS=require("fs");if(!nodePath)nodePath=require("path");filename=nodePath["normalize"](filename);var ret=nodeFS["readFileSync"](filename);return binary?ret:ret.toString()};Module["readBinary"]=function readBinary(filename){var ret=Module["read"](filename,true);if(!ret.buffer){ret=new Uint8Array(ret)}assert(ret.buffer);return ret};Module["load"]=function load(f){globalEval(read(f))};if(!Module["thisProgram"]){if(process["argv"].length>1){Module["thisProgram"]=process["argv"][1].replace(/\\/g,"/")}else{Module["thisProgram"]="unknown-program"}}Module["arguments"]=process["argv"].slice(2);if(typeof module!=="undefined"){module["exports"]=Module}process["on"]("uncaughtException",(function(ex){if(!(ex instanceof ExitStatus)){throw ex}}));Module["inspect"]=(function(){return"[Emscripten Module object]"})}else if(ENVIRONMENT_IS_SHELL){if(!Module["print"])Module["print"]=print;if(typeof printErr!="undefined")Module["printErr"]=printErr;if(typeof read!="undefined"){Module["read"]=read}else{Module["read"]=function shell_read(){throw"no read() available"}}Module["readBinary"]=function readBinary(f){if(typeof readbuffer==="function"){return new Uint8Array(readbuffer(f))}var data=read(f,"binary");assert(typeof data==="object");return data};if(typeof scriptArgs!="undefined"){Module["arguments"]=scriptArgs}else if(typeof arguments!="undefined"){Module["arguments"]=arguments}if(typeof quit==="function"){Module["quit"]=(function(status,toThrow){quit(status)})}}else if(ENVIRONMENT_IS_WEB||ENVIRONMENT_IS_WORKER){Module["read"]=function shell_read(url){var xhr=new XMLHttpRequest;xhr.open("GET",url,false);xhr.send(null);return xhr.responseText};if(ENVIRONMENT_IS_WORKER){Module["readBinary"]=function readBinary(url){var xhr=new XMLHttpRequest;xhr.open("GET",url,false);xhr.responseType="arraybuffer";xhr.send(null);return new Uint8Array(xhr.response)}}Module["readAsync"]=function readAsync(url,onload,onerror){var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.responseType="arraybuffer";xhr.onload=function xhr_onload(){if(xhr.status==200||xhr.status==0&&xhr.response){onload(xhr.response)}else{onerror()}};xhr.onerror=onerror;xhr.send(null)};if(typeof arguments!="undefined"){Module["arguments"]=arguments}if(typeof console!=="undefined"){if(!Module["print"])Module["print"]=function shell_print(x){console.log(x)};if(!Module["printErr"])Module["printErr"]=function shell_printErr(x){console.warn(x)}}else{var TRY_USE_DUMP=false;if(!Module["print"])Module["print"]=TRY_USE_DUMP&&typeof dump!=="undefined"?(function(x){dump(x)}):(function(x){})}if(ENVIRONMENT_IS_WORKER){Module["load"]=importScripts}if(typeof Module["setWindowTitle"]==="undefined"){Module["setWindowTitle"]=(function(title){document.title=title})}}else{throw"Unknown runtime environment. Where are we?"}function globalEval(x){eval.call(null,x)}if(!Module["load"]&&Module["read"]){Module["load"]=function load(f){globalEval(Module["read"](f))}}if(!Module["print"]){Module["print"]=(function(){})}if(!Module["printErr"]){Module["printErr"]=Module["print"]}if(!Module["arguments"]){Module["arguments"]=[]}if(!Module["thisProgram"]){Module["thisProgram"]="./this.program"}if(!Module["quit"]){Module["quit"]=(function(status,toThrow){throw toThrow})}Module.print=Module["print"];Module.printErr=Module["printErr"];Module["preRun"]=[];Module["postRun"]=[];for(var key in moduleOverrides){if(moduleOverrides.hasOwnProperty(key)){Module[key]=moduleOverrides[key]}}moduleOverrides=undefined;var Runtime={setTempRet0:(function(value){tempRet0=value;return value}),getTempRet0:(function(){return tempRet0}),stackSave:(function(){return STACKTOP}),stackRestore:(function(stackTop){STACKTOP=stackTop}),getNativeTypeSize:(function(type){switch(type){case"i1":case"i8":return 1;case"i16":return 2;case"i32":return 4;case"i64":return 8;case"float":return 4;case"double":return 8;default:{if(type[type.length-1]==="*"){return Runtime.QUANTUM_SIZE}else if(type[0]==="i"){var bits=parseInt(type.substr(1));assert(bits%8===0);return bits/8}else{return 0}}}}),getNativeFieldSize:(function(type){return Math.max(Runtime.getNativeTypeSize(type),Runtime.QUANTUM_SIZE)}),STACK_ALIGN:16,prepVararg:(function(ptr,type){if(type==="double"||type==="i64"){if(ptr&7){assert((ptr&7)===4);ptr+=4}}else{assert((ptr&3)===0)}return ptr}),getAlignSize:(function(type,size,vararg){if(!vararg&&(type=="i64"||type=="double"))return 8;if(!type)return Math.min(size,8);return Math.min(size||(type?Runtime.getNativeFieldSize(type):0),Runtime.QUANTUM_SIZE)}),dynCall:(function(sig,ptr,args){if(args&&args.length){return Module["dynCall_"+sig].apply(null,[ptr].concat(args))}else{return Module["dynCall_"+sig].call(null,ptr)}}),functionPointers:[],addFunction:(function(func){for(var i=0;i<Runtime.functionPointers.length;i++){if(!Runtime.functionPointers[i]){Runtime.functionPointers[i]=func;return 2*(1+i)}}throw"Finished up all reserved function pointers. Use a higher value for RESERVED_FUNCTION_POINTERS."}),removeFunction:(function(index){Runtime.functionPointers[(index-2)/2]=null}),warnOnce:(function(text){if(!Runtime.warnOnce.shown)Runtime.warnOnce.shown={};if(!Runtime.warnOnce.shown[text]){Runtime.warnOnce.shown[text]=1;Module.printErr(text)}}),funcWrappers:{},getFuncWrapper:(function(func,sig){assert(sig);if(!Runtime.funcWrappers[sig]){Runtime.funcWrappers[sig]={}}var sigCache=Runtime.funcWrappers[sig];if(!sigCache[func]){if(sig.length===1){sigCache[func]=function dynCall_wrapper(){return Runtime.dynCall(sig,func)}}else if(sig.length===2){sigCache[func]=function dynCall_wrapper(arg){return Runtime.dynCall(sig,func,[arg])}}else{sigCache[func]=function dynCall_wrapper(){return Runtime.dynCall(sig,func,Array.prototype.slice.call(arguments))}}}return sigCache[func]}),getCompilerSetting:(function(name){throw"You must build with -s RETAIN_COMPILER_SETTINGS=1 for Runtime.getCompilerSetting or emscripten_get_compiler_setting to work"}),stackAlloc:(function(size){var ret=STACKTOP;STACKTOP=STACKTOP+size|0;STACKTOP=STACKTOP+15&-16;return ret}),staticAlloc:(function(size){var ret=STATICTOP;STATICTOP=STATICTOP+size|0;STATICTOP=STATICTOP+15&-16;return ret}),dynamicAlloc:(function(size){var ret=HEAP32[DYNAMICTOP_PTR>>2];var end=(ret+size+15|0)&-16;HEAP32[DYNAMICTOP_PTR>>2]=end;if(end>=TOTAL_MEMORY){var success=enlargeMemory();if(!success){HEAP32[DYNAMICTOP_PTR>>2]=ret;return 0}}return ret}),alignMemory:(function(size,quantum){var ret=size=Math.ceil(size/(quantum?quantum:16))*(quantum?quantum:16);return ret}),makeBigInt:(function(low,high,unsigned){var ret=unsigned?+(low>>>0)+ +(high>>>0)*+4294967296:+(low>>>0)+ +(high|0)*+4294967296;return ret}),GLOBAL_BASE:8,QUANTUM_SIZE:4,__dummy__:0};Module["Runtime"]=Runtime;var ABORT=0;var EXITSTATUS=0;function assert(condition,text){if(!condition){abort("Assertion failed: "+text)}}function getCFunc(ident){var func=Module["_"+ident];if(!func){try{func=eval("_"+ident)}catch(e){}}assert(func,"Cannot call unknown function "+ident+" (perhaps LLVM optimizations or closure removed it?)");return func}var cwrap,ccall;((function(){var JSfuncs={"stackSave":(function(){Runtime.stackSave()}),"stackRestore":(function(){Runtime.stackRestore()}),"arrayToC":(function(arr){var ret=Runtime.stackAlloc(arr.length);writeArrayToMemory(arr,ret);return ret}),"stringToC":(function(str){var ret=0;if(str!==null&&str!==undefined&&str!==0){var len=(str.length<<2)+1;ret=Runtime.stackAlloc(len);stringToUTF8(str,ret,len)}return ret})};var toC={"string":JSfuncs["stringToC"],"array":JSfuncs["arrayToC"]};ccall=function ccallFunc(ident,returnType,argTypes,args,opts){var func=getCFunc(ident);var cArgs=[];var stack=0;if(args){for(var i=0;i<args.length;i++){var converter=toC[argTypes[i]];if(converter){if(stack===0)stack=Runtime.stackSave();cArgs[i]=converter(args[i])}else{cArgs[i]=args[i]}}}var ret=func.apply(null,cArgs);if(returnType==="string")ret=Pointer_stringify(ret);if(stack!==0){if(opts&&opts.async){EmterpreterAsync.asyncFinalizers.push((function(){Runtime.stackRestore(stack)}));return}Runtime.stackRestore(stack)}return ret};var sourceRegex=/^function\s*[a-zA-Z$_0-9]*\s*\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/;function parseJSFunc(jsfunc){var parsed=jsfunc.toString().match(sourceRegex).slice(1);return{arguments:parsed[0],body:parsed[1],returnValue:parsed[2]}}var JSsource=null;function ensureJSsource(){if(!JSsource){JSsource={};for(var fun in JSfuncs){if(JSfuncs.hasOwnProperty(fun)){JSsource[fun]=parseJSFunc(JSfuncs[fun])}}}}cwrap=function cwrap(ident,returnType,argTypes){argTypes=argTypes||[];var cfunc=getCFunc(ident);var numericArgs=argTypes.every((function(type){return type==="number"}));var numericRet=returnType!=="string";if(numericRet&&numericArgs){return cfunc}var argNames=argTypes.map((function(x,i){return"$"+i}));var funcstr="(function("+argNames.join(",")+") {";var nargs=argTypes.length;if(!numericArgs){ensureJSsource();funcstr+="var stack = "+JSsource["stackSave"].body+";";for(var i=0;i<nargs;i++){var arg=argNames[i],type=argTypes[i];if(type==="number")continue;var convertCode=JSsource[type+"ToC"];funcstr+="var "+convertCode.arguments+" = "+arg+";";funcstr+=convertCode.body+";";funcstr+=arg+"=("+convertCode.returnValue+");"}}var cfuncname=parseJSFunc((function(){return cfunc})).returnValue;funcstr+="var ret = "+cfuncname+"("+argNames.join(",")+");";if(!numericRet){var strgfy=parseJSFunc((function(){return Pointer_stringify})).returnValue;funcstr+="ret = "+strgfy+"(ret);"}if(!numericArgs){ensureJSsource();funcstr+=JSsource["stackRestore"].body.replace("()","(stack)")+";"}funcstr+="return ret})";return eval(funcstr)}}))();Module["ccall"]=ccall;Module["cwrap"]=cwrap;function setValue(ptr,value,type,noSafe){type=type||"i8";if(type.charAt(type.length-1)==="*")type="i32";switch(type){case"i1":HEAP8[ptr>>0]=value;break;case"i8":HEAP8[ptr>>0]=value;break;case"i16":HEAP16[ptr>>1]=value;break;case"i32":HEAP32[ptr>>2]=value;break;case"i64":tempI64=[value>>>0,(tempDouble=value,+Math_abs(tempDouble)>=+1?tempDouble>+0?(Math_min(+Math_floor(tempDouble/+4294967296),+4294967295)|0)>>>0:~~+Math_ceil((tempDouble- +(~~tempDouble>>>0))/+4294967296)>>>0:0)],HEAP32[ptr>>2]=tempI64[0],HEAP32[ptr+4>>2]=tempI64[1];break;case"float":HEAPF32[ptr>>2]=value;break;case"double":HEAPF64[ptr>>3]=value;break;default:abort("invalid type for setValue: "+type)}}Module["setValue"]=setValue;function getValue(ptr,type,noSafe){type=type||"i8";if(type.charAt(type.length-1)==="*")type="i32";switch(type){case"i1":return HEAP8[ptr>>0];case"i8":return HEAP8[ptr>>0];case"i16":return HEAP16[ptr>>1];case"i32":return HEAP32[ptr>>2];case"i64":return HEAP32[ptr>>2];case"float":return HEAPF32[ptr>>2];case"double":return HEAPF64[ptr>>3];default:abort("invalid type for setValue: "+type)}return null}Module["getValue"]=getValue;var ALLOC_NORMAL=0;var ALLOC_STACK=1;var ALLOC_STATIC=2;var ALLOC_DYNAMIC=3;var ALLOC_NONE=4;Module["ALLOC_NORMAL"]=ALLOC_NORMAL;Module["ALLOC_STACK"]=ALLOC_STACK;Module["ALLOC_STATIC"]=ALLOC_STATIC;Module["ALLOC_DYNAMIC"]=ALLOC_DYNAMIC;Module["ALLOC_NONE"]=ALLOC_NONE;function allocate(slab,types,allocator,ptr){var zeroinit,size;if(typeof slab==="number"){zeroinit=true;size=slab}else{zeroinit=false;size=slab.length}var singleType=typeof types==="string"?types:null;var ret;if(allocator==ALLOC_NONE){ret=ptr}else{ret=[typeof _malloc==="function"?_malloc:Runtime.staticAlloc,Runtime.stackAlloc,Runtime.staticAlloc,Runtime.dynamicAlloc][allocator===undefined?ALLOC_STATIC:allocator](Math.max(size,singleType?1:types.length))}if(zeroinit){var ptr=ret,stop;assert((ret&3)==0);stop=ret+(size&~3);for(;ptr<stop;ptr+=4){HEAP32[ptr>>2]=0}stop=ret+size;while(ptr<stop){HEAP8[ptr++>>0]=0}return ret}if(singleType==="i8"){if(slab.subarray||slab.slice){HEAPU8.set(slab,ret)}else{HEAPU8.set(new Uint8Array(slab),ret)}return ret}var i=0,type,typeSize,previousType;while(i<size){var curr=slab[i];if(typeof curr==="function"){curr=Runtime.getFunctionIndex(curr)}type=singleType||types[i];if(type===0){i++;continue}if(type=="i64")type="i32";setValue(ret+i,curr,type);if(previousType!==type){typeSize=Runtime.getNativeTypeSize(type);previousType=type}i+=typeSize}return ret}Module["allocate"]=allocate;function getMemory(size){if(!staticSealed)return Runtime.staticAlloc(size);if(!runtimeInitialized)return Runtime.dynamicAlloc(size);return _malloc(size)}Module["getMemory"]=getMemory;function Pointer_stringify(ptr,length){if(length===0||!ptr)return"";var hasUtf=0;var t;var i=0;while(1){t=HEAPU8[ptr+i>>0];hasUtf|=t;if(t==0&&!length)break;i++;if(length&&i==length)break}if(!length)length=i;var ret="";if(hasUtf<128){var MAX_CHUNK=1024;var curr;while(length>0){curr=String.fromCharCode.apply(String,HEAPU8.subarray(ptr,ptr+Math.min(length,MAX_CHUNK)));ret=ret?ret+curr:curr;ptr+=MAX_CHUNK;length-=MAX_CHUNK}return ret}return Module["UTF8ToString"](ptr)}Module["Pointer_stringify"]=Pointer_stringify;function AsciiToString(ptr){var str="";while(1){var ch=HEAP8[ptr++>>0];if(!ch)return str;str+=String.fromCharCode(ch)}}Module["AsciiToString"]=AsciiToString;function stringToAscii(str,outPtr){return writeAsciiToMemory(str,outPtr,false)}Module["stringToAscii"]=stringToAscii;var UTF8Decoder=typeof TextDecoder!=="undefined"?new TextDecoder("utf8"):undefined;function UTF8ArrayToString(u8Array,idx){var endPtr=idx;while(u8Array[endPtr])++endPtr;if(endPtr-idx>16&&u8Array.subarray&&UTF8Decoder){return UTF8Decoder.decode(u8Array.subarray(idx,endPtr))}else{var u0,u1,u2,u3,u4,u5;var str="";while(1){u0=u8Array[idx++];if(!u0)return str;if(!(u0&128)){str+=String.fromCharCode(u0);continue}u1=u8Array[idx++]&63;if((u0&224)==192){str+=String.fromCharCode((u0&31)<<6|u1);continue}u2=u8Array[idx++]&63;if((u0&240)==224){u0=(u0&15)<<12|u1<<6|u2}else{u3=u8Array[idx++]&63;if((u0&248)==240){u0=(u0&7)<<18|u1<<12|u2<<6|u3}else{u4=u8Array[idx++]&63;if((u0&252)==248){u0=(u0&3)<<24|u1<<18|u2<<12|u3<<6|u4}else{u5=u8Array[idx++]&63;u0=(u0&1)<<30|u1<<24|u2<<18|u3<<12|u4<<6|u5}}}if(u0<65536){str+=String.fromCharCode(u0)}else{var ch=u0-65536;str+=String.fromCharCode(55296|ch>>10,56320|ch&1023)}}}}Module["UTF8ArrayToString"]=UTF8ArrayToString;function UTF8ToString(ptr){return UTF8ArrayToString(HEAPU8,ptr)}Module["UTF8ToString"]=UTF8ToString;function stringToUTF8Array(str,outU8Array,outIdx,maxBytesToWrite){if(!(maxBytesToWrite>0))return 0;var startIdx=outIdx;var endIdx=outIdx+maxBytesToWrite-1;for(var i=0;i<str.length;++i){var u=str.charCodeAt(i);if(u>=55296&&u<=57343)u=65536+((u&1023)<<10)|str.charCodeAt(++i)&1023;if(u<=127){if(outIdx>=endIdx)break;outU8Array[outIdx++]=u}else if(u<=2047){if(outIdx+1>=endIdx)break;outU8Array[outIdx++]=192|u>>6;outU8Array[outIdx++]=128|u&63}else if(u<=65535){if(outIdx+2>=endIdx)break;outU8Array[outIdx++]=224|u>>12;outU8Array[outIdx++]=128|u>>6&63;outU8Array[outIdx++]=128|u&63}else if(u<=2097151){if(outIdx+3>=endIdx)break;outU8Array[outIdx++]=240|u>>18;outU8Array[outIdx++]=128|u>>12&63;outU8Array[outIdx++]=128|u>>6&63;outU8Array[outIdx++]=128|u&63}else if(u<=67108863){if(outIdx+4>=endIdx)break;outU8Array[outIdx++]=248|u>>24;outU8Array[outIdx++]=128|u>>18&63;outU8Array[outIdx++]=128|u>>12&63;outU8Array[outIdx++]=128|u>>6&63;outU8Array[outIdx++]=128|u&63}else{if(outIdx+5>=endIdx)break;outU8Array[outIdx++]=252|u>>30;outU8Array[outIdx++]=128|u>>24&63;outU8Array[outIdx++]=128|u>>18&63;outU8Array[outIdx++]=128|u>>12&63;outU8Array[outIdx++]=128|u>>6&63;outU8Array[outIdx++]=128|u&63}}outU8Array[outIdx]=0;return outIdx-startIdx}Module["stringToUTF8Array"]=stringToUTF8Array;function stringToUTF8(str,outPtr,maxBytesToWrite){return stringToUTF8Array(str,HEAPU8,outPtr,maxBytesToWrite)}Module["stringToUTF8"]=stringToUTF8;function lengthBytesUTF8(str){var len=0;for(var i=0;i<str.length;++i){var u=str.charCodeAt(i);if(u>=55296&&u<=57343)u=65536+((u&1023)<<10)|str.charCodeAt(++i)&1023;if(u<=127){++len}else if(u<=2047){len+=2}else if(u<=65535){len+=3}else if(u<=2097151){len+=4}else if(u<=67108863){len+=5}else{len+=6}}return len}Module["lengthBytesUTF8"]=lengthBytesUTF8;var UTF16Decoder=typeof TextDecoder!=="undefined"?new TextDecoder("utf-16le"):undefined;function demangle(func){var __cxa_demangle_func=Module["___cxa_demangle"]||Module["__cxa_demangle"];if(__cxa_demangle_func){try{var s=func.substr(1);var len=lengthBytesUTF8(s)+1;var buf=_malloc(len);stringToUTF8(s,buf,len);var status=_malloc(4);var ret=__cxa_demangle_func(buf,0,0,status);if(getValue(status,"i32")===0&&ret){return Pointer_stringify(ret)}}catch(e){}finally{if(buf)_free(buf);if(status)_free(status);if(ret)_free(ret)}return func}Runtime.warnOnce("warning: build with  -s DEMANGLE_SUPPORT=1  to link in libcxxabi demangling");return func}function demangleAll(text){var regex=/__Z[\w\d_]+/g;return text.replace(regex,(function(x){var y=demangle(x);return x===y?x:x+" ["+y+"]"}))}function jsStackTrace(){var err=new Error;if(!err.stack){try{throw new Error(0)}catch(e){err=e}if(!err.stack){return"(no stack trace available)"}}return err.stack.toString()}function stackTrace(){var js=jsStackTrace();if(Module["extraStackTrace"])js+="\n"+Module["extraStackTrace"]();return demangleAll(js)}Module["stackTrace"]=stackTrace;var HEAP,buffer,HEAP8,HEAPU8,HEAP16,HEAPU16,HEAP32,HEAPU32,HEAPF32,HEAPF64;function updateGlobalBufferViews(){Module["HEAP8"]=HEAP8=new Int8Array(buffer);Module["HEAP16"]=HEAP16=new Int16Array(buffer);Module["HEAP32"]=HEAP32=new Int32Array(buffer);Module["HEAPU8"]=HEAPU8=new Uint8Array(buffer);Module["HEAPU16"]=HEAPU16=new Uint16Array(buffer);Module["HEAPU32"]=HEAPU32=new Uint32Array(buffer);Module["HEAPF32"]=HEAPF32=new Float32Array(buffer);Module["HEAPF64"]=HEAPF64=new Float64Array(buffer)}var STATIC_BASE,STATICTOP,staticSealed;var STACK_BASE,STACKTOP,STACK_MAX;var DYNAMIC_BASE,DYNAMICTOP_PTR;STATIC_BASE=STATICTOP=STACK_BASE=STACKTOP=STACK_MAX=DYNAMIC_BASE=DYNAMICTOP_PTR=0;staticSealed=false;function abortOnCannotGrowMemory(){abort("Cannot enlarge memory arrays. Either (1) compile with  -s TOTAL_MEMORY=X  with X higher than the current value "+TOTAL_MEMORY+", (2) compile with  -s ALLOW_MEMORY_GROWTH=1  which allows increasing the size at runtime but prevents some optimizations, (3) set Module.TOTAL_MEMORY to a higher value before the program runs, or (4) if you want malloc to return NULL (0) instead of this abort, compile with  -s ABORTING_MALLOC=0 ")}function enlargeMemory(){abortOnCannotGrowMemory()}var TOTAL_STACK=Module["TOTAL_STACK"]||5242880;var TOTAL_MEMORY=Module["TOTAL_MEMORY"]||16777216;if(TOTAL_MEMORY<TOTAL_STACK)Module.printErr("TOTAL_MEMORY should be larger than TOTAL_STACK, was "+TOTAL_MEMORY+"! (TOTAL_STACK="+TOTAL_STACK+")");if(Module["buffer"]){buffer=Module["buffer"]}else{{buffer=new ArrayBuffer(TOTAL_MEMORY)}}updateGlobalBufferViews();function getTotalMemory(){return TOTAL_MEMORY}HEAP32[0]=1668509029;HEAP16[1]=25459;if(HEAPU8[2]!==115||HEAPU8[3]!==99)throw"Runtime error: expected the system to be little-endian!";Module["HEAP"]=HEAP;Module["buffer"]=buffer;Module["HEAP8"]=HEAP8;Module["HEAP16"]=HEAP16;Module["HEAP32"]=HEAP32;Module["HEAPU8"]=HEAPU8;Module["HEAPU16"]=HEAPU16;Module["HEAPU32"]=HEAPU32;Module["HEAPF32"]=HEAPF32;Module["HEAPF64"]=HEAPF64;function callRuntimeCallbacks(callbacks){while(callbacks.length>0){var callback=callbacks.shift();if(typeof callback=="function"){callback();continue}var func=callback.func;if(typeof func==="number"){if(callback.arg===undefined){Module["dynCall_v"](func)}else{Module["dynCall_vi"](func,callback.arg)}}else{func(callback.arg===undefined?null:callback.arg)}}}var __ATPRERUN__=[];var __ATINIT__=[];var __ATMAIN__=[];var __ATEXIT__=[];var __ATPOSTRUN__=[];var runtimeInitialized=false;var runtimeExited=false;function preRun(){if(Module["preRun"]){if(typeof Module["preRun"]=="function")Module["preRun"]=[Module["preRun"]];while(Module["preRun"].length){addOnPreRun(Module["preRun"].shift())}}callRuntimeCallbacks(__ATPRERUN__)}function ensureInitRuntime(){if(runtimeInitialized)return;runtimeInitialized=true;callRuntimeCallbacks(__ATINIT__)}function preMain(){callRuntimeCallbacks(__ATMAIN__)}function exitRuntime(){callRuntimeCallbacks(__ATEXIT__);runtimeExited=true}function postRun(){if(Module["postRun"]){if(typeof Module["postRun"]=="function")Module["postRun"]=[Module["postRun"]];while(Module["postRun"].length){addOnPostRun(Module["postRun"].shift())}}callRuntimeCallbacks(__ATPOSTRUN__)}function addOnPreRun(cb){__ATPRERUN__.unshift(cb)}Module["addOnPreRun"]=addOnPreRun;function addOnInit(cb){__ATINIT__.unshift(cb)}Module["addOnInit"]=addOnInit;function addOnPreMain(cb){__ATMAIN__.unshift(cb)}Module["addOnPreMain"]=addOnPreMain;function addOnExit(cb){__ATEXIT__.unshift(cb)}Module["addOnExit"]=addOnExit;function addOnPostRun(cb){__ATPOSTRUN__.unshift(cb)}Module["addOnPostRun"]=addOnPostRun;function intArrayFromString(stringy,dontAddNull,length){var len=length>0?length:lengthBytesUTF8(stringy)+1;var u8array=new Array(len);var numBytesWritten=stringToUTF8Array(stringy,u8array,0,u8array.length);if(dontAddNull)u8array.length=numBytesWritten;return u8array}Module["intArrayFromString"]=intArrayFromString;function intArrayToString(array){var ret=[];for(var i=0;i<array.length;i++){var chr=array[i];if(chr>255){chr&=255}ret.push(String.fromCharCode(chr))}return ret.join("")}Module["intArrayToString"]=intArrayToString;function writeStringToMemory(string,buffer,dontAddNull){Runtime.warnOnce("writeStringToMemory is deprecated and should not be called! Use stringToUTF8() instead!");var lastChar,end;if(dontAddNull){end=buffer+lengthBytesUTF8(string);lastChar=HEAP8[end]}stringToUTF8(string,buffer,Infinity);if(dontAddNull)HEAP8[end]=lastChar}Module["writeStringToMemory"]=writeStringToMemory;function writeArrayToMemory(array,buffer){HEAP8.set(array,buffer)}Module["writeArrayToMemory"]=writeArrayToMemory;function writeAsciiToMemory(str,buffer,dontAddNull){for(var i=0;i<str.length;++i){HEAP8[buffer++>>0]=str.charCodeAt(i)}if(!dontAddNull)HEAP8[buffer>>0]=0}Module["writeAsciiToMemory"]=writeAsciiToMemory;if(!Math["imul"]||Math["imul"](4294967295,5)!==-5)Math["imul"]=function imul(a,b){var ah=a>>>16;var al=a&65535;var bh=b>>>16;var bl=b&65535;return al*bl+(ah*bl+al*bh<<16)|0};Math.imul=Math["imul"];if(!Math["clz32"])Math["clz32"]=(function(x){x=x>>>0;for(var i=0;i<32;i++){if(x&1<<31-i)return i}return 32});Math.clz32=Math["clz32"];if(!Math["trunc"])Math["trunc"]=(function(x){return x<0?Math.ceil(x):Math.floor(x)});Math.trunc=Math["trunc"];var Math_abs=Math.abs;var Math_cos=Math.cos;var Math_sin=Math.sin;var Math_tan=Math.tan;var Math_acos=Math.acos;var Math_asin=Math.asin;var Math_atan=Math.atan;var Math_atan2=Math.atan2;var Math_exp=Math.exp;var Math_log=Math.log;var Math_sqrt=Math.sqrt;var Math_ceil=Math.ceil;var Math_floor=Math.floor;var Math_pow=Math.pow;var Math_imul=Math.imul;var Math_fround=Math.fround;var Math_round=Math.round;var Math_min=Math.min;var Math_clz32=Math.clz32;var Math_trunc=Math.trunc;var runDependencies=0;var runDependencyWatcher=null;var dependenciesFulfilled=null;function addRunDependency(id){runDependencies++;if(Module["monitorRunDependencies"]){Module["monitorRunDependencies"](runDependencies)}}Module["addRunDependency"]=addRunDependency;function removeRunDependency(id){runDependencies--;if(Module["monitorRunDependencies"]){Module["monitorRunDependencies"](runDependencies)}if(runDependencies==0){if(runDependencyWatcher!==null){clearInterval(runDependencyWatcher);runDependencyWatcher=null}if(dependenciesFulfilled){var callback=dependenciesFulfilled;dependenciesFulfilled=null;callback()}}}Module["removeRunDependency"]=removeRunDependency;Module["preloadedImages"]={};Module["preloadedAudios"]={};var ASM_CONSTS=[];STATIC_BASE=Runtime.GLOBAL_BASE;STATICTOP=STATIC_BASE+34528;__ATINIT__.push();allocate([8,201,188,243,103,230,9,106,59,167,202,132,133,174,103,187,43,248,148,254,114,243,110,60,241,54,29,95,58,245,79,165,209,130,230,173,127,82,14,81,31,108,62,43,140,104,5,155,107,189,65,251,171,217,131,31,121,33,126,19,25,205,224,91,34,174,40,215,152,47,138,66,205,101,239,35,145,68,55,113,47,59,77,236,207,251,192,181,188,219,137,129,165,219,181,233,56,181,72,243,91,194,86,57,25,208,5,182,241,17,241,89,155,79,25,175,164,130,63,146,24,129,109,218,213,94,28,171,66,2,3,163,152,170,7,216,190,111,112,69,1,91,131,18,140,178,228,78,190,133,49,36,226,180,255,213,195,125,12,85,111,137,123,242,116,93,190,114,177,150,22,59,254,177,222,128,53,18,199,37,167,6,220,155,148,38,105,207,116,241,155,193,210,74,241,158,193,105,155,228,227,37,79,56,134,71,190,239,181,213,140,139,198,157,193,15,101,156,172,119,204,161,12,36,117,2,43,89,111,44,233,45,131,228,166,110,170,132,116,74,212,251,65,189,220,169,176,92,181,83,17,131,218,136,249,118,171,223,102,238,82,81,62,152,16,50,180,45,109,198,49,168,63,33,251,152,200,39,3,176,228,14,239,190,199,127,89,191,194,143,168,61,243,11,224,198,37,167,10,147,71,145,167,213,111,130,3,224,81,99,202,6,112,110,14,10,103,41,41,20,252,47,210,70,133,10,183,39,38,201,38,92,56,33,27,46,237,42,196,90,252,109,44,77,223,179,149,157,19,13,56,83,222,99,175,139,84,115,10,101,168,178,119,60,187,10,106,118,230,174,237,71,46,201,194,129,59,53,130,20,133,44,114,146,100,3,241,76,161,232,191,162,1,48,66,188,75,102,26,168,145,151,248,208,112,139,75,194,48,190,84,6,163,81,108,199,24,82,239,214,25,232,146,209,16,169,101,85,36,6,153,214,42,32,113,87,133,53,14,244,184,209,187,50,112,160,106,16,200,208,210,184,22,193,164,25,83,171,65,81,8,108,55,30,153,235,142,223,76,119,72,39,168,72,155,225,181,188,176,52,99,90,201,197,179,12,28,57,203,138,65,227,74,170,216,78,115,227,99,119,79,202,156,91,163,184,178,214,243,111,46,104,252,178,239,93,238,130,143,116,96,47,23,67,111,99,165,120,114,171,240,161,20,120,200,132,236,57,100,26,8,2,199,140,40,30,99,35,250,255,190,144,233,189,130,222,235,108,80,164,21,121,198,178,247,163,249,190,43,83,114,227,242,120,113,198,156,97,38,234,206,62,39,202,7,194,192,33,199,184,134,209,30,235,224,205,214,125,218,234,120,209,110,238,127,79,125,245,186,111,23,114,170,103,240,6,166,152,200,162,197,125,99,10,174,13,249,190,4,152,63,17,27,71,28,19,53,11,113,27,132,125,4,35,245,119,219,40,147,36,199,64,123,171,202,50,188,190,201,21,10,190,158,60,76,13,16,156,196,103,29,67,182,66,62,203,190,212,197,76,42,126,101,252,156,41,127,89,236,250,214,58,171,111,203,95,23,88,71,74,140,25,68,108,133,59,140,1,189,241,36,255,248,37,195,1,96,220,55,0,183,76,62,255,195,66,61,0,50,76,164,1,225,164,76,255,76,61,163,255,117,62,31,0,81,145,64,255,118,65,14,0,162,115,214,255,6,138,46,0,124,230,244,255,10,138,143,0,52,26,194,0,184,244,76,0,129,143,41,1,190,244,19,255,123,170,122,255,98,129,68,0,121,213,147,0,86,101,30,255,161,103,155,0,140,89,67,255,239,229,190,1,67,11,181,0,198,240,137,254,238,69,188,255,67,151,238,0,19,42,108,255,229,85,113,1,50,68,135,255,17,106,9,0,50,103,1,255,80,1,168,1,35,152,30,255,16,168,185,1,56,89,232,255,101,210,252,0,41,250,71,0,204,170,79,255,14,46,239,255,80,77,239,0,189,214,75,255,17,141,249,0,38,80,76,255,190,85,117,0,86,228,170,0,156,216,208,1,195,207,164,255,150,66,76,255,175,225,16,255,141,80,98,1,76,219,242,0,198,162,114,0,46,218,152,0,155,43,241,254,155,160,104,255,51,187,165,0,2,17,175,0,66,84,160,1,247,58,30,0,35,65,53,254,69,236,191,0,45,134,245,1,163,123,221,0,32,110,20,255,52,23,165,0,186,214,71,0,233,176,96,0,242,239,54,1,57,89,138,0,83,0,84,255,136,160,100,0,92,142,120,254,104,124,190,0,181,177,62,255,250,41,85,0,152,130,42,1,96,252,246,0,151,151,63,254,239,133,62,0,32,56,156,0,45,167,189,255,142,133,179,1,131,86,211,0,187,179,150,254,250,170,14,255,210,163,78,0,37,52,151,0,99,77,26,0,238,156,213,255,213,192,209,1,73,46,84,0,20,65,41,1,54,206,79,0,201,131,146,254,170,111,24,255,177,33,50,254,171,38,203,255,78,247,116,0,209,221,153,0,133,128,178,1,58,44,25,0,201,39,59,1,189,19,252,0,49,229,210,1,117,187,117,0,181,179,184,1,0,114,219,0,48,94,147,0,245,41,56,0,125,13,204,254,244,173,119,0,44,221,32,254,84,234,20,0,249,160,198,1,236,126,234,255,47,99,168,254,170,226,153,255,102,179,216,0,226,141,122,255,122,66,153,254,182,245,134,0,227,228,25,1,214,57,235,255,216,173,56,255,181,231,210,0,119,128,157,255,129,95,136,255,110,126,51,0,2,169,183,255,7,130,98,254,69,176,94,255,116,4,227,1,217,242,145,255,202,173,31,1,105,1,39,255,46,175,69,0,228,47,58,255,215,224,69,254,207,56,69,255,16,254,139,255,23,207,212,255,202,20,126,255,95,213,96,255,9,176,33,0,200,5,207,255,241,42,128,254,35,33,192,255,248,229,196,1,129,17,120,0,251,103,151,255,7,52,112,255,140,56,66,255,40,226,245,255,217,70,37,254,172,214,9,255,72,67,134,1,146,192,214,255,44,38,112,0,68,184,75,255,206,90,251,0,149,235,141,0,181,170,58,0,116,244,239,0,92,157,2,0,102,173,98,0,233,137,96,1,127,49,203,0,5,155,148,0,23,148,9,255,211,122,12,0,34,134,26,255,219,204,136,0,134,8,41,255,224,83,43,254,85,25,247,0,109,127,0,254,169,136,48,0,238,119,219,255,231,173,213,0,206,18,254,254,8,186,7,255,126,9,7,1,111,42,72,0,111,52,236,254,96,63,141,0,147,191,127,254,205,78,192,255,14,106,237,1,187,219,76,0,175,243,187,254,105,89,173,0,85,25,89,1,162,243,148,0,2,118,209,254,33,158,9,0,139,163,46,255,93,70,40,0,108,42,142,254,111,252,142,255,155,223,144,0,51,229,167,255,73,252,155,255,94,116,12,255,152,160,218,255,156,238,37,255,179,234,207,255,197,0,179,255,154,164,141,0,225,196,104,0,10,35,25,254,209,212,242,255,97,253,222,254,184,101,229,0,222,18,127,1,164,136,135,255,30,207,140,254,146,97,243,0,129,192,26,254,201,84,33,255,111,10,78,255,147,81,178,255,4,4,24,0,161,238,215,255,6,141,33,0,53,215,14,255,41,181,208,255,231,139,157,0,179,203,221,255,255,185,113,0,189,226,172,255,113,66,214,255,202,62,45,255,102,64,8,255,78,174,16,254,133,117,68,255,182,120,89,255,133,114,211,0,189,110,21,255,15,10,106,0,41,192,1,0,152,232,121,255,188,60,160,255,153,113,206,255,0,183,226,254,180,13,72,255,176,160,14,254,211,201,134,255,158,24,143,0,127,105,53,0,96,12,189,0,167,215,251,255,159,76,128,254,106,101,225,255,30,252,4,0,146,12,174,0,89,241,178,254,10,229,166,255,123,221,42,254,30,20,212,0,82,128,3,0,48,209,243,0,119,121,64,255,50,227,156,255,0,110,197,1,103,27,144,0,133,59,140,1,189,241,36,255,248,37,195,1,96,220,55,0,183,76,62,255,195,66,61,0,50,76,164,1,225,164,76,255,76,61,163,255,117,62,31,0,81,145,64,255,118,65,14,0,162,115,214,255,6,138,46,0,124,230,244,255,10,138,143,0,52,26,194,0,184,244,76,0,129,143,41,1,190,244,19,255,123,170,122,255,98,129,68,0,121,213,147,0,86,101,30,255,161,103,155,0,140,89,67,255,239,229,190,1,67,11,181,0,198,240,137,254,238,69,188,255,234,113,60,255,37,255,57,255,69,178,182,254,128,208,179,0,118,26,125,254,3,7,214,255,241,50,77,255,85,203,197,255,211,135,250,255,25,48,100,255,187,213,180,254,17,88,105,0,83,209,158,1,5,115,98,0,4,174,60,254,171,55,110,255,217,181,17,255,20,188,170,0,146,156,102,254,87,214,174,255,114,122,155,1,233,44,170,0,127,8,239,1,214,236,234,0,175,5,219,0,49,106,61,255,6,66,208,255,2,106,110,255,81,234,19,255,215,107,192,255,67,151,238,0,19,42,108,255,229,85,113,1,50,68,135,255,17,106,9,0,50,103,1,255,80,1,168,1,35,152,30,255,16,168,185,1,56,89,232,255,101,210,252,0,41,250,71,0,204,170,79,255,14,46,239,255,80,77,239,0,189,214,75,255,17,141,249,0,38,80,76,255,190,85,117,0,86,228,170,0,156,216,208,1,195,207,164,255,150,66,76,255,175,225,16,255,141,80,98,1,76,219,242,0,198,162,114,0,46,218,152,0,155,43,241,254,155,160,104,255,178,9,252,254,100,110,212,0,14,5,167,0,233,239,163,255,28,151,157,1,101,146,10,255,254,158,70,254,71,249,228,0,88,30,50,0,68,58,160,255,191,24,104,1,129,66,129,255,192,50,85,255,8,179,138,255,38,250,201,0,115,80,160,0,131,230,113,0,125,88,147,0,90,68,199,0,253,76,158,0,28,255,118,0,113,250,254,0,66,75,46,0,230,218,43,0,229,120,186,1,148,68,43,0,136,124,238,1,187,107,197,255,84,53,246,255,51,116,254,255,51,187,165,0,2,17,175,0,66,84,160,1,247,58,30,0,35,65,53,254,69,236,191,0,45,134,245,1,163,123,221,0,32,110,20,255,52,23,165,0,186,214,71,0,233,176,96,0,242,239,54,1,57,89,138,0,83,0,84,255,136,160,100,0,92,142,120,254,104,124,190,0,181,177,62,255,250,41,85,0,152,130,42,1,96,252,246,0,151,151,63,254,239,133,62,0,32,56,156,0,45,167,189,255,142,133,179,1,131,86,211,0,187,179,150,254,250,170,14,255,68,113,21,255,222,186,59,255,66,7,241,1,69,6,72,0,86,156,108,254,55,167,89,0,109,52,219,254,13,176,23,255,196,44,106,255,239,149,71,255,164,140,125,255,159,173,1,0,51,41,231,0,145,62,33,0,138,111,93,1,185,83,69,0,144,115,46,0,97,151,16,255,24,228,26,0,49,217,226,0,113,75,234,254,193,153,12,255,182,48,96,255,14,13,26,0,128,195,249,254,69,193,59,0,132,37,81,254,125,106,60,0,214,240,169,1,164,227,66,0,210,163,78,0,37,52,151,0,99,77,26,0,238,156,213,255,213,192,209,1,73,46,84,0,20,65,41,1,54,206,79,0,201,131,146,254,170,111,24,255,177,33,50,254,171,38,203,255,78,247,116,0,209,221,153,0,133,128,178,1,58,44,25,0,201,39,59,1,189,19,252,0,49,229,210,1,117,187,117,0,181,179,184,1,0,114,219,0,48,94,147,0,245,41,56,0,125,13,204,254,244,173,119,0,44,221,32,254,84,234,20,0,249,160,198,1,236,126,234,255,143,62,221,0,129,89,214,255,55,139,5,254,68,20,191,255,14,204,178,1,35,195,217,0,47,51,206,1,38,246,165,0,206,27,6,254,158,87,36,0,217,52,146,255,125,123,215,255,85,60,31,255,171,13,7,0,218,245,88,254,252,35,60,0,55,214,160,255,133,101,56,0,224,32,19,254,147,64,234,0,26,145,162,1,114,118,125,0,248,252,250,0,101,94,196,255,198,141,226,254,51,42,182,0,135,12,9,254,109,172,210,255,197,236,194,1,241,65,154,0,48,156,47,255,153,67,55,255,218,165,34,254,74,180,179,0,218,66,71,1,88,122,99,0,212,181,219,255,92,42,231,255,239,0,154,0,245,77,183,255,94,81,170,1,18,213,216,0,171,93,71,0,52,94,248,0,18,151,161,254,197,209,66,255,174,244,15,254,162,48,183,0,49,61,240,254,182,93,195,0,199,228,6,1,200,5,17,255,137,45,237,255,108,148,4,0,90,79,237,255,39,63,77,255,53,82,207,1,142,22,118,255,101,232,18,1,92,26,67,0,5,200,88,255,33,168,138,255,149,225,72,0,2,209,27,255,44,245,168,1,220,237,17,255,30,211,105,254,141,238,221,0,128,80,245,254,111,254,14,0,222,95,190,1,223,9,241,0,146,76,212,255,108,205,104,255,63,117,153,0,144,69,48,0,35,228,111,0,192,33,193,255,112,214,190,254,115,152,151,0,23,102,88,0,51,74,248,0,226,199,143,254,204,162,101,255,208,97,189,1,245,104,18,0,230,246,30,255,23,148,69,0,110,88,52,254,226,181,89,255,208,47,90,254,114,161,80,255,33,116,248,0,179,152,87,255,69,144,177,1,88,238,26,255,58,32,113,1,1,77,69,0,59,121,52,255,152,238,83,0,52,8,193,0,231,39,233,255,199,34,138,0,222,68,173,0,91,57,242,254,220,210,127,255,192,7,246,254,151,35,187,0,195,236,165,0,111,93,206,0,212,247,133,1,154,133,209,255,155,231,10,0,64,78,38,0,122,249,100,1,30,19,97,255,62,91,249,1,248,133,77,0,197,63,168,254,116,10,82,0,184,236,113,254,212,203,194,255,61,100,252,254,36,5,202,255,119,91,153,255,129,79,29,0,103,103,171,254,237,215,111,255,216,53,69,0,239,240,23,0,194,149,221,255,38,225,222,0,232,255,180,254,118,82,133,255,57,209,177,1,139,232,133,0,158,176,46,254,194,115,46,0,88,247,229,1,28,103,191,0,221,222,175,254,149,235,44,0,151,228,25,254,218,105,103,0,142,85,210,0,149,129,190,255,213,65,94,254,117,134,224,255,82,198,117,0,157,221,220,0,163,101,36,0,197,114,37,0,104,172,166,254,11,182,0,0,81,72,188,255,97,188,16,255,69,6,10,0,199,147,145,255,8,9,115,1,65,214,175,255,217,173,209,0,80,127,166,0,247,229,4,254,167,183,124,255,90,28,204,254,175,59,240,255,11,41,248,1,108,40,51,255,144,177,195,254,150,250,126,0,138,91,65,1,120,60,222,255,245,193,239,0,29,214,189,255,128,2,25,0,80,154,162,0,77,220,107,1,234,205,74,255,54,166,103,255,116,72,9,0,228,94,47,255,30,200,25,255,35,214,89,255,61,176,140,255,83,226,163,255,75,130,172,0,128,38,17,0,95,137,152,255,215,124,159,1,79,93,0,0,148,82,157,254,195,130,251,255,40,202,76,255,251,126,224,0,157,99,62,254,207,7,225,255,96,68,195,0,140,186,157,255,131,19,231,255,42,128,254,0,52,219,61,254,102,203,72,0,141,7,11,255,186,164,213,0,31,122,119,0,133,242,145,0,208,252,232,255,91,213,182,255,143,4,250,254,249,215,74,0,165,30,111,1,171,9,223,0,229,123,34,1,92,130,26,255,77,155,45,1,195,139,28,255,59,224,78,0,136,17,247,0,108,121,32,0,79,250,189,255,96,227,252,254,38,241,62,0,62,174,125,255,155,111,93,255,10,230,206,1,97,197,40,255,0,49,57,254,65,250,13,0,18,251,150,255,220,109,210,255,5,174,166,254,44,129,189,0,235,35,147,255,37,247,141,255,72,141,4,255,103,107,255,0,247,90,4,0,53,44,42,0,2,30,240,0,4,59,63,0,88,78,36,0,113,167,180,0,190,71,193,255,199,158,164,255,58,8,172,0,77,33,12,0,65,63,3,0,153,77,33,255,172,254,102,1,228,221,4,255,87,30,254,1,146,41,86,255,138,204,239,254,108,141,17,255,187,242,135,0,210,208,127,0,68,45,14,254,73,96,62,0,81,60,24,255,170,6,36,255,3,249,26,0,35,213,109,0,22,129,54,255,21,35,225,255,234,61,56,255,58,217,6,0,143,124,88,0,236,126,66,0,209,38,183,255,34,238,6,255,174,145,102,0,95,22,211,0,196,15,153,254,46,84,232,255,117,34,146,1,231,250,74,255,27,134,100,1,92,187,195,255,170,198,112,0,120,28,42,0,209,70,67,0,29,81,31,0,29,168,100,1,169,173,160,0,107,35,117,0,62,96,59,255,81,12,69,1,135,239,190,255,220,252,18,0,163,220,58,255,137,137,188,255,83,102,109,0,96,6,76,0,234,222,210,255,185,174,205,1,60,158,213,255,13,241,214,0,172,129,140,0,93,104,242,0,192,156,251,0,43,117,30,0,225,81,158,0,127,232,218,0,226,28,203,0,233,27,151,255,117,43,5,255,242,14,47,255,33,20,6,0,137,251,44,254,27,31,245,255,183,214,125,254,40,121,149,0,186,158,213,255,89,8,227,0,69,88,0,254,203,135,225,0,201,174,203,0,147,71,184,0,18,121,41,254,94,5,78,0,224,214,240,254,36,5,180,0,251,135,231,1,163,138,212,0,210,249,116,254,88,129,187,0,19,8,49,254,62,14,144,255,159,76,211,0,214,51,82,0,109,117,228,254,103,223,203,255,75,252,15,1,154,71,220,255,23,13,91,1,141,168,96,255,181,182,133,0,250,51,55,0,234,234,212,254,175,63,158,0,39,240,52,1,158,189,36,255,213,40,85,1,32,180,247,255,19,102,26,1,84,24,97,255,69,21,222,0,148,139,122,255,220,213,235,1,232,203,255,0,121,57,147,0,227,7,154,0,53,22,147,1,72,1,225,0,82,134,48,254,83,60,157,255,145,72,169,0,34,103,239,0,198,233,47,0,116,19,4,255,184,106,9,255,183,129,83,0,36,176,230,1,34,103,72,0,219,162,134,0,245,42,158,0,32,149,96,254,165,44,144,0,202,239,72,254,215,150,5,0,42,66,36,1,132,215,175,0,86,174,86,255,26,197,156,255,49,232,135,254,103,182,82,0,253,128,176,1,153,178,122,0,245,250,10,0,236,24,178,0,137,106,132,0,40,29,41,0,50,30,152,255,124,105,38,0,230,191,75,0,143,43,170,0,44,131,20,255,44,13,23,255,237,255,155,1,159,109,100,255,112,181,24,255,104,220,108,0,55,211,131,0,99,12,213,255,152,151,145,255,238,5,159,0,97,155,8,0,33,108,81,0,1,3,103,0,62,109,34,255,250,155,180,0,32,71,195,255,38,70,145,1,159,95,245,0,69,229,101,1,136,28,240,0,79,224,25,0,78,110,121,255,248,168,124,0,187,128,247,0,2,147,235,254,79,11,132,0,70,58,12,1,181,8,163,255,79,137,133,255,37,170,11,255,141,243,85,255,176,231,215,255,204,150,164,255,239,215,39,255,46,87,156,254,8,163,88,255,172,34,232,0,66,44,102,255,27,54,41,254,236,99,87,255,41,123,169,1,52,114,43,0,117,134,40,0,155,134,26,0,231,207,91,254,35,132,38,255,19,102,125,254,36,227,133,255,118,3,113,255,29,13,124,0,152,96,74,1,88,146,206,255,167,191,220,254,162,18,88,255,182,100,23,0,31,117,52,0,81,46,106,1,12,2,7,0,69,80,201,1,209,246,172,0,12,48,141,1,224,211,88,0,116,226,159,0,122,98,130,0,65,236,234,1,225,226,9,255,207,226,123,1,89,214,59,0,112,135,88,1,90,244,203,255,49,11,38,1,129,108,186,0,89,112,15,1,101,46,204,255,127,204,45,254,79,255,221,255,51,73,18,255,127,42,101,255,241,21,202,0,160,227,7,0,105,50,236,0,79,52,197,255,104,202,208,1,180,15,16,0,101,197,78,255,98,77,203,0,41,185,241,1,35,193,124,0,35,155,23,255,207,53,192,0,11,125,163,1,249,158,185,255,4,131,48,0,21,93,111,255,61,121,231,1,69,200,36,255,185,48,185,255,111,238,21,255,39,50,25,255,99,215,163,255,87,212,30,255,164,147,5,255,128,6,35,1,108,223,110,255,194,76,178,0,74,101,180,0,243,47,48,0,174,25,43,255,82,173,253,1,54,114,192,255,40,55,91,0,215,108,176,255,11,56,7,0,224,233,76,0,209,98,202,254,242,25,125,0,44,193,93,254,203,8,177,0,135,176,19,0,112,71,213,255,206,59,176,1,4,67,26,0,14,143,213,254,42,55,208,255,60,67,120,0,193,21,163,0,99,164,115,0,10,20,118,0,156,212,222,254,160,7,217,255,114,245,76,1,117,59,123,0,176,194,86,254,213,15,176,0,78,206,207,254,213,129,59,0,233,251,22,1,96,55,152,255,236,255,15,255,197,89,84,255,93,149,133,0,174,160,113,0,234,99,169,255,152,116,88,0,144,164,83,255,95,29,198,255,34,47,15,255,99,120,134,255,5,236,193,0,249,247,126,255,147,187,30,0,50,230,117,255,108,217,219,255,163,81,166,255,72,25,169,254,155,121,79,255,28,155,89,254,7,126,17,0,147,65,33,1,47,234,253,0,26,51,18,0,105,83,199,255,163,196,230,0,113,248,164,0,226,254,218,0,189,209,203,255,164,247,222,254,255,35,165,0,4,188,243,1,127,179,71,0,37,237,254,255,100,186,240,0,5,57,71,254,103,72,73,255,244,18,81,254,229,210,132,255,238,6,180,255,11,229,174,255,227,221,192,1,17,49,28,0,163,215,196,254,9,118,4,255,51,240,71,0,113,129,109,255,76,240,231,0,188,177,127,0,125,71,44,1,26,175,243,0,94,169,25,254,27,230,29,0,15,139,119,1,168,170,186,255,172,197,76,255,252,75,188,0,137,124,196,0,72,22,96,255,45,151,249,1,220,145,100,0,64,192,159,255,120,239,226,0,129,178,146,0,0,192,125,0,235,138,234,0,183,157,146,0,83,199,192,255,184,172,72,255,73,225,128,0,77,6,250,255,186,65,67,0,104,246,207,0,188,32,138,255,218,24,242,0,67,138,81,254,237,129,121,255,20,207,150,1,41,199,16,255,6,20,128,0,159,118,5,0,181,16,143,255,220,38,15,0,23,64,147,254,73,26,13,0,87,228,57,1,204,124,128,0,43,24,223,0,219,99,199,0,22,75,20,255,19,27,126,0,157,62,215,0,110,29,230,0,179,167,255,1,54,252,190,0,221,204,182,254,179,158,65,255,81,157,3,0,194,218,159,0,170,223,0,0,224,11,32,255,38,197,98,0,168,164,37,0,23,88,7,1,164,186,110,0,96,36,134,0,234,242,229,0,250,121,19,0,242,254,112,255,3,47,94,1,9,239,6,255,81,134,153,254,214,253,168,255,67,124,224,0,245,95,74,0,28,30,44,254,1,109,220,255,178,89,89,0,252,36,76,0,24,198,46,255,76,77,111,0,134,234,136,255,39,94,29,0,185,72,234,255,70,68,135,255,231,102,7,254,77,231,140,0,167,47,58,1,148,97,118,255,16,27,225,1,166,206,143,255,110,178,214,255,180,131,162,0,143,141,225,1,13,218,78,255,114,153,33,1,98,104,204,0,175,114,117,1,167,206,75,0,202,196,83,1,58,64,67,0,138,47,111,1,196,247,128,255,137,224,224,254,158,112,207,0,154,100,255,1,134,37,107,0,198,128,79,255,127,209,155,255,163,254,185,254,60,14,243,0,31,219,112,254,29,217,65,0,200,13,116,254,123,60,196,255,224,59,184,254,242,89,196,0,123,16,75,254,149,16,206,0,69,254,48,1,231,116,223,255,209,160,65,1,200,80,98,0,37,194,184,254,148,63,34,0,139,240,65,255,217,144,132,255,56,38,45,254,199,120,210,0,108,177,166,255,160,222,4,0,220,126,119,254,165,107,160,255,82,220,248,1,241,175,136,0,144,141,23,255,169,138,84,0,160,137,78,255,226,118,80,255,52,27,132,255,63,96,139,255,152,250,39,0,188,155,15,0,232,51,150,254,40,15,232,255,240,229,9,255,137,175,27,255,75,73,97,1,218,212,11,0,135,5,162,1,107,185,213,0,2,249,107,255,40,242,70,0,219,200,25,0,25,157,13,0,67,82,80,255,196,249,23,255,145,20,149,0,50,72,146,0,94,76,148,1,24,251,65,0,31,192,23,0,184,212,201,255,123,233,162,1,247,173,72,0,162,87,219,254,126,134,89,0,159,11,12,254,166,105,29,0,73,27,228,1,113,120,183,255,66,163,109,1,212,143,11,255,159,231,168,1,255,128,90,0,57,14,58,254,89,52,10,255,253,8,163,1,0,145,210,255,10,129,85,1,46,181,27,0,103,136,160,254,126,188,209,255,34,35,111,0,215,219,24,255,212,11,214,254,101,5,118,0,232,197,133,255,223,167,109,255,237,80,86,255,70,139,94,0,158,193,191,1,155,15,51,255,15,190,115,0,78,135,207,255,249,10,27,1,181,125,233,0,95,172,13,254,170,213,161,255,39,236,138,255,95,93,87,255,190,128,95,0,125,15,206,0,166,150,159,0,227,15,158,255,206,158,120,255,42,141,128,0,101,178,120,1,156,109,131,0,218,14,44,254,247,168,206,255,212,112,28,0,112,17,228,255,90,16,37,1,197,222,108,0,254,207,83,255,9,90,243,255,243,244,172,0,26,88,115,255,205,116,122,0,191,230,193,0,180,100,11,1,217,37,96,255,154,78,156,0,235,234,31,255,206,178,178,255,149,192,251,0,182,250,135,0,246,22,105,0,124,193,109,255,2,210,149,255,169,17,170,0,0,96,110,255,117,9,8,1,50,123,40,255,193,189,99,0,34,227,160,0,48,80,70,254,211,51,236,0,45,122,245,254,44,174,8,0,173,37,233,255,158,65,171,0,122,69,215,255,90,80,2,255,131,106,96,254,227,114,135,0,205,49,119,254,176,62,64,255,82,51,17,255,241,20,243,255,130,13,8,254,128,217,243,255,162,27,1,254,90,118,241,0,246,198,246,255,55,16,118,255,200,159,157,0,163,17,1,0,140,107,121,0,85,161,118,255,38,0,149,0,156,47,238,0,9,166,166,1,75,98,181,255,50,74,25,0,66,15,47,0,139,225,159,0,76,3,142,255,14,238,184,0,11,207,53,255,183,192,186,1,171,32,174,255,191,76,221,1,247,170,219,0,25,172,50,254,217,9,233,0,203,126,68,255,183,92,48,0,127,167,183,1,65,49,254,0,16,63,127,1,254,21,170,255,59,224,127,254,22,48,63,255,27,78,130,254,40,195,29,0,250,132,112,254,35,203,144,0,104,169,168,0,207,253,30,255,104,40,38,254,94,228,88,0,206,16,128,255,212,55,122,255,223,22,234,0,223,197,127,0,253,181,181,1,145,102,118,0,236,153,36,255,212,217,72,255,20,38,24,254,138,62,62,0,152,140,4,0,230,220,99,255,1,21,212,255,148,201,231,0,244,123,9,254,0,171,210,0,51,58,37,255,1,255,14,255,244,183,145,254,0,242,166,0,22,74,132,0,121,216,41,0,95,195,114,254,133,24,151,255,156,226,231,255,247,5,77,255,246,148,115,254,225,92,81,255,222,80,246,254,170,123,89,255,74,199,141,0,29,20,8,255,138,136,70,255,93,75,92,0,221,147,49,254,52,126,226,0,229,124,23,0,46,9,181,0,205,64,52,1,131,254,28,0,151,158,212,0,131,64,78,0,206,25,171,0,0,230,139,0,191,253,110,254,103,247,167,0,64,40,40,1,42,165,241,255,59,75,228,254,124,243,189,255,196,92,178,255,130,140,86,255,141,89,56,1,147,198,5,255,203,248,158,254,144,162,141,0,11,172,226,0,130,42,21,255,1,167,143,255,144,36,36,255,48,88,164,254,168,170,220,0,98,71,214,0,91,208,79,0,159,76,201,1,166,42,214,255,69,255,0,255,6,128,125,255,190,1,140,0,146,83,218,255,215,238,72,1,122,127,53,0,189,116,165,255,84,8,66,255,214,3,208,255,213,110,133,0,195,168,44,1,158,231,69,0,162,64,200,254,91,58,104,0,182,58,187,254,249,228,136,0,203,134,76,254,99,221,233,0,75,254,214,254,80,69,154,0,64,152,248,254,236,136,202,255,157,105,153,254,149,175,20,0,22,35,19,255,124,121,233,0,186,250,198,254,132,229,139,0,137,80,174,255,165,125,68,0,144,202,148,254,235,239,248,0,135,184,118,0,101,94,17,255,122,72,70,254,69,130,146,0,127,222,248,1,69,127,118,255,30,82,215,254,188,74,19,255,229,167,194,254,117,25,66,255,65,234,56,254,213,22,156,0,151,59,93,254,45,28,27,255,186,126,164,255,32,6,239,0,127,114,99,1,219,52,2,255,99,96,166,254,62,190,126,255,108,222,168,1,75,226,174,0,230,226,199,0,60,117,218,255,252,248,20,1,214,188,204,0,31,194,134,254,123,69,192,255,169,173,36,254,55,98,91,0,223,42,102,254,137,1,102,0,157,90,25,0,239,122,64,255,252,6,233,0,7,54,20,255,82,116,174,0,135,37,54,255,15,186,125,0,227,112,175,255,100,180,225,255,42,237,244,255,244,173,226,254,248,18,33,0,171,99,150,255,74,235,50,255,117,82,32,254,106,168,237,0,207,109,208,1,228,9,186,0,135,60,169,254,179,92,143,0,244,170,104,255,235,45,124,255,70,99,186,0,117,137,183,0,224,31,215,0,40,9,100,0,26,16,95,1,68,217,87,0,8,151,20,255,26,100,58,255,176,165,203,1,52,118,70,0,7,32,254,254,244,254,245,255,167,144,194,255,125,113,23,255,176,121,181,0,136,84,209,0,138,6,30,255,89,48,28,0,33,155,14,255,25,240,154,0,141,205,109,1,70,115,62,255,20,40,107,254,138,154,199,255,94,223,226,255,157,171,38,0,163,177,25,254,45,118,3,255,14,222,23,1,209,190,81,255,118,123,232,1,13,213,101,255,123,55,123,254,27,246,165,0,50,99,76,255,140,214,32,255,97,65,67,255,24,12,28,0,174,86,78,1,64,247,96,0,160,135,67,0,66,55,243,255,147,204,96,255,26,6,33,255,98,51,83,1,153,213,208,255,2,184,54,255,25,218,11,0,49,67,246,254,18,149,72,255,13,25,72,0,42,79,214,0,42,4,38,1,27,139,144,255,149,187,23,0,18,164,132,0,245,84,184,254,120,198,104,255,126,218,96,0,56,117,234,255,13,29,214,254,68,47,10,255,167,154,132,254,152,38,198,0,66,178,89,255,200,46,171,255,13,99,83,255,210,187,253,255,170,45,42,1,138,209,124,0,214,162,141,0,12,230,156,0,102,36,112,254,3,147,67,0,52,215,123,255,233,171,54,255,98,137,62,0,247,218,39,255,231,218,236,0,247,191,127,0,195,146,84,0,165,176,92,255,19,212,94,255,17,74,227,0,88,40,153,1,198,147,1,255,206,67,245,254,240,3,218,255,61,141,213,255,97,183,106,0,195,232,235,254,95,86,154,0,209,48,205,254,118,209,241,255,240,120,223,1,213,29,159,0,163,127,147,255,13,218,93,0,85,24,68,254,70,20,80,255,189,5,140,1,82,97,254,255,99,99,191,255,132,84,133,255,107,218,116,255,112,122,46,0,105,17,32,0,194,160,63,255,68,222,39,1,216,253,92,0,177,105,205,255,149,201,195,0,42,225,11,255,40,162,115,0,9,7,81,0,165,218,219,0,180,22,0,254,29,146,252,255,146,207,225,1,180,135,96,0,31,163,112,0,177,11,219,255,133,12,193,254,43,78,50,0,65,113,121,1,59,217,6,255,110,94,24,1,112,172,111,0,7,15,96,0,36,85,123,0,71,150,21,255,208,73,188,0,192,11,167,1,213,245,34,0,9,230,92,0,162,142,39,255,215,90,27,0,98,97,89,0,94,79,211,0,90,157,240,0,95,220,126,1,102,176,226,0,36,30,224,254,35,31,127,0,231,232,115,1,85,83,130,0,210,73,245,255,47,143,114,255,68,65,197,0,59,72,62,255,183,133,173,254,93,121,118,255,59,177,81,255,234,69,173,255,205,128,177,0,220,244,51,0,26,244,209,1,73,222,77,255,163,8,96,254,150,149,211,0,158,254,203,1,54,127,139,0,161,224,59,0,4,109,22,255,222,42,45,255,208,146,102,255,236,142,187,0,50,205,245,255,10,74,89,254,48,79,142,0,222,76,130,255,30,166,63,0,236,12,13,255,49,184,244,0,187,113,102,0,218,101,253,0,153,57,182,254,32,150,42,0,25,198,146,1,237,241,56,0,140,68,5,0,91,164,172,255,78,145,186,254,67,52,205,0,219,207,129,1,109,115,17,0,54,143,58,1,21,248,120,255,179,255,30,0,193,236,66,255,1,255,7,255,253,192,48,255,19,69,217,1,3,214,0,255,64,101,146,1,223,125,35,255,235,73,179,255,249,167,226,0,225,175,10,1,97,162,58,0,106,112,171,1,84,172,5,255,133,140,178,255,134,245,142,0,97,90,125,255,186,203,185,255,223,77,23,255,192,92,106,0,15,198,115,255,217,152,248,0,171,178,120,255,228,134,53,0,176,54,193,1,250,251,53,0,213,10,100,1,34,199,106,0,151,31,244,254,172,224,87,255,14,237,23,255,253,85,26,255,127,39,116,255,172,104,100,0,251,14,70,255,212,208,138,255,253,211,250,0,176,49,165,0,15,76,123,255,37,218,160,255,92,135,16,1,10,126,114,255,70,5,224,255,247,249,141,0,68,20,60,1,241,210,189,255,195,217,187,1,151,3,113,0,151,92,174,0,231,62,178,255,219,183,225,0,23,23,33,255,205,181,80,0,57,184,248,255,67,180,1,255,90,123,93,255,39,0,162,255,96,248,52,255,84,66,140,0,34,127,228,255,194,138,7,1,166,110,188,0,21,17,155,1,154,190,198,255,214,80,59,255,18,7,143,0,72,29,226,1,199,217,249,0,232,161,71,1,149,190,201,0,217,175,95,254,113,147,67,255,138,143,199,255,127,204,1,0,29,182,83,1,206,230,155,255,186,204,60,0,10,125,85,255,232,96,25,255,255,89,247,255,213,254,175,1,232,193,81,0,28,43,156,254,12,69,8,0,147,24,248,0,18,198,49,0,134,60,35,0,118,246,18,255,49,88,254,254,228,21,186,255,182,65,112,1,219,22,1,255,22,126,52,255,189,53,49,255,112,25,143,0,38,127,55,255,226,101,163,254,208,133,61,255,137,69,174,1,190,118,145,255,60,98,219,255,217,13,245,255,250,136,10,0,84,254,226,0,201,31,125,1,240,51,251,255,31,131,130,255,2,138,50,255,215,215,177,1,223,12,238,255,252,149,56,255,124,91,68,255,72,126,170,254,119,255,100,0,130,135,232,255,14,79,178,0,250,131,197,0,138,198,208,0,121,216,139,254,119,18,36,255,29,193,122,0,16,42,45,255,213,240,235,1,230,190,169,255,198,35,228,254,110,173,72,0,214,221,241,255,56,148,135,0,192,117,78,254,141,93,207,255,143,65,149,0,21,18,98,255,95,44,244,1,106,191,77,0,254,85,8,254,214,110,176,255,73,173,19,254,160,196,199,255,237,90,144,0,193,172,113,255,200,155,136,254,228,90,221,0,137,49,74,1,164,221,215,255,209,189,5,255,105,236,55,255,42,31,129,1,193,255,236,0,46,217,60,0,138,88,187,255,226,82,236,255,81,69,151,255,142,190,16,1,13,134,8,0,127,122,48,255,81,64,156,0,171,243,139,0,237,35,246,0,122,143,193,254,212,122,146,0,95,41,255,1,87,132,77,0,4,212,31,0,17,31,78,0,39,45,173,254,24,142,217,255,95,9,6,255,227,83,6,0,98,59,130,254,62,30,33,0,8,115,211,1,162,97,128,255,7,184,23,254,116,28,168,255,248,138,151,255,98,244,240,0,186,118,130,0,114,248,235,255,105,173,200,1,160,124,71,255,94,36,164,1,175,65,146,255,238,241,170,254,202,198,197,0,228,71,138,254,45,246,109,255,194,52,158,0,133,187,176,0,83,252,154,254,89,189,221,255,170,73,252,0,148,58,125,0,36,68,51,254,42,69,177,255,168,76,86,255,38,100,204,255,38,53,35,0,175,19,97,0,225,238,253,255,81,81,135,0,210,27,255,254,235,73,107,0,8,207,115,0,82,127,136,0,84,99,21,254,207,19,136,0,100,164,101,0,80,208,77,255,132,207,237,255,15,3,15,255,33,166,110,0,156,95,85,255,37,185,111,1,150,106,35,255,166,151,76,0,114,87,135,255,159,194,64,0,12,122,31,255,232,7,101,254,173,119,98,0,154,71,220,254,191,57,53,255,168,232,160,255,224,32,99,255,218,156,165,0,151,153,163,0,217,13,148,1,197,113,89,0,149,28,161,254,207,23,30,0,105,132,227,255,54,230,94,255,133,173,204,255,92,183,157,255,88,144,252,254,102,33,90,0,159,97,3,0,181,218,155,255,240,114,119,0,106,214,53,255,165,190,115,1,152,91,225,255,88,106,44,255,208,61,113,0,151,52,124,0,191,27,156,255,110,54,236,1,14,30,166,255,39,127,207,1,229,199,28,0,188,228,188,254,100,157,235,0,246,218,183,1,107,22,193,255,206,160,95,0,76,239,147,0,207,161,117,0,51,166,2,255,52,117,10,254,73,56,227,255,152,193,225,0,132,94,136,255,101,191,209,0,32,107,229,255,198,43,180,1,100,210,118,0,114,67,153,255,23,88,26,255,89,154,92,1,220,120,140,255,144,114,207,255,252,115,250,255,34,206,72,0,138,133,127,255,8,178,124,1,87,75,97,0,15,229,92,254,240,67,131,255,118,123,227,254,146,120,104,255,145,213,255,1,129,187,70,255,219,119,54,0,1,19,173,0,45,150,148,1,248,83,72,0,203,233,169,1,142,107,56,0,247,249,38,1,45,242,80,255,30,233,103,0,96,82,70,0,23,201,111,0,81,39,30,255,161,183,78,255,194,234,33,255,68,227,140,254,216,206,116,0,70,27,235,255,104,144,79,0,164,230,93,254,214,135,156,0,154,187,242,254,188,20,131,255,36,109,174,0,159,112,241,0,5,110,149,1,36,165,218,0,166,29,19,1,178,46,73,0,93,43,32,254,248,189,237,0,102,155,141,0,201,93,195,255,241,139,253,255,15,111,98,255,108,65,163,254,155,79,190,255,73,174,193,254,246,40,48,255,107,88,11,254,202,97,85,255,253,204,18,255,113,242,66,0,110,160,194,254,208,18,186,0,81,21,60,0,188,104,167,255,124,166,97,254,210,133,142,0,56,242,137,254,41,111,130,0,111,151,58,1,111,213,141,255,183,172,241,255,38,6,196,255,185,7,123,255,46,11,246,0,245,105,119,1,15,2,161,255,8,206,45,255,18,202,74,255,83,124,115,1,212,141,157,0,83,8,209,254,139,15,232,255,172,54,173,254,50,247,132,0,214,189,213,0,144,184,105,0,223,254,248,0,255,147,240,255,23,188,72,0,7,51,54,0,188,25,180,254,220,180,0,255,83,160,20,0,163,189,243,255,58,209,194,255,87,73,60,0,106,24,49,0,245,249,220,0,22,173,167,0,118,11,195,255,19,126,237,0,110,159,37,255,59,82,47,0,180,187,86,0,188,148,208,1,100,37,133,255,7,112,193,0,129,188,156,255,84,106,129,255,133,225,202,0,14,236,111,255,40,20,101,0,172,172,49,254,51,54,74,255,251,185,184,255,93,155,224,255,180,249,224,1,230,178,146,0,72,57,54,254,178,62,184,0,119,205,72,0,185,239,253,255,61,15,218,0,196,67,56,255,234,32,171,1,46,219,228,0,208,108,234,255,20,63,232,255,165,53,199,1,133,228,5,255,52,205,107,0,74,238,140,255,150,156,219,254,239,172,178,255,251,189,223,254,32,142,211,255,218,15,138,1,241,196,80,0,28,36,98,254,22,234,199,0,61,237,220,255,246,57,37,0,142,17,142,255,157,62,26,0,43,238,95,254,3,217,6,255,213,25,240,1,39,220,174,255,154,205,48,254,19,13,192,255,244,34,54,254,140,16,155,0,240,181,5,254,155,193,60,0,166,128,4,255,36,145,56,255,150,240,219,0,120,51,145,0,82,153,42,1,140,236,146,0,107,92,248,1,189,10,3,0,63,136,242,0,211,39,24,0,19,202,161,1,173,27,186,255,210,204,239,254,41,209,162,255,182,254,159,255,172,116,52,0,195,103,222,254,205,69,59,0,53,22,41,1,218,48,194,0,80,210,242,0,210,188,207,0,187,161,161,254,216,17,1,0,136,225,113,0,250,184,63,0,223,30,98,254,77,168,162,0,59,53,175,0,19,201,10,255,139,224,194,0,147,193,154,255,212,189,12,254,1,200,174,255,50,133,113,1,94,179,90,0,173,182,135,0,94,177,113,0,43,89,215,255,136,252,106,255,123,134,83,254,5,245,66,255,82,49,39,1,220,2,224,0,97,129,177,0,77,59,89,0,61,29,155,1,203,171,220,255,92,78,139,0,145,33,181,255,169,24,141,1,55,150,179,0,139,60,80,255,218,39,97,0,2,147,107,255,60,248,72,0,173,230,47,1,6,83,182,255,16,105,162,254,137,212,81,255,180,184,134,1,39,222,164,255,221,105,251,1,239,112,125,0,63,7,97,0,63,104,227,255,148,58,12,0,90,60,224,255,84,212,252,0,79,215,168,0,248,221,199,1,115,121,1,0,36,172,120,0,32,162,187,255,57,107,49,255,147,42,21,0,106,198,43,1,57,74,87,0,126,203,81,255,129,135,195,0,140,31,177,0,221,139,194,0,3,222,215,0,131,68,231,0,177,86,178,254,124,151,180,0,184,124,38,1,70,163,17,0,249,251,181,1,42,55,227,0,226,161,44,0,23,236,110,0,51,149,142,1,93,5,236,0,218,183,106,254,67,24,77,0,40,245,209,255,222,121,153,0,165,57,30,0,83,125,60,0,70,38,82,1,229,6,188,0,109,222,157,255,55,118,63,255,205,151,186,0,227,33,149,255,254,176,246,1,227,177,227,0,34,106,163,254,176,43,79,0,106,95,78,1,185,241,122,255,185,14,61,0,36,1,202,0,13,178,162,255,247,11,132,0,161,230,92,1,65,1,185,255,212,50,165,1,141,146,64,255,158,242,218,0,21,164,125,0,213,139,122,1,67,71,87,0,203,158,178,1,151,92,43,0,152,111,5,255,39,3,239,255,217,255,250,255,176,63,71,255,74,245,77,1,250,174,18,255,34,49,227,255,246,46,251,255,154,35,48,1,125,157,61,255,106,36,78,255,97,236,153,0,136,187,120,255,113,134,171,255,19,213,217,254,216,94,209,255,252,5,61,0,94,3,202,0,3,26,183,255,64,191,43,255,30,23,21,0,129,141,77,255,102,120,7,1,194,76,140,0,188,175,52,255,17,81,148,0,232,86,55,1,225,48,172,0,134,42,42,255,238,50,47,0,169,18,254,0,20,147,87,255,14,195,239,255,69,247,23,0,238,229,128,255,177,49,112,0,168,98,251,255,121,71,248,0,243,8,145,254,246,227,153,255,219,169,177,254,251,139,165,255,12,163,185,255,164,40,171,255,153,159,27,254,243,109,91,255,222,24,112,1,18,214,231,0,107,157,181,254,195,147,0,255,194,99,104,255,89,140,190,255,177,66,126,254,106,185,66,0,49,218,31,0,252,174,158,0,188,79,230,1,238,41,224,0,212,234,8,1,136,11,181,0,166,117,83,255,68,195,94,0,46,132,201,0,240,152,88,0,164,57,69,254,160,224,42,255,59,215,67,255,119,195,141,255,36,180,121,254,207,47,8,255,174,210,223,0,101,197,68,255,255,82,141,1,250,137,233,0,97,86,133,1,16,80,69,0,132,131,159,0,116,93,100,0,45,141,139,0,152,172,157,255,90,43,91,0,71,153,46,0,39,16,112,255,217,136,97,255,220,198,25,254,177,53,49,0,222,88,134,255,128,15,60,0,207,192,169,255,192,116,209,255,106,78,211,1,200,213,183,255,7,12,122,254,222,203,60,255,33,110,199,254,251,106,117,0,228,225,4,1,120,58,7,255,221,193,84,254,112,133,27,0,189,200,201,255,139,135,150,0,234,55,176,255,61,50,65,0,152,108,169,255,220,85,1,255,112,135,227,0,162,26,186,0,207,96,185,254,244,136,107,0,93,153,50,1,198,97,151,0,110,11,86,255,143,117,174,255,115,212,200,0,5,202,183,0,237,164,10,254,185,239,62,0,236,120,18,254,98,123,99,255,168,201,194,254,46,234,214,0,191,133,49,255,99,169,119,0,190,187,35,1,115,21,45,255,249,131,72,0,112,6,123,255,214,49,181,254,166,233,34,0,92,197,102,254,253,228,205,255,3,59,201,1,42,98,46,0,219,37,35,255,169,195,38,0,94,124,193,1,156,43,223,0,95,72,133,254,120,206,191,0,122,197,239,255,177,187,79,255,254,46,2,1,250,167,190,0,84,129,19,0,203,113,166,255,249,31,189,254,72,157,202,255,208,71,73,255,207,24,72,0,10,16,18,1,210,81,76,255,88,208,192,255,126,243,107,255,238,141,120,255,199,121,234,255,137,12,59,255,36,220,123,255,148,179,60,254,240,12,29,0,66,0,97,1,36,30,38,255,115,1,93,255,96,103,231,255],"i8",ALLOC_NONE,Runtime.GLOBAL_BASE);allocate([197,158,59,1,192,164,240,0,202,202,57,255,24,174,48,0,89,77,155,1,42,76,215,0,244,151,233,0,23,48,81,0,239,127,52,254,227,130,37,255,248,116,93,1,124,132,118,0,173,254,192,1,6,235,83,255,110,175,231,1,251,28,182,0,129,249,93,254,84,184,128,0,76,181,62,0,175,128,186,0,100,53,136,254,109,29,226,0,221,233,58,1,20,99,74,0,0,22,160,0,134,13,21,0,9,52,55,255,17,89,140,0,175,34,59,0,84,165,119,255,224,226,234,255,7,72,166,255,123,115,255,1,18,214,246,0,250,7,71,1,217,220,185,0,212,35,76,255,38,125,175,0,189,97,210,0,114,238,44,255,41,188,169,254,45,186,154,0,81,92,22,0,132,160,193,0,121,208,98,255,13,81,44,255,203,156,82,0,71,58,21,255,208,114,191,254,50,38,147,0,154,216,195,0,101,25,18,0,60,250,215,255,233,132,235,255,103,175,142,1,16,14,92,0,141,31,110,254,238,241,45,255,153,217,239,1,97,168,47,255,249,85,16,1,28,175,62,255,57,254,54,0,222,231,126,0,166,45,117,254,18,189,96,255,228,76,50,0,200,244,94,0,198,152,120,1,68,34,69,255,12,65,160,254,101,19,90,0,167,197,120,255,68,54,185,255,41,218,188,0,113,168,48,0,88,105,189,1,26,82,32,255,185,93,164,1,228,240,237,255,66,182,53,0,171,197,92,255,107,9,233,1,199,120,144,255,78,49,10,255,109,170,105,255,90,4,31,255,28,244,113,255,74,58,11,0,62,220,246,255,121,154,200,254,144,210,178,255,126,57,129,1,43,250,14,255,101,111,28,1,47,86,241,255,61,70,150,255,53,73,5,255,30,26,158,0,209,26,86,0,138,237,74,0,164,95,188,0,142,60,29,254,162,116,248,255,187,175,160,0,151,18,16,0,209,111,65,254,203,134,39,255,88,108,49,255,131,26,71,255,221,27,215,254,104,105,93,255,31,236,31,254,135,0,211,255,143,127,110,1,212,73,229,0,233,67,167,254,195,1,208,255,132,17,221,255,51,217,90,0,67,235,50,255,223,210,143,0,179,53,130,1,233,106,198,0,217,173,220,255,112,229,24,255,175,154,93,254,71,203,246,255,48,66,133,255,3,136,230,255,23,221,113,254,235,111,213,0,170,120,95,254,251,221,2,0,45,130,158,254,105,94,217,255,242,52,180,254,213,68,45,255,104,38,28,0,244,158,76,0,161,200,96,255,207,53,13,255,187,67,148,0,170,54,248,0,119,162,178,255,83,20,11,0,42,42,192,1,146,159,163,255,183,232,111,0,77,229,21,255,71,53,143,0,27,76,34,0,246,136,47,255,219,39,182,255,92,224,201,1,19,142,14,255,69,182,241,255,163,118,245,0,9,109,106,1,170,181,247,255,78,47,238,255,84,210,176,255,213,107,139,0,39,38,11,0,72,21,150,0,72,130,69,0,205,77,155,254,142,133,21,0,71,111,172,254,226,42,59,255,179,0,215,1,33,128,241,0,234,252,13,1,184,79,8,0,110,30,73,255,246,141,189,0,170,207,218,1,74,154,69,255,138,246,49,255,155,32,100,0,125,74,105,255,90,85,61,255,35,229,177,255,62,125,193,255,153,86,188,1,73,120,212,0,209,123,246,254,135,209,38,255,151,58,44,1,92,69,214,255,14,12,88,255,252,153,166,255,253,207,112,255,60,78,83,255,227,124,110,0,180,96,252,255,53,117,33,254,164,220,82,255,41,1,27,255,38,164,166,255,164,99,169,254,61,144,70,255,192,166,18,0,107,250,66,0,197,65,50,0,1,179,18,255,255,104,1,255,43,153,35,255,80,111,168,0,110,175,168,0,41,105,45,255,219,14,205,255,164,233,140,254,43,1,118,0,233,67,195,0,178,82,159,255,138,87,122,255,212,238,90,255,144,35,124,254,25,140,164,0,251,215,44,254,133,70,107,255,101,227,80,254,92,169,55,0,215,42,49,0,114,180,85,255,33,232,27,1,172,213,25,0,62,176,123,254,32,133,24,255,225,191,62,0,93,70,153,0,181,42,104,1,22,191,224,255,200,200,140,255,249,234,37,0,149,57,141,0,195,56,208,255,254,130,70,255,32,173,240,255,29,220,199,0,110,100,115,255,132,229,249,0,228,233,223,255,37,216,209,254,178,177,209,255,183,45,165,254,224,97,114,0,137,97,168,255,225,222,172,0,165,13,49,1,210,235,204,255,252,4,28,254,70,160,151,0,232,190,52,254,83,248,93,255,62,215,77,1,175,175,179,255,160,50,66,0,121,48,208,0,63,169,209,255,0,210,200,0,224,187,44,1,73,162,82,0,9,176,143,255,19,76,193,255,29,59,167,1,24,43,154,0,28,190,190,0,141,188,129,0,232,235,203,255,234,0,109,255,54,65,159,0,60,88,232,255,121,253,150,254,252,233,131,255,198,110,41,1,83,77,71,255,200,22,59,254,106,253,242,255,21,12,207,255,237,66,189,0,90,198,202,1,225,172,127,0,53,22,202,0,56,230,132,0,1,86,183,0,109,190,42,0,243,68,174,1,109,228,154,0,200,177,122,1,35,160,183,255,177,48,85,255,90,218,169,255,248,152,78,0,202,254,110,0,6,52,43,0,142,98,65,255,63,145,22,0,70,106,93,0,232,138,107,1,110,179,61,255,211,129,218,1,242,209,92,0,35,90,217,1,182,143,106,255,116,101,217,255,114,250,221,255,173,204,6,0,60,150,163,0,73,172,44,255,239,110,80,255,237,76,153,254,161,140,249,0,149,232,229,0,133,31,40,255,174,164,119,0,113,51,214,0,129,228,2,254,64,34,243,0,107,227,244,255,174,106,200,255,84,153,70,1,50,35,16,0,250,74,216,254,236,189,66,255,153,249,13,0,230,178,4,255,221,41,238,0,118,227,121,255,94,87,140,254,254,119,92,0,73,239,246,254,117,87,128,0,19,211,145,255,177,46,252,0,229,91,246,1,69,128,247,255,202,77,54,1,8,11,9,255,153,96,166,0,217,214,173,255,134,192,2,1,0,207,0,0,189,174,107,1,140,134,100,0,158,193,243,1,182,102,171,0,235,154,51,0,142,5,123,255,60,168,89,1,217,14,92,255,19,214,5,1,211,167,254,0,44,6,202,254,120,18,236,255,15,113,184,255,184,223,139,0,40,177,119,254,182,123,90,255,176,165,176,0,247,77,194,0,27,234,120,0,231,0,214,255,59,39,30,0,125,99,145,255,150,68,68,1,141,222,248,0,153,123,210,255,110,127,152,255,229,33,214,1,135,221,197,0,137,97,2,0,12,143,204,255,81,41,188,0,115,79,130,255,94,3,132,0,152,175,187,255,124,141,10,255,126,192,179,255,11,103,198,0,149,6,45,0,219,85,187,1,230,18,178,255,72,182,152,0,3,198,184,255,128,112,224,1,97,161,230,0,254,99,38,255,58,159,197,0,151,66,219,0,59,69,143,255,185,112,249,0,119,136,47,255,123,130,132,0,168,71,95,255,113,176,40,1,232,185,173,0,207,93,117,1,68,157,108,255,102,5,147,254,49,97,33,0,89,65,111,254,247,30,163,255,124,217,221,1,102,250,216,0,198,174,75,254,57,55,18,0,227,5,236,1,229,213,173,0,201,109,218,1,49,233,239,0,30,55,158,1,25,178,106,0,155,111,188,1,94,126,140,0,215,31,238,1,77,240,16,0,213,242,25,1,38,71,168,0,205,186,93,254,49,211,140,255,219,0,180,255,134,118,165,0,160,147,134,255,110,186,35,255,198,243,42,0,243,146,119,0,134,235,163,1,4,241,135,255,193,46,193,254,103,180,79,255,225,4,184,254,242,118,130,0,146,135,176,1,234,111,30,0,69,66,213,254,41,96,123,0,121,94,42,255,178,191,195,255,46,130,42,0,117,84,8,255,233,49,214,254,238,122,109,0,6,71,89,1,236,211,123,0,244,13,48,254,119,148,14,0,114,28,86,255,75,237,25,255,145,229,16,254,129,100,53,255,134,150,120,254,168,157,50,0,23,72,104,255,224,49,14,0,255,123,22,255,151,185,151,255,170,80,184,1,134,182,20,0,41,100,101,1,153,33,16,0,76,154,111,1,86,206,234,255,192,160,164,254,165,123,93,255,1,216,164,254,67,17,175,255,169,11,59,255,158,41,61,255,73,188,14,255,195,6,137,255,22,147,29,255,20,103,3,255,246,130,227,255,122,40,128,0,226,47,24,254,35,36,32,0,152,186,183,255,69,202,20,0,195,133,195,0,222,51,247,0,169,171,94,1,183,0,160,255,64,205,18,1,156,83,15,255,197,58,249,254,251,89,110,255,50,10,88,254,51,43,216,0,98,242,198,1,245,151,113,0,171,236,194,1,197,31,199,255,229,81,38,1,41,59,20,0,253,104,230,0,152,93,14,255,246,242,146,254,214,169,240,255,240,102,108,254,160,167,236,0,154,218,188,0,150,233,202,255,27,19,250,1,2,71,133,255,175,12,63,1,145,183,198,0,104,120,115,255,130,251,247,0,17,212,167,255,62,123,132,255,247,100,189,0,155,223,152,0,143,197,33,0,155,59,44,255,150,93,240,1,127,3,87,255,95,71,207,1,167,85,1,255,188,152,116,255,10,23,23,0,137,195,93,1,54,98,97,0,240,0,168,255,148,188,127,0,134,107,151,0,76,253,171,0,90,132,192,0,146,22,54,0,224,66,54,254,230,186,229,255,39,182,196,0,148,251,130,255,65,131,108,254,128,1,160,0,169,49,167,254,199,254,148,255,251,6,131,0,187,254,129,255,85,82,62,0,178,23,58,255,254,132,5,0,164,213,39,0,134,252,146,254,37,53,81,255,155,134,82,0,205,167,238,255,94,45,180,255,132,40,161,0,254,111,112,1,54,75,217,0,179,230,221,1,235,94,191,255,23,243,48,1,202,145,203,255,39,118,42,255,117,141,253,0,254,0,222,0,43,251,50,0,54,169,234,1,80,68,208,0,148,203,243,254,145,7,135,0,6,254,0,0,252,185,127,0,98,8,129,255,38,35,72,255,211,36,220,1,40,26,89,0,168,64,197,254,3,222,239,255,2,83,215,254,180,159,105,0,58,115,194,0,186,116,106,255,229,247,219,255,129,118,193,0,202,174,183,1,166,161,72,0,201,107,147,254,237,136,74,0,233,230,106,1,105,111,168,0,64,224,30,1,1,229,3,0,102,151,175,255,194,238,228,255,254,250,212,0,187,237,121,0,67,251,96,1,197,30,11,0,183,95,204,0,205,89,138,0,64,221,37,1,255,223,30,255,178,48,211,255,241,200,90,255,167,209,96,255,57,130,221,0,46,114,200,255,61,184,66,0,55,182,24,254,110,182,33,0,171,190,232,255,114,94,31,0,18,221,8,0,47,231,254,0,255,112,83,0,118,15,215,255,173,25,40,254,192,193,31,255,238,21,146,255,171,193,118,255,101,234,53,254,131,212,112,0,89,192,107,1,8,208,27,0,181,217,15,255,231,149,232,0,140,236,126,0,144,9,199,255,12,79,181,254,147,182,202,255,19,109,182,255,49,212,225,0,74,163,203,0,175,233,148,0,26,112,51,0,193,193,9,255,15,135,249,0,150,227,130,0,204,0,219,1,24,242,205,0,238,208,117,255,22,244,112,0,26,229,34,0,37,80,188,255,38,45,206,254,240,90,225,255,29,3,47,255,42,224,76,0,186,243,167,0,32,132,15,255,5,51,125,0,139,135,24,0,6,241,219,0,172,229,133,255,246,214,50,0,231,11,207,255,191,126,83,1,180,163,170,255,245,56,24,1,178,164,211,255,3,16,202,1,98,57,118,255,141,131,89,254,33,51,24,0,243,149,91,255,253,52,14,0,35,169,67,254,49,30,88,255,179,27,36,255,165,140,183,0,58,189,151,0,88,31,0,0,75,169,66,0,66,101,199,255,24,216,199,1,121,196,26,255,14,79,203,254,240,226,81,255,94,28,10,255,83,193,240,255,204,193,131,255,94,15,86,0,218,40,157,0,51,193,209,0,0,242,177,0,102,185,247,0,158,109,116,0,38,135,91,0,223,175,149,0,220,66,1,255,86,60,232,0,25,96,37,255,225,122,162,1,215,187,168,255,158,157,46,0,56,171,162,0,232,240,101,1,122,22,9,0,51,9,21,255,53,25,238,255,217,30,232,254,125,169,148,0,13,232,102,0,148,9,37,0,165,97,141,1,228,131,41,0,222,15,243,255,254,18,17,0,6,60,237,1,106,3,113,0,59,132,189,0,92,112,30,0,105,208,213,0,48,84,179,255,187,121,231,254,27,216,109,255,162,221,107,254,73,239,195,255,250,31,57,255,149,135,89,255,185,23,115,1,3,163,157,255,18,112,250,0,25,57,187,255,161,96,164,0,47,16,243,0,12,141,251,254,67,234,184,255,41,18,161,0,175,6,96,255,160,172,52,254,24,176,183,255,198,193,85,1,124,121,137,255,151,50,114,255,220,203,60,255,207,239,5,1,0,38,107,255,55,238,94,254,70,152,94,0,213,220,77,1,120,17,69,255,85,164,190,255,203,234,81,0,38,49,37,254,61,144,124,0,137,78,49,254,168,247,48,0,95,164,252,0,105,169,135,0,253,228,134,0,64,166,75,0,81,73,20,255,207,210,10,0,234,106,150,255,94,34,90,255,254,159,57,254,220,133,99,0,139,147,180,254,24,23,185,0,41,57,30,255,189,97,76,0,65,187,223,255,224,172,37,255,34,62,95,1,231,144,240,0,77,106,126,254,64,152,91,0,29,98,155,0,226,251,53,255,234,211,5,255,144,203,222,255,164,176,221,254,5,231,24,0,179,122,205,0,36,1,134,255,125,70,151,254,97,228,252,0,172,129,23,254,48,90,209,255,150,224,82,1,84,134,30,0,241,196,46,0,103,113,234,255,46,101,121,254,40,124,250,255,135,45,242,254,9,249,168,255,140,108,131,255,143,163,171,0,50,173,199,255,88,222,142,255,200,95,158,0,142,192,163,255,7,117,135,0,111,124,22,0,236,12,65,254,68,38,65,255,227,174,254,0,244,245,38,0,240,50,208,255,161,63,250,0,60,209,239,0,122,35,19,0,14,33,230,254,2,159,113,0,106,20,127,255,228,205,96,0,137,210,174,254,180,212,144,255,89,98,154,1,34,88,139,0,167,162,112,1,65,110,197,0,241,37,169,0,66,56,131,255,10,201,83,254,133,253,187,255,177,112,45,254,196,251,0,0,196,250,151,255,238,232,214,255,150,209,205,0,28,240,118,0,71,76,83,1,236,99,91,0,42,250,131,1,96,18,64,255,118,222,35,0,113,214,203,255,122,119,184,255,66,19,36,0,204,64,249,0,146,89,139,0,134,62,135,1,104,233,101,0,188,84,26,0,49,249,129,0,208,214,75,255,207,130,77,255,115,175,235,0,171,2,137,255,175,145,186,1,55,245,135,255,154,86,181,1,100,58,246,255,109,199,60,255,82,204,134,255,215,49,230,1,140,229,192,255,222,193,251,255,81,136,15,255,179,149,162,255,23,39,29,255,7,95,75,254,191,81,222,0,241,81,90,255,107,49,201,255,244,211,157,0,222,140,149,255,65,219,56,254,189,246,90,255,178,59,157,1,48,219,52,0,98,34,215,0,28,17,187,255,175,169,24,0,92,79,161,255,236,200,194,1,147,143,234,0,229,225,7,1,197,168,14,0,235,51,53,1,253,120,174,0,197,6,168,255,202,117,171,0,163,21,206,0,114,85,90,255,15,41,10,255,194,19,99,0,65,55,216,254,162,146,116,0,50,206,212,255,64,146,29,255,158,158,131,1,100,165,130,255,172,23,129,255,125,53,9,255,15,193,18,1,26,49,11,255,181,174,201,1,135,201,14,255,100,19,149,0,219,98,79,0,42,99,143,254,96,0,48,255,197,249,83,254,104,149,79,255,235,110,136,254,82,128,44,255,65,41,36,254,88,211,10,0,187,121,187,0,98,134,199,0,171,188,179,254,210,11,238,255,66,123,130,254,52,234,61,0,48,113,23,254,6,86,120,255,119,178,245,0,87,129,201,0,242,141,209,0,202,114,85,0,148,22,161,0,103,195,48,0,25,49,171,255,138,67,130,0,182,73,122,254,148,24,130,0,211,229,154,0,32,155,158,0,84,105,61,0,177,194,9,255,166,89,86,1,54,83,187,0,249,40,117,255,109,3,215,255,53,146,44,1,63,47,179,0,194,216,3,254,14,84,136,0,136,177,13,255,72,243,186,255,117,17,125,255,211,58,211,255,93,79,223,0,90,88,245,255,139,209,111,255,70,222,47,0,10,246,79,255,198,217,178,0,227,225,11,1,78,126,179,255,62,43,126,0,103,148,35,0,129,8,165,254,245,240,148,0,61,51,142,0,81,208,134,0,15,137,115,255,211,119,236,255,159,245,248,255,2,134,136,255,230,139,58,1,160,164,254,0,114,85,141,255,49,166,182,255,144,70,84,1,85,182,7,0,46,53,93,0,9,166,161,255,55,162,178,255,45,184,188,0,146,28,44,254,169,90,49,0,120,178,241,1,14,123,127,255,7,241,199,1,189,66,50,255,198,143,101,254,189,243,135,255,141,24,24,254,75,97,87,0,118,251,154,1,237,54,156,0,171,146,207,255,131,196,246,255,136,64,113,1,151,232,57,0,240,218,115,0,49,61,27,255,64,129,73,1,252,169,27,255,40,132,10,1,90,201,193,255,252,121,240,1,186,206,41,0,43,198,97,0,145,100,183,0,204,216,80,254,172,150,65,0,249,229,196,254,104,123,73,255,77,104,96,254,130,180,8,0,104,123,57,0,220,202,229,255,102,249,211,0,86,14,232,255,182,78,209,0,239,225,164,0,106,13,32,255,120,73,17,255,134,67,233,0,83,254,181,0,183,236,112,1,48,64,131,255,241,216,243,255,65,193,226,0,206,241,100,254,100,134,166,255,237,202,197,0,55,13,81,0,32,124,102,255,40,228,177,0,118,181,31,1,231,160,134,255,119,187,202,0,0,142,60,255,128,38,189,255,166,201,150,0,207,120,26,1,54,184,172,0,12,242,204,254,133,66,230,0,34,38,31,1,184,112,80,0,32,51,165,254,191,243,55,0,58,73,146,254,155,167,205,255,100,104,152,255,197,254,207,255,173,19,247,0,238,10,202,0,239,151,242,0,94,59,39,255,240,29,102,255,10,92,154,255,229,84,219,255,161,129,80,0,208,90,204,1,240,219,174,255,158,102,145,1,53,178,76,255,52,108,168,1,83,222,107,0,211,36,109,0,118,58,56,0,8,29,22,0,237,160,199,0,170,209,157,0,137,71,47,0,143,86,32,0,198,242,2,0,212,48,136,1,92,172,186,0,230,151,105,1,96,191,229,0,138,80,191,254,240,216,130,255,98,43,6,254,168,196,49,0,253,18,91,1,144,73,121,0,61,146,39,1,63,104,24,255,184,165,112,254,126,235,98,0,80,213,98,255,123,60,87,255,82,140,245,1,223,120,173,255,15,198,134,1,206,60,239,0,231,234,92,255,33,238,19,255,165,113,142,1,176,119,38,0,160,43,166,254,239,91,105,0,107,61,194,1,25,4,68,0,15,139,51,0,164,132,106,255,34,116,46,254,168,95,197,0,137,212,23,0,72,156,58,0,137,112,69,254,150,105,154,255,236,201,157,0,23,212,154,255,136,82,227,254,226,59,221,255,95,149,192,0,81,118,52,255,33,43,215,1,14,147,75,255,89,156,121,254,14,18,79,0,147,208,139,1,151,218,62,255,156,88,8,1,210,184,98,255,20,175,123,255,102,83,229,0,220,65,116,1,150,250,4,255,92,142,220,255,34,247,66,255,204,225,179,254,151,81,151,0,71,40,236,255,138,63,62,0,6,79,240,255,183,185,181,0,118,50,27,0,63,227,192,0,123,99,58,1,50,224,155,255,17,225,223,254,220,224,77,255,14,44,123,1,141,128,175,0,248,212,200,0,150,59,183,255,147,97,29,0,150,204,181,0,253,37,71,0,145,85,119,0,154,200,186,0,2,128,249,255,83,24,124,0,14,87,143,0,168,51,245,1,124,151,231,255,208,240,197,1,124,190,185,0,48,58,246,0,20,233,232,0,125,18,98,255,13,254,31,255,245,177,130,255,108,142,35,0,171,125,242,254,140,12,34,255,165,161,162,0,206,205,101,0,247,25,34,1,100,145,57,0,39,70,57,0,118,204,203,255,242,0,162,0,165,244,30,0,198,116,226,0,128,111,153,255,140,54,182,1,60,122,15,255,155,58,57,1,54,50,198,0,171,211,29,255,107,138,167,255,173,107,199,255,109,161,193,0,89,72,242,255,206,115,89,255,250,254,142,254,177,202,94,255,81,89,50,0,7,105,66,255,25,254,255,254,203,64,23,255,79,222,108,255,39,249,75,0,241,124,50,0,239,152,133,0,221,241,105,0,147,151,98,0,213,161,121,254,242,49,137,0,233,37,249,254,42,183,27,0,184,119,230,255,217,32,163,255,208,251,228,1,137,62,131,255,79,64,9,254,94,48,113,0,17,138,50,254,193,255,22,0,247,18,197,1,67,55,104,0,16,205,95,255,48,37,66,0,55,156,63,1,64,82,74,255,200,53,71,254,239,67,125,0,26,224,222,0,223,137,93,255,30,224,202,255,9,220,132,0,198,38,235,1,102,141,86,0,60,43,81,1,136,28,26,0,233,36,8,254,207,242,148,0,164,162,63,0,51,46,224,255,114,48,79,255,9,175,226,0,222,3,193,255,47,160,232,255,255,93,105,254,14,42,230,0,26,138,82,1,208,43,244,0,27,39,38,255,98,208,127,255,64,149,182,255,5,250,209,0,187,60,28,254,49,25,218,255,169,116,205,255,119,18,120,0,156,116,147,255,132,53,109,255,13,10,202,0,110,83,167,0,157,219,137,255,6,3,130,255,50,167,30,255,60,159,47,255,129,128,157,254,94,3,189,0,3,166,68,0,83,223,215,0,150,90,194,1,15,168,65,0,227,83,51,255,205,171,66,255,54,187,60,1,152,102,45,255,119,154,225,0,240,247,136,0,100,197,178,255,139,71,223,255,204,82,16,1,41,206,42,255,156,192,221,255,216,123,244,255,218,218,185,255,187,186,239,255,252,172,160,255,195,52,22,0,144,174,181,254,187,100,115,255,211,78,176,255,27,7,193,0,147,213,104,255,90,201,10,255,80,123,66,1,22,33,186,0,1,7,99,254,30,206,10,0,229,234,5,0,53,30,210,0,138,8,220,254,71,55,167,0,72,225,86,1,118,190,188,0,254,193,101,1,171,249,172,255,94,158,183,254,93,2,108,255,176,93,76,255,73,99,79,255,74,64,129,254,246,46,65,0,99,241,127,254,246,151,102,255,44,53,208,254,59,102,234,0,154,175,164,255,88,242,32,0,111,38,1,0,255,182,190,255,115,176,15,254,169,60,129,0,122,237,241,0,90,76,63,0,62,74,120,255,122,195,110,0,119,4,178,0,222,242,210,0,130,33,46,254,156,40,41,0,167,146,112,1,49,163,111,255,121,176,235,0,76,207,14,255,3,25,198,1,41,235,213,0,85,36,214,1,49,92,109,255,200,24,30,254,168,236,195,0,145,39,124,1,236,195,149,0,90,36,184,255,67,85,170,255,38,35,26,254,131,124,68,255,239,155,35,255,54,201,164,0,196,22,117,255,49,15,205,0,24,224,29,1,126,113,144,0,117,21,182,0,203,159,141,0,223,135,77,0,176,230,176,255,190,229,215,255,99,37,181,255,51,21,138,255,25,189,89,255,49,48,165,254,152,45,247,0,170,108,222,0,80,202,5,0,27,69,103,254,204,22,129,255,180,252,62,254,210,1,91,255,146,110,254,255,219,162,28,0,223,252,213,1,59,8,33,0,206,16,244,0,129,211,48,0,107,160,208,0,112,59,209,0,109,77,216,254,34,21,185,255,246,99,56,255,179,139,19,255,185,29,50,255,84,89,19,0,74,250,98,255,225,42,200,255,192,217,205,255,210,16,167,0,99,132,95,1,43,230,57,0,254,11,203,255,99,188,63,255,119,193,251,254,80,105,54,0,232,181,189,1,183,69,112,255,208,171,165,255,47,109,180,255,123,83,165,0,146,162,52,255,154,11,4,255,151,227,90,255,146,137,97,254,61,233,41,255,94,42,55,255,108,164,236,0,152,68,254,0,10,140,131,255,10,106,79,254,243,158,137,0,67,178,66,254,177,123,198,255,15,62,34,0,197,88,42,255,149,95,177,255,152,0,198,255,149,254,113,255,225,90,163,255,125,217,247,0,18,17,224,0,128,66,120,254,192,25,9,255,50,221,205,0,49,212,70,0,233,255,164,0,2,209,9,0,221,52,219,254,172,224,244,255,94,56,206,1,242,179,2,255,31,91,164,1,230,46,138,255,189,230,220,0,57,47,61,255,111,11,157,0,177,91,152,0,28,230,98,0,97,87,126,0,198,89,145,255,167,79,107,0,249,77,160,1,29,233,230,255,150,21,86,254,60,11,193,0,151,37,36,254,185,150,243,255,228,212,83,1,172,151,180,0,201,169,155,0,244,60,234,0,142,235,4,1,67,218,60,0,192,113,75,1,116,243,207,255,65,172,155,0,81,30,156,255,80,72,33,254,18,231,109,255,142,107,21,254,125,26,132,255,176,16,59,255,150,201,58,0,206,169,201,0,208,121,226,0,40,172,14,255,150,61,94,255,56,57,156,255,141,60,145,255,45,108,149,255,238,145,155,255,209,85,31,254,192,12,210,0,99,98,93,254,152,16,151,0,225,185,220,0,141,235,44,255,160,172,21,254,71,26,31,255,13,64,93,254,28,56,198,0,177,62,248,1,182,8,241,0,166,101,148,255,78,81,133,255,129,222,215,1,188,169,129,255,232,7,97,0,49,112,60,255,217,229,251,0,119,108,138,0,39,19,123,254,131,49,235,0,132,84,145,0,130,230,148,255,25,74,187,0,5,245,54,255,185,219,241,1,18,194,228,255,241,202,102,0,105,113,202,0,155,235,79,0,21,9,178,255,156,1,239,0,200,148,61,0,115,247,210,255,49,221,135,0,58,189,8,1,35,46,9,0,81,65,5,255,52,158,185,255,125,116,46,255,74,140,13,255,210,92,172,254,147,23,71,0,217,224,253,254,115,108,180,255,145,58,48,254,219,177,24,255,156,255,60,1,154,147,242,0,253,134,87,0,53,75,229,0,48,195,222,255,31,175,50,255,156,210,120,255,208,35,222,255,18,248,179,1,2,10,101,255,157,194,248,255,158,204,101,255,104,254,197,255,79,62,4,0,178,172,101,1,96,146,251,255,65,10,156,0,2,137,165,255,116,4,231,0,242,215,1,0,19,35,29,255,43,161,79,0,59,149,246,1,251,66,176,0,200,33,3,255,80,110,142,255,195,161,17,1,228,56,66,255,123,47,145,254,132,4,164,0,67,174,172,0,25,253,114,0,87,97,87,1,250,220,84,0,96,91,200,255,37,125,59,0,19,65,118,0,161,52,241,255,237,172,6,255,176,191,255,255,1,65,130,254,223,190,230,0,101,253,231,255,146,35,109,0,250,29,77,1,49,0,19,0,123,90,155,1,22,86,32,255,218,213,65,0,111,93,127,0,60,93,169,255,8,127,182,0,17,186,14,254,253,137,246,255,213,25,48,254,76,238,0,255,248,92,70,255,99,224,139,0,184,9,255,1,7,164,208,0,205,131,198,1,87,214,199,0,130,214,95,0,221,149,222,0,23,38,171,254,197,110,213,0,43,115,140,254,215,177,118,0,96,52,66,1,117,158,237,0,14,64,182,255,46,63,174,255,158,95,190,255,225,205,177,255,43,5,142,255,172,99,212,255,244,187,147,0,29,51,153,255,228,116,24,254,30,101,207,0,19,246,150,255,134,231,5,0,125,134,226,1,77,65,98,0,236,130,33,255,5,110,62,0,69,108,127,255,7,113,22,0,145,20,83,254,194,161,231,255,131,181,60,0,217,209,177,255,229,148,212,254,3,131,184,0,117,177,187,1,28,14,31,255,176,102,80,0,50,84,151,255,125,31,54,255,21,157,133,255,19,179,139,1,224,232,26,0,34,117,170,255,167,252,171,255,73,141,206,254,129,250,35,0,72,79,236,1,220,229,20,255,41,202,173,255,99,76,238,255,198,22,224,255,108,198,195,255,36,141,96,1,236,158,59,255,106,100,87,0,110,226,2,0,227,234,222,0,154,93,119,255,74,112,164,255,67,91,2,255,21,145,33,255,102,214,137,255,175,230,103,254,163,246,166,0,93,247,116,254,167,224,28,255,220,2,57,1,171,206,84,0,123,228,17,255,27,120,119,0,119,11,147,1,180,47,225,255,104,200,185,254,165,2,114,0,77,78,212,0,45,154,177,255,24,196,121,254,82,157,182,0,90,16,190,1,12,147,197,0,95,239,152,255,11,235,71,0,86,146,119,255,172,134,214,0,60,131,196,0,161,225,129,0,31,130,120,254,95,200,51,0,105,231,210,255,58,9,148,255,43,168,221,255,124,237,142,0,198,211,50,254,46,245,103,0,164,248,84,0,152,70,208,255,180,117,177,0,70,79,185,0,243,74,32,0,149,156,207,0,197,196,161,1,245,53,239,0,15,93,246,254,139,240,49,255,196,88,36,255,162,38,123,0,128,200,157,1,174,76,103,255,173,169,34,254,216,1,171,255,114,51,17,0,136,228,194,0,110,150,56,254,106,246,159,0,19,184,79,255,150,77,240,255,155,80,162,0,0,53,169,255,29,151,86,0,68,94,16,0,92,7,110,254,98,117,149,255,249,77,230,255,253,10,140,0,214,124,92,254,35,118,235,0,89,48,57,1,22,53,166,0,184,144,61,255,179,255,194,0,214,248,61,254,59,110,246,0,121,21,81,254,166,3,228,0,106,64,26,255,69,232,134,255,242,220,53,254,46,220,85,0,113,149,247,255,97,179,103,255,190,127,11,0,135,209,182,0,95,52,129,1,170,144,206,255,122,200,204,255,168,100,146,0,60,144,149,254,70,60,40,0,122,52,177,255,246,211,101,255,174,237,8,0,7,51,120,0,19,31,173,0,126,239,156,255,143,189,203,0,196,128,88,255,233,133,226,255,30,125,173,255,201,108,50,0,123,100,59,255,254,163,3,1,221,148,181,255,214,136,57,254,222,180,137,255,207,88,54,255,28,33,251,255,67,214,52,1,210,208,100,0,81,170,94,0,145,40,53,0,224,111,231,254,35,28,244,255,226,199,195,254,238,17,230,0,217,217,164,254,169,157,221,0,218,46,162,1,199,207,163,255,108,115,162,1,14,96,187,255,118,60,76,0,184,159,152,0,209,231,71,254,42,164,186,255,186,153,51,254,221,171,182,255,162,142,173,0,235,47,193,0,7,139,16,1,95,164,64,255,16,221,166,0,219,197,16,0,132,29,44,255,100,69,117,255,60,235,88,254,40,81,173,0,71,190,61,255,187,88,157,0,231,11,23,0,237,117,164,0,225,168,223,255,154,114,116,255,163,152,242,1,24,32,170,0,125,98,113,254,168,19,76,0,17,157,220,254,155,52,5,0,19,111,161,255,71,90,252,255,173,110,240,0,10,198,121,255,253,255,240,255,66,123,210,0,221,194,215,254,121,163,17,255,225,7,99,0,190,49,182,0,115,9,133,1,232,26,138,255,213,68,132,0,44,119,122,255,179,98,51,0,149,90,106,0,71,50,230,255,10,153,118,255,177,70,25,0,165,87,205,0,55,138,234,0,238,30,97,0,113,155,207,0,98,153,127,0,34,107,219,254,117,114,172,255,76,180,255,254,242,57,179,255,221,34,172,254,56,162,49,255,83,3,255,255,113,221,189,255,188,25,228,254,16,88,89,255,71,28,198,254,22,17,149,255,243,121,254,255,107,202,99,255,9,206,14,1,220,47,153,0,107,137,39,1,97,49,194,255,149,51,197,254,186,58,11,255,107,43,232,1,200,6,14,255,181,133,65,254,221,228,171,255,123,62,231,1,227,234,179,255,34,189,212,254,244,187,249,0,190,13,80,1,130,89,1,0,223,133,173,0,9,222,198,255,66,127,74,0,167,216,93,255,155,168,198,1,66,145,0,0,68,102,46,1,172,90,154,0,216,128,75,255,160,40,51,0,158,17,27,1,124,240,49,0,236,202,176,255,151,124,192,255,38,193,190,0,95,182,61,0,163,147,124,255,255,165,51,255,28,40,17,254,215,96,78,0,86,145,218,254,31,36,202,255,86,9,5,0,111,41,200,255,237,108,97,0,57,62,44,0,117,184,15,1,45,241,116,0,152,1,220,255,157,165,188,0,250,15,131,1,60,44,125,255,65,220,251,255,75,50,184,0,53,90,128,255,231,80,194,255,136,129,127,1,21,18,187,255,45,58,161,255,71,147,34,0,174,249,11,254,35,141,29,0,239,68,177,255,115,110,58,0,238,190,177,1,87,245,166,255,190,49,247,255,146,83,184,255,173,14,39,255,146,215,104,0,142,223,120,0,149,200,155,255,212,207,145,1,16,181,217,0,173,32,87,255,255,35,181,0,119,223,161,1,200,223,94,255,70,6,186,255,192,67,85,255,50,169,152,0,144,26,123,255,56,243,179,254,20,68,136,0,39,140,188,254,253,208,5,255,200,115,135,1,43,172,229,255,156,104,187,0,151,251,167,0,52,135,23,0,151,153,72,0,147,197,107,254,148,158,5,255,238,143,206,0,126,153,137,255,88,152,197,254,7,68,167,0,252,159,165,255,239,78,54,255,24,63,55,255,38,222,94,0,237,183,12,255,206,204,210,0,19,39,246,254,30,74,231,0,135,108,29,1,179,115,0,0,117,118,116,1,132,6,252,255,145,129,161,1,105,67,141,0,82,37,226,255,238,226,228,255,204,214,129,254,162,123,100,255,185,121,234,0,45,108,231,0,66,8,56,255,132,136,128,0,172,224,66,254,175,157,188,0,230,223,226,254,242,219,69,0,184,14,119,1,82,162,56,0,114,123,20,0,162,103,85,255,49,239,99,254,156,135,215,0,111,255,167,254,39,196,214,0,144,38,79,1,249,168,125,0,155,97,156,255,23,52,219,255,150,22,144,0,44,149,165,255,40,127,183,0,196,77,233,255,118,129,210,255,170,135,230,255,214,119,198,0,233,240,35,0,253,52,7,255,117,102,48,255,21,204,154,255,179,136,177,255,23,2,3,1,149,130,89,255,252,17,159,1,70,60,26,0,144,107,17,0,180,190,60,255,56,182,59,255,110,71,54,255,198,18,129,255,149,224,87,255,223,21,152,255,138,22,182,255,250,156,205,0,236,45,208,255,79,148,242,1,101,70,209,0,103,78,174,0,101,144,172,255,152,136,237,1,191,194,136,0,113,80,125,1,152,4,141,0,155,150,53,255,196,116,245,0,239,114,73,254,19,82,17,255,124,125,234,255,40,52,191,0,42,210,158,255,155,132,165,0,178,5,42,1,64,92,40,255,36,85,77,255,178,228,118,0,137,66,96,254,115,226,66,0,110,240,69,254,151,111,80,0,167,174,236,255,227,108,107,255,188,242,65,255,183,81,255,0,57,206,181,255,47,34,181,255,213,240,158,1,71,75,95,0,156,40,24,255,102,210,81,0,171,199,228,255,154,34,41,0,227,175,75,0,21,239,195,0,138,229,95,1,76,192,49,0,117,123,87,1,227,225,130,0,125,62,63,255,2,198,171,0,254,36,13,254,145,186,206,0,148,255,244,255,35,0,166,0,30,150,219,1,92,228,212,0,92,198,60,254,62,133,200,255,201,41,59,0,125,238,109,255,180,163,238,1,140,122,82,0,9,22,88,255,197,157,47,255,153,94,57,0,88,30,182,0,84,161,85,0,178,146,124,0,166,166,7,255,21,208,223,0,156,182,242,0,155,121,185,0,83,156,174,254,154,16,118,255,186,83,232,1,223,58,121,255,29,23,88,0,35,125,127,255,170,5,149,254,164,12,130,255,155,196,29,0,161,96,136,0,7,35,29,1,162,37,251,0,3,46,242,255,0,217,188,0,57,174,226,1,206,233,2,0,57,187,136,254,123,189,9,255,201,117,127,255,186,36,204,0,231,25,216,0,80,78,105,0,19,134,129,255,148,203,68,0,141,81,125,254,248,165,200,255,214,144,135,0,151,55,166,255,38,235,91,0,21,46,154,0,223,254,150,255,35,153,180,255,125,176,29,1,43,98,30,255,216,122,230,255,233,160,12,0,57,185,12,254,240,113,7,255,5,9,16,254,26,91,108,0,109,198,203,0,8,147,40,0,129,134,228,255,124,186,40,255,114,98,132,254,166,132,23,0,99,69,44,0,9,242,238,255,184,53,59,0,132,129,102,255,52,32,243,254,147,223,200,255,123,83,179,254,135,144,201,255,141,37,56,1,151,60,227,255,90,73,156,1,203,172,187,0,80,151,47,255,94,137,231,255,36,191,59,255,225,209,181,255,74,215,213,254,6,118,179,255,153,54,193,1,50,0,231,0,104,157,72,1,140,227,154,255,182,226,16,254,96,225,92,255,115,20,170,254,6,250,78,0,248,75,173,255,53,89,6,255,0,180,118,0,72,173,1,0,64,8,206,1,174,133,223,0,185,62,133,255,214,11,98,0,197,31,208,0,171,167,244,255,22,231,181,1,150,218,185,0,247,169,97,1,165,139,247,255,47,120,149,1,103,248,51,0,60,69,28,254,25,179,196,0,124,7,218,254,58,107,81,0,184,233,156,255,252,74,36,0,118,188,67,0,141,95,53,255,222,94,165,254,46,61,53,0,206,59,115,255,47,236,250,255,74,5,32,1,129,154,238,255,106,32,226,0,121,187,61,255,3,166,241,254,67,170,172,255,29,216,178,255,23,201,252,0,253,110,243,0,200,125,57,0,109,192,96,255,52,115,238,0,38,121,243,255,201,56,33,0,194,118,130,0,75,96,25,255,170,30,230,254,39,63,253,0,36,45,250,255,251,1,239,0,160,212,92,1,45,209,237,0,243,33,87,254,237,84,201,255,212,18,157,254,212,99,127,255,217,98,16,254,139,172,239,0,168,201,130,255,143,193,169,255,238,151,193,1,215,104,41,0,239,61,165,254,2,3,242,0,22,203,177,254,177,204,22,0,149,129,213,254,31,11,41,255,0,159,121,254,160,25,114,255,162,80,200,0,157,151,11,0,154,134,78,1,216,54,252,0,48,103,133,0,105,220,197,0,253,168,77,254,53,179,23,0,24,121,240,1,255,46,96,255,107,60,135,254,98,205,249,255,63,249,119,255,120,59,211,255,114,180,55,254,91,85,237,0,149,212,77,1,56,73,49,0,86,198,150,0,93,209,160,0,69,205,182,255,244,90,43,0,20,36,176,0,122,116,221,0,51,167,39,1,231,1,63,255,13,197,134,0,3,209,34,255,135,59,202,0,167,100,78,0,47,223,76,0,185,60,62,0,178,166,123,1,132,12,161,255,61,174,43,0,195,69,144,0,127,47,191,1,34,44,78,0,57,234,52,1,255,22,40,255,246,94,146,0,83,228,128,0,60,78,224,255,0,96,210,255,153,175,236,0,159,21,73,0,180,115,196,254,131,225,106,0,255,167,134,0,159,8,112,255,120,68,194,255,176,196,198,255,118,48,168,255,93,169,1,0,112,200,102,1,74,24,254,0,19,141,4,254,142,62,63,0,131,179,187,255,77,156,155,255,119,86,164,0,170,208,146,255,208,133,154,255,148,155,58,255,162,120,232,254,252,213,155,0,241,13,42,0,94,50,131,0,179,170,112,0,140,83,151,255,55,119,84,1,140,35,239,255,153,45,67,1,236,175,39,0,54,151,103,255,158,42,65,255,196,239,135,254,86,53,203,0,149,97,47,254,216,35,17,255,70,3,70,1,103,36,90,255,40,26,173,0,184,48,13,0,163,219,217,255,81,6,1,255,221,170,108,254,233,208,93,0,100,201,249,254,86,36,35,255,209,154,30,1,227,201,251,255,2,189,167,254,100,57,3,0,13,128,41,0,197,100,75,0,150,204,235,255,145,174,59,0,120,248,149,255,85,55,225,0,114,210,53,254,199,204,119,0,14,247,74,1,63,251,129,0,67,104,151,1,135,130,80,0,79,89,55,255,117,230,157,255,25,96,143,0,213,145,5,0,69,241,120,1,149,243,95,255,114,42,20,0,131,72,2,0,154,53,20,255,73,62,109,0,196,102,152,0,41,12,204,255,122,38,11,1,250,10,145,0,207,125,148,0,246,244,222,255,41,32,85,1,112,213,126,0,162,249,86,1,71,198,127,255,81,9,21,1,98,39,4,255,204,71,45,1,75,111,137,0,234,59,231,0,32,48,95,255,204,31,114,1,29,196,181,255,51,241,167,254,93,109,142,0,104,144,45,0,235,12,181,255,52,112,164,0,76,254,202,255,174,14,162,0,61,235,147,255,43,64,185,254,233,125,217,0,243,88,167,254,74,49,8,0,156,204,66,0,124,214,123,0,38,221,118,1,146,112,236,0,114,98,177,0,151,89,199,0,87,197,112,0,185,149,161,0,44,96,165,0,248,179,20,255,188,219,216,254,40,62,13,0,243,142,141,0,229,227,206,255,172,202,35,255,117,176,225,255,82,110,38,1,42,245,14,255,20,83,97,0,49,171,10,0,242,119,120,0,25,232,61,0,212,240,147,255,4,115,56,255,145,17,239,254,202,17,251,255,249,18,245,255,99,117,239,0,184,4,179,255,246,237,51,255,37,239,137,255,166,112,166,255,81,188,33,255,185,250,142,255,54,187,173,0,208,112,201,0,246,43,228,1,104,184,88,255,212,52,196,255,51,117,108,255,254,117,155,0,46,91,15,255,87,14,144,255,87,227,204,0,83,26,83,1,159,76,227,0,159,27,213,1,24,151,108,0,117,144,179,254,137,209,82,0,38,159,10,0,115,133,201,0,223,182,156,1,110,196,93,255,57,60,233,0,5,167,105,255,154,197,164,0,96,34,186,255,147,133,37,1,220,99,190,0,1,167,84,255,20,145,171,0,194,197,251,254,95,78,133,255,252,248,243,255,225,93,131,255,187,134,196,255,216,153,170,0,20,118,158,254,140,1,118,0,86,158,15,1,45,211,41,255,147,1,100,254,113,116,76,255,211,127,108,1,103,15,48,0,193,16,102,1,69,51,95,255,107,128,157,0,137,171,233,0,90,124,144,1,106,161,182,0,175,76,236,1,200,141,172,255,163,58,104,0,233,180,52,255,240,253,14,255,162,113,254,255,38,239,138,254,52,46,166,0,241,101,33,254,131,186,156,0,111,208,62,255,124,94,160,255,31,172,254,0,112,174,56,255,188,99,27,255,67,138,251,0,125,58,128,1,156,152,174,255,178,12,247,255,252,84,158,0,82,197,14,254,172,200,83,255,37,39,46,1,106,207,167,0,24,189,34,0,131,178,144,0,206,213,4,0,161,226,210,0,72,51,105,255,97,45,187,255,78,184,223,255,176,29,251,0,79,160,86,255,116,37,178,0,82,77,213,1,82,84,141,255,226,101,212,1,175,88,199,255,245,94,247,1,172,118,109,255,166,185,190,0,131,181,120,0,87,254,93,255,134,240,73,255,32,245,143,255,139,162,103,255,179,98,18,254,217,204,112,0,147,223,120,255,53,10,243,0,166,140,150,0,125,80,200,255,14,109,219,255,91,218,1,255,252,252,47,254,109,156,116,255,115,49,127,1,204,87,211,255,148,202,217,255,26,85,249,255,14,245,134,1,76,89,169,255,242,45,230,0,59,98,172,255,114,73,132,254,78,155,49,255,158,126,84,0,49,175,43,255,16,182,84,255,157,103,35,0,104,193,109,255,67,221,154,0,201,172,1,254,8,162,88,0,165,1,29,255,125,155,229,255,30,154,220,1,103,239,92,0,220,1,109,255,202,198,1,0,94,2,142,1,36,54,44,0,235,226,158,255,170,251,214,255,185,77,9,0,97,74,242,0,219,163,149,255,240,35,118,255,223,114,88,254,192,199,3,0,106,37,24,255,201,161,118,255,97,89,99,1,224,58,103,255,101,199,147,254,222,60,99,0,234,25,59,1,52,135,27,0,102,3,91,254,168,216,235,0,229,232,136,0,104,60,129,0,46,168,238,0,39,191,67,0,75,163,47,0,143,97,98,255,56,216,168,1,168,233,252,255,35,111,22,255,92,84,43,0,26,200,87,1,91,253,152,0,202,56,70,0,142,8,77,0,80,10,175,1,252,199,76,0,22,110,82,255,129,1,194,0,11,128,61,1,87,14,145,255,253,222,190,1,15,72,174,0,85,163,86,254,58,99,44,255,45,24,188,254,26,205,15,0,19,229,210,254,248,67,195,0,99,71,184,0,154,199,37,255,151,243,121,255,38,51,75,255,201,85,130,254,44,65,250,0,57,147,243,254,146,43,59,255,89,28,53,0,33,84,24,255,179,51,18,254,189,70,83,0,11,156,179,1,98,134,119,0,158,111,111,0,119,154,73,255,200,63,140,254,45,13,13,255,154,192,2,254,81,72,42,0,46,160,185,254,44,112,6,0,146,215,149,1,26,176,104,0,68,28,87,1,236,50,153,255,179,128,250,254,206,193,191,255,166,92,137,254,53,40,239,0,210,1,204,254,168,173,35,0,141,243,45,1,36,50,109,255,15,242,194,255,227,159,122,255,176,175,202,254,70,57,72,0,40,223,56,0,208,162,58,255,183,98,93,0,15,111,12,0,30,8,76,255,132,127,246,255,45,242,103,0,69,181,15,255,10,209,30,0,3,179,121,0,241,232,218,1,123,199,88,255,2,210,202,1,188,130,81,255,94,101,208,1,103,36,45],"i8",ALLOC_NONE,Runtime.GLOBAL_BASE+10240);allocate([76,193,24,1,95,26,241,255,165,162,187,0,36,114,140,0,202,66,5,255,37,56,147,0,152,11,243,1,127,85,232,255,250,135,212,1,185,177,113,0,90,220,75,255,69,248,146,0,50,111,50,0,92,22,80,0,244,36,115,254,163,100,82,255,25,193,6,1,127,61,36,0,253,67,30,254,65,236,170,255,161,17,215,254,63,175,140,0,55,127,4,0,79,112,233,0,109,160,40,0,143,83,7,255,65,26,238,255,217,169,140,255,78,94,189,255,0,147,190,255,147,71,186,254,106,77,127,255,233,157,233,1,135,87,237,255,208,13,236,1,155,109,36,255,180,100,218,0,180,163,18,0,190,110,9,1,17,63,123,255,179,136,180,255,165,123,123,255,144,188,81,254,71,240,108,255,25,112,11,255,227,218,51,255,167,50,234,255,114,79,108,255,31,19,115,255,183,240,99,0,227,87,143,255,72,217,248,255,102,169,95,1,129,149,149,0,238,133,12,1,227,204,35,0,208,115,26,1,102,8,234,0,112,88,143,1,144,249,14,0,240,158,172,254,100,112,119,0,194,141,153,254,40,56,83,255,121,176,46,0,42,53,76,255,158,191,154,0,91,209,92,0,173,13,16,1,5,72,226,255,204,254,149,0,80,184,207,0,100,9,122,254,118,101,171,255,252,203,0,254,160,207,54,0,56,72,249,1,56,140,13,255,10,64,107,254,91,101,52,255,225,181,248,1,139,255,132,0,230,145,17,0,233,56,23,0,119,1,241,255,213,169,151,255,99,99,9,254,185,15,191,255,173,103,109,1,174,13,251,255,178,88,7,254,27,59,68,255,10,33,2,255,248,97,59,0,26,30,146,1,176,147,10,0,95,121,207,1,188,88,24,0,185,94,254,254,115,55,201,0,24,50,70,0,120,53,6,0,142,66,146,0,228,226,249,255,104,192,222,1,173,68,219,0,162,184,36,255,143,102,137,255,157,11,23,0,125,45,98,0,235,93,225,254,56,112,160,255,70,116,243,1,153,249,55,255,129,39,17,1,241,80,244,0,87,69,21,1,94,228,73,255,78,66,65,255,194,227,231,0,61,146,87,255,173,155,23,255,112,116,219,254,216,38,11,255,131,186,133,0,94,212,187,0,100,47,91,0,204,254,175,255,222,18,215,254,173,68,108,255,227,228,79,255,38,221,213,0,163,227,150,254,31,190,18,0,160,179,11,1,10,90,94,255,220,174,88,0,163,211,229,255,199,136,52,0,130,95,221,255,140,188,231,254,139,113,128,255,117,171,236,254,49,220,20,255,59,20,171,255,228,109,188,0,20,225,32,254,195,16,174,0,227,254,136,1,135,39,105,0,150,77,206,255,210,238,226,0,55,212,132,254,239,57,124,0,170,194,93,255,249,16,247,255,24,151,62,255,10,151,10,0,79,139,178,255,120,242,202,0,26,219,213,0,62,125,35,255,144,2,108,255,230,33,83,255,81,45,216,1,224,62,17,0,214,217,125,0,98,153,153,255,179,176,106,254,131,93,138,255,109,62,36,255,178,121,32,255,120,252,70,0,220,248,37,0,204,88,103,1,128,220,251,255,236,227,7,1,106,49,198,255,60,56,107,0,99,114,238,0,220,204,94,1,73,187,1,0,89,154,34,0,78,217,165,255,14,195,249,255,9,230,253,255,205,135,245,0,26,252,7,255,84,205,27,1,134,2,112,0,37,158,32,0,231,91,237,255,191,170,204,255,152,7,222,0,109,192,49,0,193,166,146,255,232,19,181,255,105,142,52,255,103,16,27,1,253,200,165,0,195,217,4,255,52,189,144,255,123,155,160,254,87,130,54,255,78,120,61,255,14,56,41,0,25,41,125,255,87,168,245,0,214,165,70,0,212,169,6,255,219,211,194,254,72,93,164,255,197,33,103,255,43,142,141,0,131,225,172,0,244,105,28,0,68,68,225,0,136,84,13,255,130,57,40,254,139,77,56,0,84,150,53,0,54,95,157,0,144,13,177,254,95,115,186,0,117,23,118,255,244,166,241,255,11,186,135,0,178,106,203,255,97,218,93,0,43,253,45,0,164,152,4,0,139,118,239,0,96,1,24,254,235,153,211,255,168,110,20,255,50,239,176,0,114,41,232,0,193,250,53,0,254,160,111,254,136,122,41,255,97,108,67,0,215,152,23,255,140,209,212,0,42,189,163,0,202,42,50,255,106,106,189,255,190,68,217,255,233,58,117,0,229,220,243,1,197,3,4,0,37,120,54,254,4,156,134,255,36,61,171,254,165,136,100,255,212,232,14,0,90,174,10,0,216,198,65,255,12,3,64,0,116,113,115,255,248,103,8,0,231,125,18,255,160,28,197,0,30,184,35,1,223,73,249,255,123,20,46,254,135,56,37,255,173,13,229,1,119,161,34,255,245,61,73,0,205,125,112,0,137,104,134,0,217,246,30,255,237,142,143,0,65,159,102,255,108,164,190,0,219,117,173,255,34,37,120,254,200,69,80,0,31,124,218,254,74,27,160,255,186,154,199,255,71,199,252,0,104,81,159,1,17,200,39,0,211,61,192,1,26,238,91,0,148,217,12,0,59,91,213,255,11,81,183,255,129,230,122,255,114,203,145,1,119,180,66,255,72,138,180,0,224,149,106,0,119,82,104,255,208,140,43,0,98,9,182,255,205,101,134,255,18,101,38,0,95,197,166,255,203,241,147,0,62,208,145,255,133,246,251,0,2,169,14,0,13,247,184,0,142,7,254,0,36,200,23,255,88,205,223,0,91,129,52,255,21,186,30,0,143,228,210,1,247,234,248,255,230,69,31,254,176,186,135,255,238,205,52,1,139,79,43,0,17,176,217,254,32,243,67,0,242,111,233,0,44,35,9,255,227,114,81,1,4,71,12,255,38,105,191,0,7,117,50,255,81,79,16,0,63,68,65,255,157,36,110,255,77,241,3,255,226,45,251,1,142,25,206,0,120,123,209,1,28,254,238,255,5,128,126,255,91,222,215,255,162,15,191,0,86,240,73,0,135,185,81,254,44,241,163,0,212,219,210,255,112,162,155,0,207,101,118,0,168,72,56,255,196,5,52,0,72,172,242,255,126,22,157,255,146,96,59,255,162,121,152,254,140,16,95,0,195,254,200,254,82,150,162,0,119,43,145,254,204,172,78,255,166,224,159,0,104,19,237,255,245,126,208,255,226,59,213,0,117,217,197,0,152,72,237,0,220,31,23,254,14,90,231,255,188,212,64,1,60,101,246,255,85,24,86,0,1,177,109,0,146,83,32,1,75,182,192,0,119,241,224,0,185,237,27,255,184,101,82,1,235,37,77,255,253,134,19,0,232,246,122,0,60,106,179,0,195,11,12,0,109,66,235,1,125,113,59,0,61,40,164,0,175,104,240,0,2,47,187,255,50,12,141,0,194,139,181,255,135,250,104,0,97,92,222,255,217,149,201,255,203,241,118,255,79,151,67,0,122,142,218,255,149,245,239,0,138,42,200,254,80,37,97,255,124,112,167,255,36,138,87,255,130,29,147,255,241,87,78,255,204,97,19,1,177,209,22,255,247,227,127,254,99,119,83,255,212,25,198,1,16,179,179,0,145,77,172,254,89,153,14,255,218,189,167,0,107,233,59,255,35,33,243,254,44,112,112,255,161,127,79,1,204,175,10,0,40,21,138,254,104,116,228,0,199,95,137,255,133,190,168,255,146,165,234,1,183,99,39,0,183,220,54,254,255,222,133,0,162,219,121,254,63,239,6,0,225,102,54,255,251,18,246,0,4,34,129,1,135,36,131,0,206,50,59,1,15,97,183,0,171,216,135,255,101,152,43,255,150,251,91,0,38,145,95,0,34,204,38,254,178,140,83,255,25,129,243,255,76,144,37,0,106,36,26,254,118,144,172,255,68,186,229,255,107,161,213,255,46,163,68,255,149,170,253,0,187,17,15,0,218,160,165,255,171,35,246,1,96,13,19,0,165,203,117,0,214,107,192,255,244,123,177,1,100,3,104,0,178,242,97,255,251,76,130,255,211,77,42,1,250,79,70,255,63,244,80,1,105,101,246,0,61,136,58,1,238,91,213,0,14,59,98,255,167,84,77,0,17,132,46,254,57,175,197,255,185,62,184,0,76,64,207,0,172,175,208,254,175,74,37,0,138,27,211,254,148,125,194,0,10,89,81,0,168,203,101,255,43,213,209,1,235,245,54,0,30,35,226,255,9,126,70,0,226,125,94,254,156,117,20,255,57,248,112,1,230,48,64,255,164,92,166,1,224,214,230,255,36,120,143,0,55,8,43,255,251,1,245,1,106,98,165,0,74,107,106,254,53,4,54,255,90,178,150,1,3,120,123,255,244,5,89,1,114,250,61,255,254,153,82,1,77,15,17,0,57,238,90,1,95,223,230,0,236,52,47,254,103,148,164,255,121,207,36,1,18,16,185,255,75,20,74,0,187,11,101,0,46,48,129,255,22,239,210,255,77,236,129,255,111,77,204,255,61,72,97,255,199,217,251,255,42,215,204,0,133,145,201,255,57,230,146,1,235,100,198,0,146,73,35,254,108,198,20,255,182,79,210,255,82,103,136,0,246,108,176,0,34,17,60,255,19,74,114,254,168,170,78,255,157,239,20,255,149,41,168,0,58,121,28,0,79,179,134,255,231,121,135,255,174,209,98,255,243,122,190,0,171,166,205,0,212,116,48,0,29,108,66,255,162,222,182,1,14,119,21,0,213,39,249,255,254,223,228,255,183,165,198,0,133,190,48,0,124,208,109,255,119,175,85,255,9,209,121,1,48,171,189,255,195,71,134,1,136,219,51,255,182,91,141,254,49,159,72,0,35,118,245,255,112,186,227,255,59,137,31,0,137,44,163,0,114,103,60,254,8,213,150,0,162,10,113,255,194,104,72,0,220,131,116,255,178,79,92,0,203,250,213,254,93,193,189,255,130,255,34,254,212,188,151,0,136,17,20,255,20,101,83,255,212,206,166,0,229,238,73,255,151,74,3,255,168,87,215,0,155,188,133,255,166,129,73,0,240,79,133,255,178,211,81,255,203,72,163,254,193,168,165,0,14,164,199,254,30,255,204,0,65,72,91,1,166,74,102,255,200,42,0,255,194,113,227,255,66,23,208,0,229,216,100,255,24,239,26,0,10,233,62,255,123,10,178,1,26,36,174,255,119,219,199,1,45,163,190,0,16,168,42,0,166,57,198,255,28,26,26,0,126,165,231,0,251,108,100,255,61,229,121,255,58,118,138,0,76,207,17,0,13,34,112,254,89,16,168,0,37,208,105,255,35,201,215,255,40,106,101,254,6,239,114,0,40,103,226,254,246,127,110,255,63,167,58,0,132,240,142,0,5,158,88,255,129,73,158,255,94,89,146,0,230,54,146,0,8,45,173,0,79,169,1,0,115,186,247,0,84,64,131,0,67,224,253,255,207,189,64,0,154,28,81,1,45,184,54,255,87,212,224,255,0,96,73,255,129,33,235,1,52,66,80,255,251,174,155,255,4,179,37,0,234,164,93,254,93,175,253,0,198,69,87,255,224,106,46,0,99,29,210,0,62,188,114,255,44,234,8,0,169,175,247,255,23,109,137,255,229,182,39,0,192,165,94,254,245,101,217,0,191,88,96,0,196,94,99,255,106,238,11,254,53,126,243,0,94,1,101,255,46,147,2,0,201,124,124,255,141,12,218,0,13,166,157,1,48,251,237,255,155,250,124,255,106,148,146,255,182,13,202,0,28,61,167,0,217,152,8,254,220,130,45,255,200,230,255,1,55,65,87,255,93,191,97,254,114,251,14,0,32,105,92,1,26,207,141,0,24,207,13,254,21,50,48,255,186,148,116,255,211,43,225,0,37,34,162,254,164,210,42,255,68,23,96,255,182,214,8,255,245,117,137,255,66,195,50,0,75,12,83,254,80,140,164,0,9,165,36,1,228,110,227,0,241,17,90,1,25,52,212,0,6,223,12,255,139,243,57,0,12,113,75,1,246,183,191,255,213,191,69,255,230,15,142,0,1,195,196,255,138,171,47,255,64,63,106,1,16,169,214,255,207,174,56,1,88,73,133,255,182,133,140,0,177,14,25,255,147,184,53,255,10,227,161,255,120,216,244,255,73,77,233,0,157,238,139,1,59,65,233,0,70,251,216,1,41,184,153,255,32,203,112,0,146,147,253,0,87,101,109,1,44,82,133,255,244,150,53,255,94,152,232,255,59,93,39,255,88,147,220,255,78,81,13,1,32,47,252,255,160,19,114,255,93,107,39,255,118,16,211,1,185,119,209,255,227,219,127,254,88,105,236,255,162,110,23,255,36,166,110,255,91,236,221,255,66,234,116,0,111,19,244,254,10,233,26,0,32,183,6,254,2,191,242,0,218,156,53,254,41,60,70,255,168,236,111,0,121,185,126,255,238,142,207,255,55,126,52,0,220,129,208,254,80,204,164,255,67,23,144,254,218,40,108,255,127,202,164,0,203,33,3,255,2,158,0,0,37,96,188,255,192,49,74,0,109,4,0,0,111,167,10,254,91,218,135,255,203,66,173,255,150,194,226,0,201,253,6,255,174,102,121,0,205,191,110,0,53,194,4,0,81,40,45,254,35,102,143,255,12,108,198,255,16,27,232,255,252,71,186,1,176,110,114,0,142,3,117,1,113,77,142,0,19,156,197,1,92,47,252,0,53,232,22,1,54,18,235,0,46,35,189,255,236,212,129,0,2,96,208,254,200,238,199,255,59,175,164,255,146,43,231,0,194,217,52,255,3,223,12,0,138,54,178,254,85,235,207,0,232,207,34,0,49,52,50,255,166,113,89,255,10,45,216,255,62,173,28,0,111,165,246,0,118,115,91,255,128,84,60,0,167,144,203,0,87,13,243,0,22,30,228,1,177,113,146,255,129,170,230,254,252,153,129,255,145,225,43,0,70,231,5,255,122,105,126,254,86,246,148,255,110,37,154,254,209,3,91,0,68,145,62,0,228,16,165,255,55,221,249,254,178,210,91,0,83,146,226,254,69,146,186,0,93,210,104,254,16,25,173,0,231,186,38,0,189,122,140,255,251,13,112,255,105,110,93,0,251,72,170,0,192,23,223,255,24,3,202,1,225,93,228,0,153,147,199,254,109,170,22,0,248,101,246,255,178,124,12,255,178,254,102,254,55,4,65,0,125,214,180,0,183,96,147,0,45,117,23,254,132,191,249,0,143,176,203,254,136,183,54,255,146,234,177,0,146,101,86,255,44,123,143,1,33,209,152,0,192,90,41,254,83,15,125,255,213,172,82,0,215,169,144,0,16,13,34,0,32,209,100,255,84,18,249,1,197,17,236,255,217,186,230,0,49,160,176,255,111,118,97,255,237,104,235,0,79,59,92,254,69,249,11,255,35,172,74,1,19,118,68,0,222,124,165,255,180,66,35,255,86,174,246,0,43,74,111,255,126,144,86,255,228,234,91,0,242,213,24,254,69,44,235,255,220,180,35,0,8,248,7,255,102,47,92,255,240,205,102,255,113,230,171,1,31,185,201,255,194,246,70,255,122,17,187,0,134,70,199,255,149,3,150,255,117,63,103,0,65,104,123,255,212,54,19,1,6,141,88,0,83,134,243,255,136,53,103,0,169,27,180,0,177,49,24,0,111,54,167,0,195,61,215,255,31,1,108,1,60,42,70,0,185,3,162,255,194,149,40,255,246,127,38,254,190,119,38,255,61,119,8,1,96,161,219,255,42,203,221,1,177,242,164,255,245,159,10,0,116,196,0,0,5,93,205,254,128,127,179,0,125,237,246,255,149,162,217,255,87,37,20,254,140,238,192,0,9,9,193,0,97,1,226,0,29,38,10,0,0,136,63,255,229,72,210,254,38,134,92,255,78,218,208,1,104,36,84,255,12,5,193,255,242,175,61,255,191,169,46,1,179,147,147,255,113,190,139,254,125,172,31,0,3,75,252,254,215,36,15,0,193,27,24,1,255,69,149,255,110,129,118,0,203,93,249,0,138,137,64,254,38,70,6,0,153,116,222,0,161,74,123,0,193,99,79,255,118,59,94,255,61,12,43,1,146,177,157,0,46,147,191,0,16,255,38,0,11,51,31,1,60,58,98,255,111,194,77,1,154,91,244,0,140,40,144,1,173,10,251,0,203,209,50,254,108,130,78,0,228,180,90,0,174,7,250,0,31,174,60,0,41,171,30,0,116,99,82,255,118,193,139,255,187,173,198,254,218,111,56,0,185,123,216,0,249,158,52,0,52,180,93,255,201,9,91,255,56,45,166,254,132,155,203,255,58,232,110,0,52,211,89,255,253,0,162,1,9,87,183,0,145,136,44,1,94,122,245,0,85,188,171,1,147,92,198,0,0,8,104,0,30,95,174,0,221,230,52,1,247,247,235,255,137,174,53,255,35,21,204,255,71,227,214,1,232,82,194,0,11,48,227,255,170,73,184,255,198,251,252,254,44,112,34,0,131,101,131,255,72,168,187,0,132,135,125,255,138,104,97,255,238,184,168,255,243,104,84,255,135,216,226,255,139,144,237,0,188,137,150,1,80,56,140,255,86,169,167,255,194,78,25,255,220,17,180,255,17,13,193,0,117,137,212,255,141,224,151,0,49,244,175,0,193,99,175,255,19,99,154,1,255,65,62,255,156,210,55,255,242,244,3,255,250,14,149,0,158,88,217,255,157,207,134,254,251,232,28,0,46,156,251,255,171,56,184,255,239,51,234,0,142,138,131,255,25,254,243,1,10,201,194,0,63,97,75,0,210,239,162,0,192,200,31,1,117,214,243,0,24,71,222,254,54,40,232,255,76,183,111,254,144,14,87,255,214,79,136,255,216,196,212,0,132,27,140,254,131,5,253,0,124,108,19,255,28,215,75,0,76,222,55,254,233,182,63,0,68,171,191,254,52,111,222,255,10,105,77,255,80,170,235,0,143,24,88,255,45,231,121,0,148,129,224,1,61,246,84,0,253,46,219,255,239,76,33,0,49,148,18,254,230,37,69,0,67,134,22,254,142,155,94,0,31,157,211,254,213,42,30,255,4,228,247,254,252,176,13,255,39,0,31,254,241,244,255,255,170,45,10,254,253,222,249,0,222,114,132,0,255,47,6,255,180,163,179,1,84,94,151,255,89,209,82,254,229,52,169,255,213,236,0,1,214,56,228,255,135,119,151,255,112,201,193,0,83,160,53,254,6,151,66,0,18,162,17,0,233,97,91,0,131,5,78,1,181,120,53,255,117,95,63,255,237,117,185,0,191,126,136,255,144,119,233,0,183,57,97,1,47,201,187,255,167,165,119,1,45,100,126,0,21,98,6,254,145,150,95,255,120,54,152,0,209,98,104,0,143,111,30,254,184,148,249,0,235,216,46,0,248,202,148,255,57,95,22,0,242,225,163,0,233,247,232,255,71,171,19,255,103,244,49,255,84,103,93,255,68,121,244,1,82,224,13,0,41,79,43,255,249,206,167,255,215,52,21,254,192,32,22,255,247,111,60,0,101,74,38,255,22,91,84,254,29,28,13,255,198,231,215,254,244,154,200,0,223,137,237,0,211,132,14,0,95,64,206,255,17,62,247,255,233,131,121,1,93,23,77,0,205,204,52,254,81,189,136,0,180,219,138,1,143,18,94,0,204,43,140,254,188,175,219,0,111,98,143,255,151,63,162,255,211,50,71,254,19,146,53,0,146,45,83,254,178,82,238,255,16,133,84,255,226,198,93,255,201,97,20,255,120,118,35,255,114,50,231,255,162,229,156,255,211,26,12,0,114,39,115,255,206,212,134,0,197,217,160,255,116,129,94,254,199,215,219,255,75,223,249,1,253,116,181,255,232,215,104,255,228,130,246,255,185,117,86,0,14,5,8,0,239,29,61,1,237,87,133,255,125,146,137,254,204,168,223,0,46,168,245,0,154,105,22,0,220,212,161,255,107,69,24,255,137,218,181,255,241,84,198,255,130,122,211,255,141,8,153,255,190,177,118,0,96,89,178,0,255,16,48,254,122,96,105,255,117,54,232,255,34,126,105,255,204,67,166,0,232,52,138,255,211,147,12,0,25,54,7,0,44,15,215,254,51,236,45,0,190,68,129,1,106,147,225,0,28,93,45,254,236,141,15,255,17,61,161,0,220,115,192,0,236,145,24,254,111,168,169,0,224,58,63,255,127,164,188,0,82,234,75,1,224,158,134,0,209,68,110,1,217,166,217,0,70,225,166,1,187,193,143,255,16,7,88,255,10,205,140,0,117,192,156,1,17,56,38,0,27,124,108,1,171,215,55,255,95,253,212,0,155,135,168,255,246,178,153,254,154,68,74,0,232,61,96,254,105,132,59,0,33,76,199,1,189,176,130,255,9,104,25,254,75,198,102,255,233,1,112,0,108,220,20,255,114,230,70,0,140,194,133,255,57,158,164,254,146,6,80,255,169,196,97,1,85,183,130,0,70,158,222,1,59,237,234,255,96,25,26,255,232,175,97,255,11,121,248,254,88,35,194,0,219,180,252,254,74,8,227,0,195,227,73,1,184,110,161,255,49,233,164,1,128,53,47,0,82,14,121,255,193,190,58,0,48,174,117,255,132,23,32,0,40,10,134,1,22,51,25,255,240,11,176,255,110,57,146,0,117,143,239,1,157,101,118,255,54,84,76,0,205,184,18,255,47,4,72,255,78,112,85,255,193,50,66,1,93,16,52,255,8,105,134,0,12,109,72,255,58,156,251,0,144,35,204,0,44,160,117,254,50,107,194,0,1,68,165,255,111,110,162,0,158,83,40,254,76,214,234,0,58,216,205,255,171,96,147,255,40,227,114,1,176,227,241,0,70,249,183,1,136,84,139,255,60,122,247,254,143,9,117,255,177,174,137,254,73,247,143,0,236,185,126,255,62,25,247,255,45,64,56,255,161,244,6,0,34,57,56,1,105,202,83,0,128,147,208,0,6,103,10,255,74,138,65,255,97,80,100,255,214,174,33,255,50,134,74,255,110,151,130,254,111,84,172,0,84,199,75,254,248,59,112,255,8,216,178,1,9,183,95,0,238,27,8,254,170,205,220,0,195,229,135,0,98,76,237,255,226,91,26,1,82,219,39,255,225,190,199,1,217,200,121,255,81,179,8,255,140,65,206,0,178,207,87,254,250,252,46,255,104,89,110,1,253,189,158,255,144,214,158,255,160,245,54,255,53,183,92,1,21,200,194,255,146,33,113,1,209,1,255,0,235,106,43,255,167,52,232,0,157,229,221,0,51,30,25,0,250,221,27,1,65,147,87,255,79,123,196,0,65,196,223,255,76,44,17,1,85,241,68,0,202,183,249,255,65,212,212,255,9,33,154,1,71,59,80,0,175,194,59,255,141,72,9,0,100,160,244,0,230,208,56,0,59,25,75,254,80,194,194,0,18,3,200,254,160,159,115,0,132,143,247,1,111,93,57,255,58,237,11,1,134,222,135,255,122,163,108,1,123,43,190,255,251,189,206,254,80,182,72,255,208,246,224,1,17,60,9,0,161,207,38,0,141,109,91,0,216,15,211,255,136,78,110,0,98,163,104,255,21,80,121,255,173,178,183,1,127,143,4,0,104,60,82,254,214,16,13,255,96,238,33,1,158,148,230,255,127,129,62,255,51,255,210,255,62,141,236,254,157,55,224,255,114,39,244,0,192,188,250,255,228,76,53,0,98,84,81,255,173,203,61,254,147,50,55,255,204,235,191,0,52,197,244,0,88,43,211,254,27,191,119,0,188,231,154,0,66,81,161,0,92,193,160,1,250,227,120,0,123,55,226,0,184,17,72,0,133,168,10,254,22,135,156,255,41,25,103,255,48,202,58,0,186,149,81,255,188,134,239,0,235,181,189,254,217,139,188,255,74,48,82,0,46,218,229,0,189,253,251,0,50,229,12,255,211,141,191,1,128,244,25,255,169,231,122,254,86,47,189,255,132,183,23,255,37,178,150,255,51,137,253,0,200,78,31,0,22,105,50,0,130,60,0,0,132,163,91,254,23,231,187,0,192,79,239,0,157,102,164,255,192,82,20,1,24,181,103,255,240,9,234,0,1,123,164,255,133,233,0,255,202,242,242,0,60,186,245,0,241,16,199,255,224,116,158,254,191,125,91,255,224,86,207,0,121,37,231,255,227,9,198,255,15,153,239,255,121,232,217,254,75,112,82,0,95,12,57,254,51,214,105,255,148,220,97,1,199,98,36,0,156,209,12,254,10,212,52,0,217,180,55,254,212,170,232,255,216,20,84,255,157,250,135,0,157,99,127,254,1,206,41,0,149,36,70,1,54,196,201,255,87,116,0,254,235,171,150,0,27,163,234,0,202,135,180,0,208,95,0,254,123,156,93,0,183,62,75,0,137,235,182,0,204,225,255,255,214,139,210,255,2,115,8,255,29,12,111,0,52,156,1,0,253,21,251,255,37,165,31,254,12,130,211,0,106,18,53,254,42,99,154,0,14,217,61,254,216,11,92,255,200,197,112,254,147,38,199,0,36,252,120,254,107,169,77,0,1,123,159,255,207,75,102,0,163,175,196,0,44,1,240,0,120,186,176,254,13,98,76,255,237,124,241,255,232,146,188,255,200,96,224,0,204,31,41,0,208,200,13,0,21,225,96,255,175,156,196,0,247,208,126,0,62,184,244,254,2,171,81,0,85,115,158,0,54,64,45,255,19,138,114,0,135,71,205,0,227,47,147,1,218,231,66,0,253,209,28,0,244,15,173,255,6,15,118,254,16,150,208,255,185,22,50,255,86,112,207,255,75,113,215,1,63,146,43,255,4,225,19,254,227,23,62,255,14,255,214,254,45,8,205,255,87,197,151,254,210,82,215,255,245,248,247,255,128,248,70,0,225,247,87,0,90,120,70,0,213,245,92,0,13,133,226,0,47,181,5,1,92,163,105,255,6,30,133,254,232,178,61,255,230,149,24,255,18,49,158,0,228,100,61,254,116,243,251,255,77,75,92,1,81,219,147,255,76,163,254,254,141,213,246,0,232,37,152,254,97,44,100,0,201,37,50,1,212,244,57,0,174,171,183,255,249,74,112,0,166,156,30,0,222,221,97,255,243,93,73,254,251,101,100,255,216,217,93,255,254,138,187,255,142,190,52,255,59,203,177,255,200,94,52,0,115,114,158,255,165,152,104,1,126,99,226,255,118,157,244,1,107,200,16,0,193,90,229,0,121,6,88,0,156,32,93,254,125,241,211,255,14,237,157,255,165,154,21,255,184,224,22,255,250,24,152,255,113,77,31,0,247,171,23,255,237,177,204,255,52,137,145,255,194,182,114,0,224,234,149,0,10,111,103,1,201,129,4,0,238,142,78,0,52,6,40,255,110,213,165,254,60,207,253,0,62,215,69,0,96,97,0,255,49,45,202,0,120,121,22,255,235,139,48,1,198,45,34,255,182,50,27,1,131,210,91,255,46,54,128,0,175,123,105,255,198,141,78,254,67,244,239,255,245,54,103,254,78,38,242,255,2,92,249,254,251,174,87,255,139,63,144,0,24,108,27,255,34,102,18,1,34,22,152,0,66,229,118,254,50,143,99,0,144,169,149,1,118,30,152,0,178,8,121,1,8,159,18,0,90,101,230,255,129,29,119,0,68,36,11,1,232,183,55,0,23,255,96,255,161,41,193,255,63,139,222,0,15,179,243,0,255,100,15,255,82,53,135,0,137,57,149,1,99,240,170,255,22,230,228,254,49,180,82,255,61,82,43,0,110,245,217,0,199,125,61,0,46,253,52,0,141,197,219,0,211,159,193,0,55,121,105,254,183,20,129,0,169,119,170,255,203,178,139,255,135,40,182,255,172,13,202,255,65,178,148,0,8,207,43,0,122,53,127,1,74,161,48,0,227,214,128,254,86,11,243,255,100,86,7,1,245,68,134,255,61,43,21,1,152,84,94,255,190,60,250,254,239,118,232,255,214,136,37,1,113,76,107,255,93,104,100,1,144,206,23,255,110,150,154,1,228,103,185,0,218,49,50,254,135,77,139,255,185,1,78,0,0,161,148,255,97,29,233,255,207,148,149,255,160,168,0,0,91,128,171,255,6,28,19,254,11,111,247,0,39,187,150,255,138,232,149,0,117,62,68,255,63,216,188,255,235,234,32,254,29,57,160,255,25,12,241,1,169,60,191,0,32,131,141,255,237,159,123,255,94,197,94,254,116,254,3,255,92,179,97,254,121,97,92,255,170,112,14,0,21,149,248,0,248,227,3,0,80,96,109,0,75,192,74,1,12,90,226,255,161,106,68,1,208,114,127,255,114,42,255,254,74,26,74,255,247,179,150,254,121,140,60,0,147,70,200,255,214,40,161,255,161,188,201,255,141,65,135,255,242,115,252,0,62,47,202,0,180,149,255,254,130,55,237,0,165,17,186,255,10,169,194,0,156,109,218,255,112,140,123,255,104,128,223,254,177,142,108,255,121,37,219,255,128,77,18,255,111,108,23,1,91,192,75,0,174,245,22,255,4,236,62,255,43,64,153,1,227,173,254,0,237,122,132,1,127,89,186,255,142,82,128,254,252,84,174,0,90,179,177,1,243,214,87,255,103,60,162,255,208,130,14,255,11,130,139,0,206,129,219,255,94,217,157,255,239,230,230,255,116,115,159,254,164,107,95,0,51,218,2,1,216,125,198,255,140,202,128,254,11,95,68,255,55,9,93,254,174,153,6,255,204,172,96,0,69,160,110,0,213,38,49,254,27,80,213,0,118,125,114,0,70,70,67,255,15,142,73,255,131,122,185,255,243,20,50,254,130,237,40,0,210,159,140,1,197,151,65,255,84,153,66,0,195,126,90,0,16,238,236,1,118,187,102,255,3,24,133,255,187,69,230,0,56,197,92,1,213,69,94,255,80,138,229,1,206,7,230,0,222,111,230,1,91,233,119,255,9,89,7,1,2,98,1,0,148,74,133,255,51,246,180,255,228,177,112,1,58,189,108,255,194,203,237,254,21,209,195,0,147,10,35,1,86,157,226,0,31,163,139,254,56,7,75,255,62,90,116,0,181,60,169,0,138,162,212,254,81,167,31,0,205,90,112,255,33,112,227,0,83,151,117,1,177,224,73,255,174,144,217,255,230,204,79,255,22,77,232,255,114,78,234,0,224,57,126,254,9,49,141,0,242,147,165,1,104,182,140,255,167,132,12,1,123,68,127,0,225,87,39,1,251,108,8,0,198,193,143,1,121,135,207,255,172,22,70,0,50,68,116,255,101,175,40,255,248,105,233,0,166,203,7,0,110,197,218,0,215,254,26,254,168,226,253,0,31,143,96,0,11,103,41,0,183,129,203,254,100,247,74,255,213,126,132,0,210,147,44,0,199,234,27,1,148,47,181,0,155,91,158,1,54,105,175,255,2,78,145,254,102,154,95,0,128,207,127,254,52,124,236,255,130,84,71,0,221,243,211,0,152,170,207,0,222,106,199,0,183,84,94,254,92,200,56,255,138,182,115,1,142,96,146,0,133,136,228,0,97,18,150,0,55,251,66,0,140,102,4,0,202,103,151,0,30,19,248,255,51,184,207,0,202,198,89,0,55,197,225,254,169,95,249,255,66,65,68,255,188,234,126,0,166,223,100,1,112,239,244,0,144,23,194,0,58,39,182,0,244,44,24,254,175,68,179,255,152,118,154,1,176,162,130,0,217,114,204,254,173,126,78,255,33,222,30,255,36,2,91,255,2,143,243,0,9,235,215,0,3,171,151,1,24,215,245,255,168,47,164,254,241,146,207,0,69,129,180,0,68,243,113,0,144,53,72,254,251,45,14,0,23,110,168,0,68,68,79,255,110,70,95,254,174,91,144,255,33,206,95,255,137,41,7,255,19,187,153,254,35,255,112,255,9,145,185,254,50,157,37,0,11,112,49,1,102,8,190,255,234,243,169,1,60,85,23,0,74,39,189,0,116,49,239,0,173,213,210,0,46,161,108,255,159,150,37,0,196,120,185,255,34,98,6,255,153,195,62,255,97,230,71,255,102,61,76,0,26,212,236,255,164,97,16,0,198,59,146,0,163,23,196,0,56,24,61,0,181,98,193,0,251,147,229,255,98,189,24,255,46,54,206,255,234,82,246,0,183,103,38,1,109,62,204,0,10,240,224,0,146,22,117,255,142,154,120,0,69,212,35,0,208,99,118,1,121,255,3,255,72,6,194,0,117,17,197,255,125,15,23,0,154,79,153,0,214,94,197,255,185,55,147,255,62,254,78,254,127,82,153,0,110,102,63,255,108,82,161,255,105,187,212,1,80,138,39,0,60,255,93,255,72,12,186,0,210,251,31,1,190,167,144,255,228,44,19,254,128,67,232,0,214,249,107,254,136,145,86,255,132,46,176,0,189,187,227,255,208,22,140,0,217,211,116,0,50,81,186,254,139,250,31,0,30,64,198,1,135,155,100,0,160,206,23,254,187,162,211,255,16,188,63,0,254,208,49,0,85,84,191,0,241,192,242,255,153,126,145,1,234,162,162,255,230,97,216,1,64,135,126,0,190,148,223,1,52,0,43,255,28,39,189,1,64,136,238,0,175,196,185,0,98,226,213,255,127,159,244,1,226,175,60,0,160,233,142,1,180,243,207,255,69,152,89,1,31,101,21,0,144,25,164,254,139,191,209,0,91,25,121,0,32,147,5,0,39,186,123,255,63,115,230,255,93,167,198,255,143,213,220,255,179,156,19,255,25,66,122,0,214,160,217,255,2,45,62,255,106,79,146,254,51,137,99,255,87,100,231,255,175,145,232,255,101,184,1,255,174,9,125,0,82,37,161,1,36,114,141,255,48,222,142,255,245,186,154,0,5,174,221,254,63,114,155,255,135,55,160,1,80,31,135,0,126,250,179,1,236,218,45,0,20,28,145,1,16,147,73,0,249,189,132,1,17,189,192,255,223,142,198,255,72,20,15,255,250,53,237,254,15,11,18,0,27,211,113,254,213,107,56,255,174,147,146,255,96,126,48,0,23,193,109,1,37,162,94,0,199,157,249,254,24,128,187,255,205,49,178,254,93,164,42,255,43,119,235,1,88,183,237,255,218,210,1,255,107,254,42,0,230,10,99,255,162,0,226,0,219,237,91,0,129,178,203,0,208,50,95,254,206,208,95,255,247,191,89,254,110,234,79,255,165,61,243,0,20,122,112,255,246,246,185,254,103,4,123,0,233,99,230,1,219,91,252,255,199,222,22,255,179,245,233,255,211,241,234,0,111,250,192,255,85,84,136,0,101,58,50,255,131,173,156,254,119,45,51,255,118,233,16,254,242,90,214,0,94,159,219,1,3,3,234,255,98,76,92,254,80,54,230,0,5,228,231,254,53,24,223,255,113,56,118,1,20,132,1,255,171,210,236,0,56,241,158,255,186,115,19,255,8,229,174,0,48,44,0,1,114,114,166,255,6,73,226,255,205,89,244,0,137,227,75,1,248,173,56,0,74,120,246,254,119,3,11,255,81,120,198,255,136,122,98,255,146,241,221,1,109,194,78,255,223,241,70,1,214,200,169,255,97,190,47,255,47,103,174,255,99,92,72,254,118,233,180,255,193,35,233,254,26,229,32,255,222,252,198,0,204,43,71,255,199,84,172,0,134,102,190,0,111,238,97,254,230,40,230,0,227,205,64,254,200,12,225,0,166,25,222,0,113,69,51,255,143,159,24,0,167,184,74,0,29,224,116,254,158,208,233,0,193,116,126,255,212,11,133,255,22,58,140,1,204,36,51,255,232,30,43,0,235,70,181,255,64,56,146,254,169,18,84,255,226,1,13,255,200,50,176,255,52,213,245,254,168,209,97,0,191,71,55,0,34,78,156,0,232,144,58,1,185,74,189,0,186,142,149,254,64,69,127,255,161,203,147,255,176,151,191,0,136,231,203,254,163,182,137,0,161,126,251,254,233,32,66,0,68,207,66,0,30,28,37,0,93,114,96,1,254,92,247,255,44,171,69,0,202,119,11,255,188,118,50,1,255,83,136,255,71,82,26,0,70,227,2,0,32,235,121,1,181,41,154,0,71,134,229,254,202,255,36,0,41,152,5,0,154,63,73,255,34,182,124,0,121,221,150,255,26,204,213,1,41,172,87,0,90,157,146,255,109,130,20,0,71,107,200,255,243,102,189,0,1,195,145,254,46,88,117,0,8,206,227,0,191,110,253,255,109,128,20,254,134,85,51,255,137,177,112,1,216,34,22,255,131,16,208,255,121,149,170,0,114,19,23,1,166,80,31,255,113,240,122,0,232,179,250,0,68,110,180,254,210,170,119,0,223,108,164,255,207,79,233,255,27,229,226,254,209,98,81,255,79,68,7,0,131,185,100,0,170,29,162,255,17,162,107,255,57,21,11,1,100,200,181,255,127,65,166,1,165,134,204,0,104,167,168,0,1,164,79,0,146,135,59,1,70,50,128,255,102,119,13,254,227,6,135,0,162,142,179,255,160,100,222,0,27,224,219,1,158,93,195,255,234,141,137,0,16,24,125,255,238,206,47,255,97,17,98,255,116,110,12,255,96,115,77,0,91,227,232,255,248,254,79,255,92,229,6,254,88,198,139,0,206,75,129,0,250,77,206,255,141,244,123,1,138,69,220,0,32,151,6,1,131,167,22,255,237,68,167,254,199,189,150,0,163,171,138,255,51,188,6,255,95,29,137,254,148,226,179,0,181,107,208,255,134,31,82,255,151,101,45,255,129,202,225,0,224,72,147,0,48,138,151,255,195,64,206,254,237,218,158,0,106,29,137,254,253,189,233,255,103,15,17,255,194,97,255,0,178,45,169,254,198,225,155,0,39,48,117,255,135,106,115,0,97,38,181,0,150,47,65,255,83,130,229,254,246,38,129,0,92,239,154,254,91,99,127,0,161,111,33,255,238,217,242,255,131,185,195,255,213,191,158,255,41,150,218,0,132,169,131,0,89,84,252,1,171,70,128,255,163,248,203,254,1,50,180,255,124,76,85,1,251,111,80,0,99,66,239,255,154,237,182,255,221,126,133,254,74,204,99,255,65,147,119,255,99,56,167,255,79,248,149,255,116,155,228,255,237,43,14,254,69,137,11,255,22,250,241,1,91,122,143,255,205,249,243,0,212,26,60,255,48,182,176,1,48,23,191,255,203,121,152,254,45,74,213,255,62,90,18,254,245,163,230,255,185,106,116,255,83,35,159,0,12,33,2,255,80,34,62,0,16,87,174,255,173,101,85,0,202,36,81,254,160,69,204,255,64,225,187,0,58,206,94,0,86,144,47,0,229,86,245,0,63,145,190,1,37,5,39,0,109,251,26,0,137,147,234,0,162,121,145,255,144,116,206,255,197,232,185,255,183,190,140,255,73,12,254,255,139,20,242,255,170,90,239,255,97,66,187,255,245,181,135,254,222,136,52,0,245,5,51,254,203,47,78,0,152,101,216,0,73,23,125,0,254,96,33,1,235,210,73,255,43,209,88,1,7,129,109,0,122,104,228,254,170,242,203,0,242,204,135,255,202,28,233,255,65,6,127,0,159,144,71,0,100,140,95,0,78,150,13,0,251,107,118,1,182,58,125,255,1,38,108,255,141,189,209,255,8,155,125,1,113,163,91,255,121,79,190,255,134,239,108,255,76,47,248,0,163,228,239,0,17,111,10,0,88,149,75,255,215,235,239,0,167,159,24,255,47,151,108,255,107,209,188,0,233,231,99,254,28,202,148,255,174,35,138,255,110,24,68,255,2,69,181,0,107,102,82,0,102,237,7,0,92,36,237,255,221,162,83,1,55,202,6,255,135,234,135,255,24,250,222,0,65,94,168,254,245,248,210,255,167,108,201,254,255,161,111,0,205,8,254,0,136,13,116,0,100,176,132,255,43,215,126,255,177,133,130,255,158,79,148,0,67,224,37,1,12,206,21,255,62,34,110,1,237,104,175,255,80,132,111,255,142,174,72,0,84,229,180,254,105,179,140,0,64,248,15,255,233,138,16,0,245,67,123,254,218,121,212,255,63,95,218,1,213,133,137,255,143,182,82,255,48,28,11,0,244,114,141,1,209,175,76,255,157,181,150,255,186,229,3,255,164,157,111,1,231,189,139,0,119,202,190,255,218,106,64,255,68,235,63,254,96,26,172,255,187,47,11,1,215,18,251,255,81,84,89,0,68,58,128,0,94,113,5,1,92,129,208,255,97,15,83,254,9,28,188,0,239,9,164,0,60,205,152,0,192,163,98,255,184,18,60,0,217,182,139,0,109,59,120,255,4,192,251,0,169,210,240,255,37,172,92,254,148,211,245,255,179,65,52,0,253,13,115,0,185,174,206,1,114,188,149,255,237,90,173,0,43,199,192,255,88,108,113,0,52,35,76,0,66,25,148,255,221,4,7,255,151,241,114,255,190,209,232,0,98,50,199,0,151,150,213,255,18,74,36,1,53,40,7,0,19,135,65,255,26,172,69,0,174,237,85,0,99,95,41,0,3,56,16,0,39,160,177,255,200,106,218,254,185,68,84,255,91,186,61,254,67,143,141,255,13,244,166,255,99,114,198,0,199,110,163,255,193,18,186,0,124,239,246,1,110,68,22,0,2,235,46,1,212,60,107,0,105,42,105,1,14,230,152,0,7,5,131,0,141,104,154,255,213,3,6,0,131,228,162,255,179,100,28,1,231,123,85,255,206,14,223,1,253,96,230,0,38,152,149,1,98,137,122,0,214,205,3,255,226,152,179,255,6,133,137,0,158,69,140,255,113,162,154,255,180,243,172,255,27,189,115,255,143,46,220,255,213,134,225,255,126,29,69,0,188,43,137,1,242,70,9,0,90,204,255,255,231,170,147,0,23,56,19,254,56,125,157,255,48,179,218,255,79,182,253,255,38,212,191,1,41,235,124,0,96,151,28,0,135,148,190,0,205,249,39,254,52,96,136,255,212,44,136,255,67,209,131,255,252,130,23,255,219,128,20,255,198,129,118,0,108,101,11,0,178,5,146,1,62,7,100,255,181,236,94,254,28,26,164,0,76,22,112,255,120,102,79,0,202,192,229,1,200,176,215,0,41,64,244,255,206,184,78,0,167,45,63,1,160,35,0,255,59,12,142,255,204,9,144,255,219,94,229,1,122,27,112,0,189,105,109,255,64,208,74,255,251,127,55,1,2,226,198,0,44,76,209,0,151,152,77,255,210,23,46,1,201,171,69,255,44,211,231,0,190,37,224,255,245,196,62,255,169,181,222,255,34,211,17,0,119,241,197,255,229,35,152,1,21,69,40,255,178,226,161,0,148,179,193,0,219,194,254,1,40,206,51,255,231,92,250,1,67,153,170,0,21,148,241,0,170,69,82,255,121,18,231,255,92,114,3,0,184,62,230,0,225,201,87,255,146,96,162,255,181,242,220,0,173,187,221,1,226,62,170,255,56,126,217,1,117,13,227,255,179,44,239,0,157,141,155,255,144,221,83,0,235,209,208,0,42,17,165,1,251,81,133,0,124,245,201,254,97,211,24,255,83,214,166,0,154,36,9,255,248,47,127,0,90,219,140,255,161,217,38,254,212,147,63,255,66,84,148,1,207,3,1,0,230,134,89,1,127,78,122,255,224,155,1,255,82,136,74,0,178,156,208,255,186,25,49,255,222,3,210,1,229,150,190,255,85,162,52,255,41,84,141,255,73,123,84,254,93,17,150,0,119,19,28,1,32,22,215,255,28,23,204,255,142,241,52,255,228,52,125,0,29,76,207,0,215,167,250,254,175,164,230,0,55,207,105,1,109,187,245,255,161,44,220,1,41,101,128,255,167,16,94,0,93,214,107,255,118,72,0,254,80,61,234,255,121,175,125,0,139,169,251,0,97,39,147,254,250,196,49,255,165,179,110,254,223,70,187,255,22,142,125,1,154,179,138,255,118,176,42,1,10,174,153,0,156,92,102,0,168,13,161,255,143,16,32,0,250,197,180,255,203,163,44,1,87,32,36,0,161,153,20,255,123,252,15,0,25,227,80,0,60,88,142,0,17,22,201,1,154,205,77,255,39,63,47,0,8,122,141,0,128,23,182,254,204,39,19,255,4,112,29,255,23,36,140,255,210,234,116,254,53,50,63,255,121,171,104,255,160,219,94,0,87,82,14,254,231,42,5,0,165,139,127,254,86,78,38,0,130,60,66,254,203,30,45,255,46,196,122,1,249,53,162,255,136,143,103,254,215,210,114,0,231,7,160,254,169,152,42,255,111,45,246,0,142,131,135,255,131,71,204,255,36,226,11,0,0,28,242,255,225,138,213,255,247,46,216,254,245,3,183,0,108,252,74,1,206,26,48,255,205,54,246,255,211,198,36,255,121,35,50,0,52,216,202,255,38,139,129,254,242,73,148,0,67,231,141,255,42,47,204,0,78,116,25,1,4,225,191,255,6,147,228,0,58,88,177,0,122,165,229,255,252,83,201,255,224,167,96,1,177,184,158,255,242,105,179,1,248,198,240,0,133,66,203,1,254,36,47,0,45,24,115,255,119,62,254,0,196,225,186,254,123,141,172,0,26,85,41,255,226,111,183,0,213,231,151,0,4,59,7,255,238,138,148,0,66,147,33,255,31,246,141,255,209,141,116,255,104,112,31,0,88,161,172,0,83,215,230,254,47,111,151,0,45,38,52,1,132,45,204,0,138,128,109,254,233,117,134,255,243,190,173,254,241,236,240,0,82,127,236,254,40,223,161,255,110,182,225,255,123,174,239,0,135,242,145,1,51,209,154,0,150,3,115,254,217,164,252,255,55,156,69,1,84,94,255,255,232,73,45,1,20,19,212,255,96,197,59,254,96,251,33,0,38,199,73,1,64,172,247,255,117,116,56,255,228,17,18,0,62,138,103,1,246,229,164,255,244,118,201,254,86,32,159,255,109,34,137,1,85,211,186,0,10,193,193,254,122,194,177,0,122,238,102,255,162,218,171,0,108,217,161,1,158,170,34,0,176,47,155,1,181,228,11,255,8,156,0,0,16,75,93,0,206,98,255,1,58,154,35,0,12,243,184,254,67,117,66,255,230,229,123,0,201,42,110],"i8",ALLOC_NONE,Runtime.GLOBAL_BASE+20480);allocate([134,228,178,254,186,108,118,255,58,19,154,255,82,169,62,255,114,143,115,1,239,196,50,255,173,48,193,255,147,2,84,255,150,134,147,254,95,232,73,0,109,227,52,254,191,137,10,0,40,204,30,254,76,52,97,255,164,235,126,0,254,124,188,0,74,182,21,1,121,29,35,255,241,30,7,254,85,218,214,255,7,84,150,254,81,27,117,255,160,159,152,254,66,24,221,255,227,10,60,1,141,135,102,0,208,189,150,1,117,179,92,0,132,22,136,255,120,199,28,0,21,129,79,254,182,9,65,0,218,163,169,0,246,147,198,255,107,38,144,1,78,175,205,255,214,5,250,254,47,88,29,255,164,47,204,255,43,55,6,255,131,134,207,254,116,100,214,0,96,140,75,1,106,220,144,0,195,32,28,1,172,81,5,255,199,179,52,255,37,84,203,0,170,112,174,0,11,4,91,0,69,244,27,1,117,131,92,0,33,152,175,255,140,153,107,255,251,135,43,254,87,138,4,255,198,234,147,254,121,152,84,255,205,101,155,1,157,9,25,0,72,106,17,254,108,153,0,255,189,229,186,0,193,8,176,255,174,149,209,0,238,130,29,0,233,214,126,1,61,226,102,0,57,163,4,1,198,111,51,255,45,79,78,1,115,210,10,255,218,9,25,255,158,139,198,255,211,82,187,254,80,133,83,0,157,129,230,1,243,133,134,255,40,136,16,0,77,107,79,255,183,85,92,1,177,204,202,0,163,71,147,255,152,69,190,0,172,51,188,1,250,210,172,255,211,242,113,1,89,89,26,255,64,66,111,254,116,152,42,0,161,39,27,255,54,80,254,0,106,209,115,1,103,124,97,0,221,230,98,255,31,231,6,0,178,192,120,254,15,217,203,255,124,158,79,0,112,145,247,0,92,250,48,1,163,181,193,255,37,47,142,254,144,189,165,255,46,146,240,0,6,75,128,0,41,157,200,254,87,121,213,0,1,113,236,0,5,45,250,0,144,12,82,0,31,108,231,0,225,239,119,255,167,7,189,255,187,228,132,255,110,189,34,0,94,44,204,1,162,52,197,0,78,188,241,254,57,20,141,0,244,146,47,1,206,100,51,0,125,107,148,254,27,195,77,0,152,253,90,1,7,143,144,255,51,37,31,0,34,119,38,255,7,197,118,0,153,188,211,0,151,20,116,254,245,65,52,255,180,253,110,1,47,177,209,0,161,99,17,255,118,222,202,0,125,179,252,1,123,54,126,255,145,57,191,0,55,186,121,0,10,243,138,0,205,211,229,255,125,156,241,254,148,156,185,255,227,19,188,255,124,41,32,255,31,34,206,254,17,57,83,0,204,22,37,255,42,96,98,0,119,102,184,1,3,190,28,0,110,82,218,255,200,204,192,255,201,145,118,0,117,204,146,0,132,32,98,1,192,194,121,0,106,161,248,1,237,88,124,0,23,212,26,0,205,171,90,255,248,48,216,1,141,37,230,255,124,203,0,254,158,168,30,255,214,248,21,0,112,187,7,255,75,133,239,255,74,227,243,255,250,147,70,0,214,120,162,0,167,9,179,255,22,158,18,0,218,77,209,1,97,109,81,255,244,33,179,255,57,52,57,255,65,172,210,255,249,71,209,255,142,169,238,0,158,189,153,255,174,254,103,254,98,33,14,0,141,76,230,255,113,139,52,255,15,58,212,0,168,215,201,255,248,204,215,1,223,68,160,255,57,154,183,254,47,231,121,0,106,166,137,0,81,136,138,0,165,43,51,0,231,139,61,0,57,95,59,254,118,98,25,255,151,63,236,1,94,190,250,255,169,185,114,1,5,250,58,255,75,105,97,1,215,223,134,0,113,99,163,1,128,62,112,0,99,106,147,0,163,195,10,0,33,205,182,0,214,14,174,255,129,38,231,255,53,182,223,0,98,42,159,255,247,13,40,0,188,210,177,1,6,21,0,255,255,61,148,254,137,45,129,255,89,26,116,254,126,38,114,0,251,50,242,254,121,134,128,255,204,249,167,254,165,235,215,0,202,177,243,0,133,141,62,0,240,130,190,1,110,175,255,0,0,20,146,1,37,210,121,255,7,39,130,0,142,250,84,255,141,200,207,0,9,95,104,255,11,244,174,0,134,232,126,0,167,1,123,254,16,193,149,255,232,233,239,1,213,70,112,255,252,116,160,254,242,222,220,255,205,85,227,0,7,185,58,0,118,247,63,1,116,77,177,255,62,245,200,254,63,18,37,255,107,53,232,254,50,221,211,0,162,219,7,254,2,94,43,0,182,62,182,254,160,78,200,255,135,140,170,0,235,184,228,0,175,53,138,254,80,58,77,255,152,201,2,1,63,196,34,0,5,30,184,0,171,176,154,0,121,59,206,0,38,99,39,0,172,80,77,254,0,134,151,0,186,33,241,254,94,253,223,255,44,114,252,0,108,126,57,255,201,40,13,255,39,229,27,255,39,239,23,1,151,121,51,255,153,150,248,0,10,234,174,255,118,246,4,254,200,245,38,0,69,161,242,1,16,178,150,0,113,56,130,0,171,31,105,0,26,88,108,255,49,42,106,0,251,169,66,0,69,93,149,0,20,57,254,0,164,25,111,0,90,188,90,255,204,4,197,0,40,213,50,1,212,96,132,255,88,138,180,254,228,146,124,255,184,246,247,0,65,117,86,255,253,102,210,254,254,121,36,0,137,115,3,255,60,24,216,0,134,18,29,0,59,226,97,0,176,142,71,0,7,209,161,0,189,84,51,254,155,250,72,0,213,84,235,255,45,222,224,0,238,148,143,255,170,42,53,255,78,167,117,0,186,0,40,255,125,177,103,255,69,225,66,0,227,7,88,1,75,172,6,0,169,45,227,1,16,36,70,255,50,2,9,255,139,193,22,0,143,183,231,254,218,69,50,0,236,56,161,1,213,131,42,0,138,145,44,254,136,229,40,255,49,63,35,255,61,145,245,255,101,192,2,254,232,167,113,0,152,104,38,1,121,185,218,0,121,139,211,254,119,240,35,0,65,189,217,254,187,179,162,255,160,187,230,0,62,248,14,255,60,78,97,0,255,247,163,255,225,59,91,255,107,71,58,255,241,47,33,1,50,117,236,0,219,177,63,254,244,90,179,0,35,194,215,255,189,67,50,255,23,135,129,0,104,189,37,255,185,57,194,0,35,62,231,255,220,248,108,0,12,231,178,0,143,80,91,1,131,93,101,255,144,39,2,1,255,250,178,0,5,17,236,254,139,32,46,0,204,188,38,254,245,115,52,255,191,113,73,254,191,108,69,255,22,69,245,1,23,203,178,0,170,99,170,0,65,248,111,0,37,108,153,255,64,37,69,0,0,88,62,254,89,148,144,255,191,68,224,1,241,39,53,0,41,203,237,255,145,126,194,255,221,42,253,255,25,99,151,0,97,253,223,1,74,115,49,255,6,175,72,255,59,176,203,0,124,183,249,1,228,228,99,0,129,12,207,254,168,192,195,255,204,176,16,254,152,234,171,0,77,37,85,255,33,120,135,255,142,194,227,1,31,214,58,0,213,187,125,255,232,46,60,255,190,116,42,254,151,178,19,255,51,62,237,254,204,236,193,0,194,232,60,0,172,34,157,255,189,16,184,254,103,3,95,255,141,233,36,254,41,25,11,255,21,195,166,0,118,245,45,0,67,213,149,255,159,12,18,255,187,164,227,1,160,25,5,0,12,78,195,1,43,197,225,0,48,142,41,254,196,155,60,255,223,199,18,1,145,136,156,0,252,117,169,254,145,226,238,0,239,23,107,0,109,181,188,255,230,112,49,254,73,170,237,255,231,183,227,255,80,220,20,0,194,107,127,1,127,205,101,0,46,52,197,1,210,171,36,255,88,3,90,255,56,151,141,0,96,187,255,255,42,78,200,0,254,70,70,1,244,125,168,0,204,68,138,1,124,215,70,0,102,66,200,254,17,52,228,0,117,220,143,254,203,248,123,0,56,18,174,255,186,151,164,255,51,232,208,1,160,228,43,255,249,29,25,1,68,190,63,0,5,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,220,130,0,0,0,4,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,144,130,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,127,0,0],"i8",ALLOC_NONE,Runtime.GLOBAL_BASE+30720);var tempDoublePtr=STATICTOP;STATICTOP+=16;function ___lock(){}function ___unlock(){}var SYSCALLS={varargs:0,get:(function(varargs){SYSCALLS.varargs+=4;var ret=HEAP32[SYSCALLS.varargs-4>>2];return ret}),getStr:(function(){var ret=Pointer_stringify(SYSCALLS.get());return ret}),get64:(function(){var low=SYSCALLS.get(),high=SYSCALLS.get();if(low>=0)assert(high===0);else assert(high===-1);return low}),getZero:(function(){assert(SYSCALLS.get()===0)})};function ___syscall6(which,varargs){SYSCALLS.varargs=varargs;try{var stream=SYSCALLS.getStreamFromFD();FS.close(stream);return 0}catch(e){if(typeof FS==="undefined"||!(e instanceof FS.ErrnoError))abort(e);return-e.errno}}function _llvm_stackrestore(p){var self=_llvm_stacksave;var ret=self.LLVM_SAVEDSTACKS[p];self.LLVM_SAVEDSTACKS.splice(p,1);Runtime.stackRestore(ret)}function ___setErrNo(value){if(Module["___errno_location"])HEAP32[Module["___errno_location"]()>>2]=value;return value}function _llvm_stacksave(){var self=_llvm_stacksave;if(!self.LLVM_SAVEDSTACKS){self.LLVM_SAVEDSTACKS=[]}self.LLVM_SAVEDSTACKS.push(Runtime.stackSave());return self.LLVM_SAVEDSTACKS.length-1}function _emscripten_memcpy_big(dest,src,num){HEAPU8.set(HEAPU8.subarray(src,src+num),dest);return dest}function ___syscall140(which,varargs){SYSCALLS.varargs=varargs;try{var stream=SYSCALLS.getStreamFromFD(),offset_high=SYSCALLS.get(),offset_low=SYSCALLS.get(),result=SYSCALLS.get(),whence=SYSCALLS.get();var offset=offset_low;FS.llseek(stream,offset,whence);HEAP32[result>>2]=stream.position;if(stream.getdents&&offset===0&&whence===0)stream.getdents=null;return 0}catch(e){if(typeof FS==="undefined"||!(e instanceof FS.ErrnoError))abort(e);return-e.errno}}function ___syscall146(which,varargs){SYSCALLS.varargs=varargs;try{var stream=SYSCALLS.get(),iov=SYSCALLS.get(),iovcnt=SYSCALLS.get();var ret=0;if(!___syscall146.buffer){___syscall146.buffers=[null,[],[]];___syscall146.printChar=(function(stream,curr){var buffer=___syscall146.buffers[stream];assert(buffer);if(curr===0||curr===10){(stream===1?Module["print"]:Module["printErr"])(UTF8ArrayToString(buffer,0));buffer.length=0}else{buffer.push(curr)}})}for(var i=0;i<iovcnt;i++){var ptr=HEAP32[iov+i*8>>2];var len=HEAP32[iov+(i*8+4)>>2];for(var j=0;j<len;j++){___syscall146.printChar(stream,HEAPU8[ptr+j])}ret+=len}return ret}catch(e){if(typeof FS==="undefined"||!(e instanceof FS.ErrnoError))abort(e);return-e.errno}}function ___syscall54(which,varargs){SYSCALLS.varargs=varargs;try{return 0}catch(e){if(typeof FS==="undefined"||!(e instanceof FS.ErrnoError))abort(e);return-e.errno}}__ATEXIT__.push((function(){var fflush=Module["_fflush"];if(fflush)fflush(0);var printChar=___syscall146.printChar;if(!printChar)return;var buffers=___syscall146.buffers;if(buffers[1].length)printChar(1,10);if(buffers[2].length)printChar(2,10)}));DYNAMICTOP_PTR=allocate(1,"i32",ALLOC_STATIC);STACK_BASE=STACKTOP=Runtime.alignMemory(STATICTOP);STACK_MAX=STACK_BASE+TOTAL_STACK;DYNAMIC_BASE=Runtime.alignMemory(STACK_MAX);HEAP32[DYNAMICTOP_PTR>>2]=DYNAMIC_BASE;staticSealed=true;function invoke_ii(index,a1){try{return Module["dynCall_ii"](index,a1)}catch(e){if(typeof e!=="number"&&e!=="longjmp")throw e;Module["setThrew"](1,0)}}function invoke_iiii(index,a1,a2,a3){try{return Module["dynCall_iiii"](index,a1,a2,a3)}catch(e){if(typeof e!=="number"&&e!=="longjmp")throw e;Module["setThrew"](1,0)}}Module.asmGlobalArg={"Math":Math,"Int8Array":Int8Array,"Int16Array":Int16Array,"Int32Array":Int32Array,"Uint8Array":Uint8Array,"Uint16Array":Uint16Array,"Uint32Array":Uint32Array,"Float32Array":Float32Array,"Float64Array":Float64Array,"NaN":NaN,"Infinity":Infinity};Module.asmLibraryArg={"abort":abort,"assert":assert,"enlargeMemory":enlargeMemory,"getTotalMemory":getTotalMemory,"abortOnCannotGrowMemory":abortOnCannotGrowMemory,"invoke_ii":invoke_ii,"invoke_iiii":invoke_iiii,"___lock":___lock,"___syscall6":___syscall6,"___setErrNo":___setErrNo,"_llvm_stacksave":_llvm_stacksave,"___syscall140":___syscall140,"_emscripten_memcpy_big":_emscripten_memcpy_big,"___syscall54":___syscall54,"___unlock":___unlock,"_llvm_stackrestore":_llvm_stackrestore,"___syscall146":___syscall146,"DYNAMICTOP_PTR":DYNAMICTOP_PTR,"tempDoublePtr":tempDoublePtr,"ABORT":ABORT,"STACKTOP":STACKTOP,"STACK_MAX":STACK_MAX};// EMSCRIPTEN_START_ASM
-var asm=(function(global,env,buffer) {
-"use asm";var a=new global.Int8Array(buffer);var b=new global.Int16Array(buffer);var c=new global.Int32Array(buffer);var d=new global.Uint8Array(buffer);var e=new global.Uint16Array(buffer);var f=new global.Uint32Array(buffer);var g=new global.Float32Array(buffer);var h=new global.Float64Array(buffer);var i=env.DYNAMICTOP_PTR|0;var j=env.tempDoublePtr|0;var k=env.ABORT|0;var l=env.STACKTOP|0;var m=env.STACK_MAX|0;var n=0;var o=0;var p=0;var q=0;var r=global.NaN,s=global.Infinity;var t=0,u=0,v=0,w=0,x=0.0;var y=0;var z=global.Math.floor;var A=global.Math.abs;var B=global.Math.sqrt;var C=global.Math.pow;var D=global.Math.cos;var E=global.Math.sin;var F=global.Math.tan;var G=global.Math.acos;var H=global.Math.asin;var I=global.Math.atan;var J=global.Math.atan2;var K=global.Math.exp;var L=global.Math.log;var M=global.Math.ceil;var N=global.Math.imul;var O=global.Math.min;var P=global.Math.max;var Q=global.Math.clz32;var R=env.abort;var S=env.assert;var T=env.enlargeMemory;var U=env.getTotalMemory;var V=env.abortOnCannotGrowMemory;var W=env.invoke_ii;var X=env.invoke_iiii;var Y=env.___lock;var Z=env.___syscall6;var _=env.___setErrNo;var $=env._llvm_stacksave;var aa=env.___syscall140;var ba=env._emscripten_memcpy_big;var ca=env.___syscall54;var da=env.___unlock;var ea=env._llvm_stackrestore;var fa=env.___syscall146;var ga=0.0;
+var Module = typeof Module !== "undefined" ? Module : {};
+var moduleOverrides = {};
+var key;
+for (key in Module) {
+ if (Module.hasOwnProperty(key)) {
+  moduleOverrides[key] = Module[key];
+ }
+}
+Module["arguments"] = [];
+Module["thisProgram"] = "./this.program";
+Module["quit"] = (function(status, toThrow) {
+ throw toThrow;
+});
+Module["preRun"] = [];
+Module["postRun"] = [];
+var ENVIRONMENT_IS_WEB = false;
+var ENVIRONMENT_IS_WORKER = false;
+var ENVIRONMENT_IS_NODE = false;
+var ENVIRONMENT_IS_SHELL = false;
+ENVIRONMENT_IS_WEB = typeof window === "object";
+ENVIRONMENT_IS_WORKER = typeof importScripts === "function";
+ENVIRONMENT_IS_NODE = typeof process === "object" && typeof require === "function" && !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_WORKER;
+ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
+var scriptDirectory = "";
+function locateFile(path) {
+ if (Module["locateFile"]) {
+  return Module["locateFile"](path, scriptDirectory);
+ } else {
+  return scriptDirectory + path;
+ }
+}
+if (ENVIRONMENT_IS_NODE) {
+ scriptDirectory = __dirname + "/";
+ var nodeFS;
+ var nodePath;
+ Module["read"] = function shell_read(filename, binary) {
+  var ret;
+  ret = tryParseAsDataURI(filename);
+  if (!ret) {
+   if (!nodeFS) nodeFS = require("fs");
+   if (!nodePath) nodePath = require("path");
+   filename = nodePath["normalize"](filename);
+   ret = nodeFS["readFileSync"](filename);
+  }
+  return binary ? ret : ret.toString();
+ };
+ Module["readBinary"] = function readBinary(filename) {
+  var ret = Module["read"](filename, true);
+  if (!ret.buffer) {
+   ret = new Uint8Array(ret);
+  }
+  assert(ret.buffer);
+  return ret;
+ };
+ if (process["argv"].length > 1) {
+  Module["thisProgram"] = process["argv"][1].replace(/\\/g, "/");
+ }
+ Module["arguments"] = process["argv"].slice(2);
+ if (typeof module !== "undefined") {
+  module["exports"] = Module;
+ }
+ process["on"]("uncaughtException", (function(ex) {
+  if (!(ex instanceof ExitStatus)) {
+   throw ex;
+  }
+ }));
+ process["on"]("unhandledRejection", (function(reason, p) {
+  process["exit"](1);
+ }));
+ Module["quit"] = (function(status) {
+  process["exit"](status);
+ });
+ Module["inspect"] = (function() {
+  return "[Emscripten Module object]";
+ });
+} else if (ENVIRONMENT_IS_SHELL) {
+ if (typeof read != "undefined") {
+  Module["read"] = function shell_read(f) {
+   var data = tryParseAsDataURI(f);
+   if (data) {
+    return intArrayToString(data);
+   }
+   return read(f);
+  };
+ }
+ Module["readBinary"] = function readBinary(f) {
+  var data;
+  data = tryParseAsDataURI(f);
+  if (data) {
+   return data;
+  }
+  if (typeof readbuffer === "function") {
+   return new Uint8Array(readbuffer(f));
+  }
+  data = read(f, "binary");
+  assert(typeof data === "object");
+  return data;
+ };
+ if (typeof scriptArgs != "undefined") {
+  Module["arguments"] = scriptArgs;
+ } else if (typeof arguments != "undefined") {
+  Module["arguments"] = arguments;
+ }
+ if (typeof quit === "function") {
+  Module["quit"] = (function(status) {
+   quit(status);
+  });
+ }
+} else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
+ if (ENVIRONMENT_IS_WEB) {
+  var currentScript = document.currentScript;
+  if (currentScript.src.indexOf("blob:") !== 0) {
+   scriptDirectory = currentScript.src.split("/").slice(0, -1).join("/") + "/";
+  }
+ } else if (ENVIRONMENT_IS_WORKER) {
+  scriptDirectory = self.location.href.split("/").slice(0, -1).join("/") + "/";
+ }
+ Module["read"] = function shell_read(url) {
+  try {
+   var xhr = new XMLHttpRequest;
+   xhr.open("GET", url, false);
+   xhr.send(null);
+   return xhr.responseText;
+  } catch (err) {
+   var data = tryParseAsDataURI(url);
+   if (data) {
+    return intArrayToString(data);
+   }
+   throw err;
+  }
+ };
+ if (ENVIRONMENT_IS_WORKER) {
+  Module["readBinary"] = function readBinary(url) {
+   try {
+    var xhr = new XMLHttpRequest;
+    xhr.open("GET", url, false);
+    xhr.responseType = "arraybuffer";
+    xhr.send(null);
+    return new Uint8Array(xhr.response);
+   } catch (err) {
+    var data = tryParseAsDataURI(url);
+    if (data) {
+     return data;
+    }
+    throw err;
+   }
+  };
+ }
+ Module["readAsync"] = function readAsync(url, onload, onerror) {
+  var xhr = new XMLHttpRequest;
+  xhr.open("GET", url, true);
+  xhr.responseType = "arraybuffer";
+  xhr.onload = function xhr_onload() {
+   if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
+    onload(xhr.response);
+    return;
+   }
+   var data = tryParseAsDataURI(url);
+   if (data) {
+    onload(data.buffer);
+    return;
+   }
+   onerror();
+  };
+  xhr.onerror = onerror;
+  xhr.send(null);
+ };
+ Module["setWindowTitle"] = (function(title) {
+  document.title = title;
+ });
+} else {}
+var out = Module["print"] || (typeof console !== "undefined" ? console.log.bind(console) : typeof print !== "undefined" ? print : null);
+var err = Module["printErr"] || (typeof printErr !== "undefined" ? printErr : typeof console !== "undefined" && console.warn.bind(console) || out);
+for (key in moduleOverrides) {
+ if (moduleOverrides.hasOwnProperty(key)) {
+  Module[key] = moduleOverrides[key];
+ }
+}
+moduleOverrides = undefined;
+var STACK_ALIGN = 16;
+function staticAlloc(size) {
+ var ret = STATICTOP;
+ STATICTOP = STATICTOP + size + 15 & -16;
+ return ret;
+}
+function dynamicAlloc(size) {
+ var ret = HEAP32[DYNAMICTOP_PTR >> 2];
+ var end = ret + size + 15 & -16;
+ HEAP32[DYNAMICTOP_PTR >> 2] = end;
+ if (end >= TOTAL_MEMORY) {
+  var success = enlargeMemory();
+  if (!success) {
+   HEAP32[DYNAMICTOP_PTR >> 2] = ret;
+   return 0;
+  }
+ }
+ return ret;
+}
+function alignMemory(size, factor) {
+ if (!factor) factor = STACK_ALIGN;
+ var ret = size = Math.ceil(size / factor) * factor;
+ return ret;
+}
+function getNativeTypeSize(type) {
+ switch (type) {
+ case "i1":
+ case "i8":
+  return 1;
+ case "i16":
+  return 2;
+ case "i32":
+  return 4;
+ case "i64":
+  return 8;
+ case "float":
+  return 4;
+ case "double":
+  return 8;
+ default:
+  {
+   if (type[type.length - 1] === "*") {
+    return 4;
+   } else if (type[0] === "i") {
+    var bits = parseInt(type.substr(1));
+    assert(bits % 8 === 0);
+    return bits / 8;
+   } else {
+    return 0;
+   }
+  }
+ }
+}
+function warnOnce(text) {
+ if (!warnOnce.shown) warnOnce.shown = {};
+ if (!warnOnce.shown[text]) {
+  warnOnce.shown[text] = 1;
+  err(text);
+ }
+}
+var jsCallStartIndex = 1;
+var functionPointers = new Array(0);
+var funcWrappers = {};
+function dynCall(sig, ptr, args) {
+ if (args && args.length) {
+  return Module["dynCall_" + sig].apply(null, [ ptr ].concat(args));
+ } else {
+  return Module["dynCall_" + sig].call(null, ptr);
+ }
+}
+var GLOBAL_BASE = 8;
+var ABORT = 0;
+var EXITSTATUS = 0;
+function assert(condition, text) {
+ if (!condition) {
+  abort("Assertion failed: " + text);
+ }
+}
+function getCFunc(ident) {
+ var func = Module["_" + ident];
+ assert(func, "Cannot call unknown function " + ident + ", make sure it is exported");
+ return func;
+}
+var JSfuncs = {
+ "stackSave": (function() {
+  stackSave();
+ }),
+ "stackRestore": (function() {
+  stackRestore();
+ }),
+ "arrayToC": (function(arr) {
+  var ret = stackAlloc(arr.length);
+  writeArrayToMemory(arr, ret);
+  return ret;
+ }),
+ "stringToC": (function(str) {
+  var ret = 0;
+  if (str !== null && str !== undefined && str !== 0) {
+   var len = (str.length << 2) + 1;
+   ret = stackAlloc(len);
+   stringToUTF8(str, ret, len);
+  }
+  return ret;
+ })
+};
+var toC = {
+ "string": JSfuncs["stringToC"],
+ "array": JSfuncs["arrayToC"]
+};
+function ccall(ident, returnType, argTypes, args, opts) {
+ function convertReturnValue(ret) {
+  if (returnType === "string") return Pointer_stringify(ret);
+  if (returnType === "boolean") return Boolean(ret);
+  return ret;
+ }
+ var func = getCFunc(ident);
+ var cArgs = [];
+ var stack = 0;
+ if (args) {
+  for (var i = 0; i < args.length; i++) {
+   var converter = toC[argTypes[i]];
+   if (converter) {
+    if (stack === 0) stack = stackSave();
+    cArgs[i] = converter(args[i]);
+   } else {
+    cArgs[i] = args[i];
+   }
+  }
+ }
+ var ret = func.apply(null, cArgs);
+ ret = convertReturnValue(ret);
+ if (stack !== 0) stackRestore(stack);
+ return ret;
+}
+function setValue(ptr, value, type, noSafe) {
+ type = type || "i8";
+ if (type.charAt(type.length - 1) === "*") type = "i32";
+ switch (type) {
+ case "i1":
+  HEAP8[ptr >> 0] = value;
+  break;
+ case "i8":
+  HEAP8[ptr >> 0] = value;
+  break;
+ case "i16":
+  HEAP16[ptr >> 1] = value;
+  break;
+ case "i32":
+  HEAP32[ptr >> 2] = value;
+  break;
+ case "i64":
+  tempI64 = [ value >>> 0, (tempDouble = value, +Math_abs(tempDouble) >= +1 ? tempDouble > +0 ? (Math_min(+Math_floor(tempDouble / +4294967296), +4294967295) | 0) >>> 0 : ~~+Math_ceil((tempDouble - +(~~tempDouble >>> 0)) / +4294967296) >>> 0 : 0) ], HEAP32[ptr >> 2] = tempI64[0], HEAP32[ptr + 4 >> 2] = tempI64[1];
+  break;
+ case "float":
+  HEAPF32[ptr >> 2] = value;
+  break;
+ case "double":
+  HEAPF64[ptr >> 3] = value;
+  break;
+ default:
+  abort("invalid type for setValue: " + type);
+ }
+}
+var ALLOC_STATIC = 2;
+var ALLOC_NONE = 4;
+function Pointer_stringify(ptr, length) {
+ if (length === 0 || !ptr) return "";
+ var hasUtf = 0;
+ var t;
+ var i = 0;
+ while (1) {
+  t = HEAPU8[ptr + i >> 0];
+  hasUtf |= t;
+  if (t == 0 && !length) break;
+  i++;
+  if (length && i == length) break;
+ }
+ if (!length) length = i;
+ var ret = "";
+ if (hasUtf < 128) {
+  var MAX_CHUNK = 1024;
+  var curr;
+  while (length > 0) {
+   curr = String.fromCharCode.apply(String, HEAPU8.subarray(ptr, ptr + Math.min(length, MAX_CHUNK)));
+   ret = ret ? ret + curr : curr;
+   ptr += MAX_CHUNK;
+   length -= MAX_CHUNK;
+  }
+  return ret;
+ }
+ return UTF8ToString(ptr);
+}
+var UTF8Decoder = typeof TextDecoder !== "undefined" ? new TextDecoder("utf8") : undefined;
+function UTF8ArrayToString(u8Array, idx) {
+ var endPtr = idx;
+ while (u8Array[endPtr]) ++endPtr;
+ if (endPtr - idx > 16 && u8Array.subarray && UTF8Decoder) {
+  return UTF8Decoder.decode(u8Array.subarray(idx, endPtr));
+ } else {
+  var u0, u1, u2, u3, u4, u5;
+  var str = "";
+  while (1) {
+   u0 = u8Array[idx++];
+   if (!u0) return str;
+   if (!(u0 & 128)) {
+    str += String.fromCharCode(u0);
+    continue;
+   }
+   u1 = u8Array[idx++] & 63;
+   if ((u0 & 224) == 192) {
+    str += String.fromCharCode((u0 & 31) << 6 | u1);
+    continue;
+   }
+   u2 = u8Array[idx++] & 63;
+   if ((u0 & 240) == 224) {
+    u0 = (u0 & 15) << 12 | u1 << 6 | u2;
+   } else {
+    u3 = u8Array[idx++] & 63;
+    if ((u0 & 248) == 240) {
+     u0 = (u0 & 7) << 18 | u1 << 12 | u2 << 6 | u3;
+    } else {
+     u4 = u8Array[idx++] & 63;
+     if ((u0 & 252) == 248) {
+      u0 = (u0 & 3) << 24 | u1 << 18 | u2 << 12 | u3 << 6 | u4;
+     } else {
+      u5 = u8Array[idx++] & 63;
+      u0 = (u0 & 1) << 30 | u1 << 24 | u2 << 18 | u3 << 12 | u4 << 6 | u5;
+     }
+    }
+   }
+   if (u0 < 65536) {
+    str += String.fromCharCode(u0);
+   } else {
+    var ch = u0 - 65536;
+    str += String.fromCharCode(55296 | ch >> 10, 56320 | ch & 1023);
+   }
+  }
+ }
+}
+function UTF8ToString(ptr) {
+ return UTF8ArrayToString(HEAPU8, ptr);
+}
+function stringToUTF8Array(str, outU8Array, outIdx, maxBytesToWrite) {
+ if (!(maxBytesToWrite > 0)) return 0;
+ var startIdx = outIdx;
+ var endIdx = outIdx + maxBytesToWrite - 1;
+ for (var i = 0; i < str.length; ++i) {
+  var u = str.charCodeAt(i);
+  if (u >= 55296 && u <= 57343) u = 65536 + ((u & 1023) << 10) | str.charCodeAt(++i) & 1023;
+  if (u <= 127) {
+   if (outIdx >= endIdx) break;
+   outU8Array[outIdx++] = u;
+  } else if (u <= 2047) {
+   if (outIdx + 1 >= endIdx) break;
+   outU8Array[outIdx++] = 192 | u >> 6;
+   outU8Array[outIdx++] = 128 | u & 63;
+  } else if (u <= 65535) {
+   if (outIdx + 2 >= endIdx) break;
+   outU8Array[outIdx++] = 224 | u >> 12;
+   outU8Array[outIdx++] = 128 | u >> 6 & 63;
+   outU8Array[outIdx++] = 128 | u & 63;
+  } else if (u <= 2097151) {
+   if (outIdx + 3 >= endIdx) break;
+   outU8Array[outIdx++] = 240 | u >> 18;
+   outU8Array[outIdx++] = 128 | u >> 12 & 63;
+   outU8Array[outIdx++] = 128 | u >> 6 & 63;
+   outU8Array[outIdx++] = 128 | u & 63;
+  } else if (u <= 67108863) {
+   if (outIdx + 4 >= endIdx) break;
+   outU8Array[outIdx++] = 248 | u >> 24;
+   outU8Array[outIdx++] = 128 | u >> 18 & 63;
+   outU8Array[outIdx++] = 128 | u >> 12 & 63;
+   outU8Array[outIdx++] = 128 | u >> 6 & 63;
+   outU8Array[outIdx++] = 128 | u & 63;
+  } else {
+   if (outIdx + 5 >= endIdx) break;
+   outU8Array[outIdx++] = 252 | u >> 30;
+   outU8Array[outIdx++] = 128 | u >> 24 & 63;
+   outU8Array[outIdx++] = 128 | u >> 18 & 63;
+   outU8Array[outIdx++] = 128 | u >> 12 & 63;
+   outU8Array[outIdx++] = 128 | u >> 6 & 63;
+   outU8Array[outIdx++] = 128 | u & 63;
+  }
+ }
+ outU8Array[outIdx] = 0;
+ return outIdx - startIdx;
+}
+function stringToUTF8(str, outPtr, maxBytesToWrite) {
+ return stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
+}
+function lengthBytesUTF8(str) {
+ var len = 0;
+ for (var i = 0; i < str.length; ++i) {
+  var u = str.charCodeAt(i);
+  if (u >= 55296 && u <= 57343) u = 65536 + ((u & 1023) << 10) | str.charCodeAt(++i) & 1023;
+  if (u <= 127) {
+   ++len;
+  } else if (u <= 2047) {
+   len += 2;
+  } else if (u <= 65535) {
+   len += 3;
+  } else if (u <= 2097151) {
+   len += 4;
+  } else if (u <= 67108863) {
+   len += 5;
+  } else {
+   len += 6;
+  }
+ }
+ return len;
+}
+var UTF16Decoder = typeof TextDecoder !== "undefined" ? new TextDecoder("utf-16le") : undefined;
+function demangle(func) {
+ return func;
+}
+function demangleAll(text) {
+ var regex = /__Z[\w\d_]+/g;
+ return text.replace(regex, (function(x) {
+  var y = demangle(x);
+  return x === y ? x : x + " [" + y + "]";
+ }));
+}
+function jsStackTrace() {
+ var err = new Error;
+ if (!err.stack) {
+  try {
+   throw new Error(0);
+  } catch (e) {
+   err = e;
+  }
+  if (!err.stack) {
+   return "(no stack trace available)";
+  }
+ }
+ return err.stack.toString();
+}
+var buffer, HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
+function updateGlobalBufferViews() {
+ Module["HEAP8"] = HEAP8 = new Int8Array(buffer);
+ Module["HEAP16"] = HEAP16 = new Int16Array(buffer);
+ Module["HEAP32"] = HEAP32 = new Int32Array(buffer);
+ Module["HEAPU8"] = HEAPU8 = new Uint8Array(buffer);
+ Module["HEAPU16"] = HEAPU16 = new Uint16Array(buffer);
+ Module["HEAPU32"] = HEAPU32 = new Uint32Array(buffer);
+ Module["HEAPF32"] = HEAPF32 = new Float32Array(buffer);
+ Module["HEAPF64"] = HEAPF64 = new Float64Array(buffer);
+}
+var STATIC_BASE, STATICTOP, staticSealed;
+var STACK_BASE, STACKTOP, STACK_MAX;
+var DYNAMIC_BASE, DYNAMICTOP_PTR;
+STATIC_BASE = STATICTOP = STACK_BASE = STACKTOP = STACK_MAX = DYNAMIC_BASE = DYNAMICTOP_PTR = 0;
+staticSealed = false;
+function abortOnCannotGrowMemory() {
+ abort("Cannot enlarge memory arrays. Either (1) compile with  -s TOTAL_MEMORY=X  with X higher than the current value " + TOTAL_MEMORY + ", (2) compile with  -s ALLOW_MEMORY_GROWTH=1  which allows increasing the size at runtime but prevents some optimizations, (3) set Module.TOTAL_MEMORY to a higher value before the program runs, or (4) if you want malloc to return NULL (0) instead of this abort, compile with  -s ABORTING_MALLOC=0 ");
+}
+function enlargeMemory() {
+ abortOnCannotGrowMemory();
+}
+var TOTAL_STACK = Module["TOTAL_STACK"] || 5242880;
+var TOTAL_MEMORY = Module["TOTAL_MEMORY"] || 16777216;
+if (TOTAL_MEMORY < TOTAL_STACK) err("TOTAL_MEMORY should be larger than TOTAL_STACK, was " + TOTAL_MEMORY + "! (TOTAL_STACK=" + TOTAL_STACK + ")");
+if (Module["buffer"]) {
+ buffer = Module["buffer"];
+} else {
+ {
+  buffer = new ArrayBuffer(TOTAL_MEMORY);
+ }
+ Module["buffer"] = buffer;
+}
+updateGlobalBufferViews();
+function getTotalMemory() {
+ return TOTAL_MEMORY;
+}
+function callRuntimeCallbacks(callbacks) {
+ while (callbacks.length > 0) {
+  var callback = callbacks.shift();
+  if (typeof callback == "function") {
+   callback();
+   continue;
+  }
+  var func = callback.func;
+  if (typeof func === "number") {
+   if (callback.arg === undefined) {
+    Module["dynCall_v"](func);
+   } else {
+    Module["dynCall_vi"](func, callback.arg);
+   }
+  } else {
+   func(callback.arg === undefined ? null : callback.arg);
+  }
+ }
+}
+var __ATPRERUN__ = [];
+var __ATINIT__ = [];
+var __ATMAIN__ = [];
+var __ATEXIT__ = [];
+var __ATPOSTRUN__ = [];
+var runtimeInitialized = false;
+var runtimeExited = false;
+function preRun() {
+ if (Module["preRun"]) {
+  if (typeof Module["preRun"] == "function") Module["preRun"] = [ Module["preRun"] ];
+  while (Module["preRun"].length) {
+   addOnPreRun(Module["preRun"].shift());
+  }
+ }
+ callRuntimeCallbacks(__ATPRERUN__);
+}
+function ensureInitRuntime() {
+ if (runtimeInitialized) return;
+ runtimeInitialized = true;
+ callRuntimeCallbacks(__ATINIT__);
+}
+function preMain() {
+ callRuntimeCallbacks(__ATMAIN__);
+}
+function exitRuntime() {
+ callRuntimeCallbacks(__ATEXIT__);
+ runtimeExited = true;
+}
+function postRun() {
+ if (Module["postRun"]) {
+  if (typeof Module["postRun"] == "function") Module["postRun"] = [ Module["postRun"] ];
+  while (Module["postRun"].length) {
+   addOnPostRun(Module["postRun"].shift());
+  }
+ }
+ callRuntimeCallbacks(__ATPOSTRUN__);
+}
+function addOnPreRun(cb) {
+ __ATPRERUN__.unshift(cb);
+}
+function addOnPostRun(cb) {
+ __ATPOSTRUN__.unshift(cb);
+}
+function writeArrayToMemory(array, buffer) {
+ HEAP8.set(array, buffer);
+}
+function writeAsciiToMemory(str, buffer, dontAddNull) {
+ for (var i = 0; i < str.length; ++i) {
+  HEAP8[buffer++ >> 0] = str.charCodeAt(i);
+ }
+ if (!dontAddNull) HEAP8[buffer >> 0] = 0;
+}
+var Math_abs = Math.abs;
+var Math_ceil = Math.ceil;
+var Math_floor = Math.floor;
+var Math_min = Math.min;
+var runDependencies = 0;
+var runDependencyWatcher = null;
+var dependenciesFulfilled = null;
+function addRunDependency(id) {
+ runDependencies++;
+ if (Module["monitorRunDependencies"]) {
+  Module["monitorRunDependencies"](runDependencies);
+ }
+}
+function removeRunDependency(id) {
+ runDependencies--;
+ if (Module["monitorRunDependencies"]) {
+  Module["monitorRunDependencies"](runDependencies);
+ }
+ if (runDependencies == 0) {
+  if (runDependencyWatcher !== null) {
+   clearInterval(runDependencyWatcher);
+   runDependencyWatcher = null;
+  }
+  if (dependenciesFulfilled) {
+   var callback = dependenciesFulfilled;
+   dependenciesFulfilled = null;
+   callback();
+  }
+ }
+}
+Module["preloadedImages"] = {};
+Module["preloadedAudios"] = {};
+var memoryInitializer = null;
+var dataURIPrefix = "data:application/octet-stream;base64,";
+function isDataURI(filename) {
+ return String.prototype.startsWith ? filename.startsWith(dataURIPrefix) : filename.indexOf(dataURIPrefix) === 0;
+}
+STATIC_BASE = GLOBAL_BASE;
+STATICTOP = STATIC_BASE + 33088;
+__ATINIT__.push();
+memoryInitializer = "data:application/octet-stream;base64,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";
+var tempDoublePtr = STATICTOP;
+STATICTOP += 16;
+function _llvm_stackrestore(p) {
+ var self = _llvm_stacksave;
+ var ret = self.LLVM_SAVEDSTACKS[p];
+ self.LLVM_SAVEDSTACKS.splice(p, 1);
+ stackRestore(ret);
+}
+function _llvm_stacksave() {
+ var self = _llvm_stacksave;
+ if (!self.LLVM_SAVEDSTACKS) {
+  self.LLVM_SAVEDSTACKS = [];
+ }
+ self.LLVM_SAVEDSTACKS.push(stackSave());
+ return self.LLVM_SAVEDSTACKS.length - 1;
+}
+function _emscripten_memcpy_big(dest, src, num) {
+ HEAPU8.set(HEAPU8.subarray(src, src + num), dest);
+ return dest;
+}
+function ___setErrNo(value) {
+ if (Module["___errno_location"]) HEAP32[Module["___errno_location"]() >> 2] = value;
+ return value;
+}
+DYNAMICTOP_PTR = staticAlloc(4);
+STACK_BASE = STACKTOP = alignMemory(STATICTOP);
+STACK_MAX = STACK_BASE + TOTAL_STACK;
+DYNAMIC_BASE = alignMemory(STACK_MAX);
+HEAP32[DYNAMICTOP_PTR >> 2] = DYNAMIC_BASE;
+staticSealed = true;
+var ASSERTIONS = false;
+function intArrayToString(array) {
+ var ret = [];
+ for (var i = 0; i < array.length; i++) {
+  var chr = array[i];
+  if (chr > 255) {
+   if (ASSERTIONS) {
+    assert(false, "Character code " + chr + " (" + String.fromCharCode(chr) + ")  at offset " + i + " not in 0x00-0xFF.");
+   }
+   chr &= 255;
+  }
+  ret.push(String.fromCharCode(chr));
+ }
+ return ret.join("");
+}
+var decodeBase64 = typeof atob === "function" ? atob : (function(input) {
+ var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+ var output = "";
+ var chr1, chr2, chr3;
+ var enc1, enc2, enc3, enc4;
+ var i = 0;
+ input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+ do {
+  enc1 = keyStr.indexOf(input.charAt(i++));
+  enc2 = keyStr.indexOf(input.charAt(i++));
+  enc3 = keyStr.indexOf(input.charAt(i++));
+  enc4 = keyStr.indexOf(input.charAt(i++));
+  chr1 = enc1 << 2 | enc2 >> 4;
+  chr2 = (enc2 & 15) << 4 | enc3 >> 2;
+  chr3 = (enc3 & 3) << 6 | enc4;
+  output = output + String.fromCharCode(chr1);
+  if (enc3 !== 64) {
+   output = output + String.fromCharCode(chr2);
+  }
+  if (enc4 !== 64) {
+   output = output + String.fromCharCode(chr3);
+  }
+ } while (i < input.length);
+ return output;
+});
+function intArrayFromBase64(s) {
+ if (typeof ENVIRONMENT_IS_NODE === "boolean" && ENVIRONMENT_IS_NODE) {
+  var buf;
+  try {
+   buf = Buffer.from(s, "base64");
+  } catch (_) {
+   buf = new Buffer(s, "base64");
+  }
+  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+ }
+ try {
+  var decoded = decodeBase64(s);
+  var bytes = new Uint8Array(decoded.length);
+  for (var i = 0; i < decoded.length; ++i) {
+   bytes[i] = decoded.charCodeAt(i);
+  }
+  return bytes;
+ } catch (_) {
+  throw new Error("Converting base64 string to bytes failed.");
+ }
+}
+function tryParseAsDataURI(filename) {
+ if (!isDataURI(filename)) {
+  return;
+ }
+ return intArrayFromBase64(filename.slice(dataURIPrefix.length));
+}
+Module.asmGlobalArg = {
+ "Math": Math,
+ "Int8Array": Int8Array,
+ "Int16Array": Int16Array,
+ "Int32Array": Int32Array,
+ "Uint8Array": Uint8Array,
+ "Uint16Array": Uint16Array,
+ "Uint32Array": Uint32Array,
+ "Float32Array": Float32Array,
+ "Float64Array": Float64Array,
+ "NaN": NaN,
+ "Infinity": Infinity
+};
+Module.asmLibraryArg = {
+ "abort": abort,
+ "assert": assert,
+ "enlargeMemory": enlargeMemory,
+ "getTotalMemory": getTotalMemory,
+ "abortOnCannotGrowMemory": abortOnCannotGrowMemory,
+ "___setErrNo": ___setErrNo,
+ "_emscripten_memcpy_big": _emscripten_memcpy_big,
+ "_llvm_stackrestore": _llvm_stackrestore,
+ "_llvm_stacksave": _llvm_stacksave,
+ "DYNAMICTOP_PTR": DYNAMICTOP_PTR,
+ "tempDoublePtr": tempDoublePtr,
+ "ABORT": ABORT,
+ "STACKTOP": STACKTOP,
+ "STACK_MAX": STACK_MAX
+};
+// EMSCRIPTEN_START_ASM
+
+var asm = (/** @suppress {uselessCode} */ function(global,env,buffer) {
+
+ "use asm";
+ var a = new global.Int8Array(buffer);
+ var b = new global.Int16Array(buffer);
+ var c = new global.Int32Array(buffer);
+ var d = new global.Uint8Array(buffer);
+ var e = new global.Uint16Array(buffer);
+ var f = new global.Uint32Array(buffer);
+ var g = new global.Float32Array(buffer);
+ var h = new global.Float64Array(buffer);
+ var i = env.DYNAMICTOP_PTR | 0;
+ var j = env.tempDoublePtr | 0;
+ var k = env.ABORT | 0;
+ var l = env.STACKTOP | 0;
+ var m = env.STACK_MAX | 0;
+ var n = 0;
+ var o = 0;
+ var p = 0;
+ var q = 0;
+ var r = global.NaN, s = global.Infinity;
+ var t = 0, u = 0, v = 0, w = 0, x = 0.0;
+ var y = 0;
+ var z = global.Math.floor;
+ var A = global.Math.abs;
+ var B = global.Math.sqrt;
+ var C = global.Math.pow;
+ var D = global.Math.cos;
+ var E = global.Math.sin;
+ var F = global.Math.tan;
+ var G = global.Math.acos;
+ var H = global.Math.asin;
+ var I = global.Math.atan;
+ var J = global.Math.atan2;
+ var K = global.Math.exp;
+ var L = global.Math.log;
+ var M = global.Math.ceil;
+ var N = global.Math.imul;
+ var O = global.Math.min;
+ var P = global.Math.max;
+ var Q = global.Math.clz32;
+ var R = env.abort;
+ var S = env.assert;
+ var T = env.enlargeMemory;
+ var U = env.getTotalMemory;
+ var V = env.abortOnCannotGrowMemory;
+ var W = env.___setErrNo;
+ var X = env._emscripten_memcpy_big;
+ var Y = env._llvm_stackrestore;
+ var Z = env._llvm_stacksave;
+ var _ = 0.0;
+ 
 // EMSCRIPTEN_START_FUNCS
-function ja(a){a=a|0;var b=0;b=l;l=l+a|0;l=l+15&-16;return b|0}function ka(){return l|0}function la(a){a=a|0;l=a}function ma(a,b){a=a|0;b=b|0;l=a;m=b}function na(a,b){a=a|0;b=b|0;if(!n){n=a;o=b}}function oa(a){a=a|0;y=a}function pa(){return y|0}function qa(b,c){b=b|0;c=c|0;return ((((a[c+1>>0]^a[b+1>>0]|a[c>>0]^a[b>>0]|a[c+2>>0]^a[b+2>>0]|a[c+3>>0]^a[b+3>>0]|a[c+4>>0]^a[b+4>>0]|a[c+5>>0]^a[b+5>>0]|a[c+6>>0]^a[b+6>>0]|a[c+7>>0]^a[b+7>>0]|a[c+8>>0]^a[b+8>>0]|a[c+9>>0]^a[b+9>>0]|a[c+10>>0]^a[b+10>>0]|a[c+11>>0]^a[b+11>>0]|a[c+12>>0]^a[b+12>>0]|a[c+13>>0]^a[b+13>>0]|a[c+14>>0]^a[b+14>>0]|a[c+15>>0]^a[b+15>>0]|a[c+16>>0]^a[b+16>>0]|a[c+17>>0]^a[b+17>>0]|a[c+18>>0]^a[b+18>>0]|a[c+19>>0]^a[b+19>>0]|a[c+20>>0]^a[b+20>>0]|a[c+21>>0]^a[b+21>>0]|a[c+22>>0]^a[b+22>>0]|a[c+23>>0]^a[b+23>>0]|a[c+24>>0]^a[b+24>>0]|a[c+25>>0]^a[b+25>>0]|a[c+26>>0]^a[b+26>>0]|a[c+27>>0]^a[b+27>>0]|a[c+28>>0]^a[b+28>>0]|a[c+29>>0]^a[b+29>>0]|a[c+30>>0]^a[b+30>>0]|a[c+31>>0]^a[b+31>>0])&255)+511|0)>>>8&1)+-1|0}function ra(b,d,e,f){b=b|0;d=d|0;e=e|0;f=f|0;var g=0,h=0,i=0,j=0,k=0,m=0,n=0,o=0,p=0;n=l;l=l+240|0;g=n+8|0;h=n+168|0;i=n;j=$()|0;k=l;l=l+((1*(f+64|0)|0)+15&-16)|0;m=i;c[m>>2]=0;c[m+4>>2]=0;m=h;o=d;p=m+32|0;do{a[m>>0]=a[o>>0]|0;m=m+1|0;o=o+1|0}while((m|0)<(p|0));vb(g,d);rb(h+32|0,g);d=a[h+63>>0]&-128;ua(k,i,e,f,0,h)|0;m=b;o=k;p=m+64|0;do{a[m>>0]=a[o>>0]|0;m=m+1|0;o=o+1|0}while((m|0)<(p|0));p=b+63|0;a[p>>0]=a[p>>0]|d;ea(j|0);l=n;return}function sa(b,c,d,e){b=b|0;c=c|0;d=d|0;e=e|0;var f=0,g=0,h=0,i=0,j=0,k=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0;n=l;l=l+288|0;s=n+208|0;p=n+168|0;q=n+128|0;o=n+88|0;r=n+48|0;f=n+8|0;g=n+248|0;h=n;i=e+64|0;j=$()|0;k=l;l=l+((1*i|0)+15&-16)|0;m=l;l=l+((1*i|0)+15&-16)|0;Ua(s,c);Qa(r);db(p,s,r);Ra(q,s,r);Xa(o,q);_a(f,p,o);eb(g,f);f=b+63|0;c=a[f>>0]|0;o=g+31|0;a[o>>0]=a[o>>0]|c&-128;a[f>>0]=c&127;f=k;c=f+64|0;do{a[f>>0]=a[b>>0]|0;f=f+1|0;b=b+1|0}while((f|0)<(c|0));sc(k+64|0,d|0,e|0)|0;s=Cb(m,h,k,i,0,g)|0;ea(j|0);l=n;return s|0}function ta(a,b,c,d){a=a|0;b=b|0;c=c|0;d=d|0;var e=0;d=l;l=l+208|0;e=d;Jb(e);Kb(e,b,c);Rb(e,a);l=d;return 0}function ua(b,d,e,f,g,h){b=b|0;d=d|0;e=e|0;f=f|0;g=g|0;h=h|0;var i=0,j=0,k=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0;q=l;l=l+320|0;k=q+288|0;m=q+224|0;n=q+160|0;o=q;p=k;r=h+32|0;s=p+32|0;do{a[p>>0]=a[r>>0]|0;p=p+1|0;r=r+1|0}while((p|0)<(s|0));i=lc(f|0,g|0,64,0)|0;j=y;c[d>>2]=i;c[d+4>>2]=j;tc(b+64|0,e|0,f|0)|0;d=b+32|0;tc(d|0,h|0,32)|0;p=lc(f|0,g|0,32,0)|0;ta(m,d,p,y)|0;p=d;r=k;s=p+32|0;do{a[p>>0]=a[r>>0]|0;p=p+1|0;r=r+1|0}while((p|0)<(s|0));Gb(m);vb(o,m);rb(b,o);ta(n,b,i,j)|0;Gb(n);Db(d,n,h,m);l=q;return 0}function va(b,c,d){b=b|0;c=c|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,m=0;m=l;l=l+368|0;f=m+248|0;g=m+168|0;h=m+80|0;i=m;j=m+328|0;k=j;e=k+32|0;do{a[k>>0]=a[c>>0]|0;k=k+1|0;c=c+1|0}while((k|0)<(e|0));wa(f,d);xa(g,h,j,f);ya(i,h);za(h,g,i);Aa(b,h);l=m;return 0}function wa(a,b){a=a|0;b=b|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0;i=d[b>>0]|0;j=oc(d[b+1>>0]|0|0,0,8)|0;k=y;g=oc(d[b+2>>0]|0|0,0,16)|0;k=k|y;h=b+3|0;e=oc(d[h>>0]|0|0,0,24)|0;f=a;c[f>>2]=j|i|g|e&50331648;c[f+4>>2]=k;h=d[h>>0]|0;f=oc(d[b+4>>0]|0|0,0,8)|0;k=y;e=oc(d[b+5>>0]|0|0,0,16)|0;k=k|y;g=b+6|0;i=oc(d[g>>0]|0|0,0,24)|0;k=nc(f|h|e|i|0,k|y|0,2)|0;i=a+8|0;c[i>>2]=k&33554431;c[i+4>>2]=0;g=d[g>>0]|0;i=oc(d[b+7>>0]|0|0,0,8)|0;k=y;e=oc(d[b+8>>0]|0|0,0,16)|0;k=k|y;h=b+9|0;f=oc(d[h>>0]|0|0,0,24)|0;k=nc(i|g|e|f|0,k|y|0,3)|0;f=a+16|0;c[f>>2]=k&67108863;c[f+4>>2]=0;h=d[h>>0]|0;f=oc(d[b+10>>0]|0|0,0,8)|0;k=y;e=oc(d[b+11>>0]|0|0,0,16)|0;k=k|y;g=b+12|0;i=oc(d[g>>0]|0|0,0,24)|0;k=nc(f|h|e|i|0,k|y|0,5)|0;i=a+24|0;c[i>>2]=k&33554431;c[i+4>>2]=0;g=d[g>>0]|0;i=oc(d[b+13>>0]|0|0,0,8)|0;k=y;e=oc(d[b+14>>0]|0|0,0,16)|0;k=k|y;h=oc(d[b+15>>0]|0|0,0,24)|0;k=nc(i|g|e|h|0,k|y|0,6)|0;h=a+32|0;c[h>>2]=k&67108863;c[h+4>>2]=0;h=d[b+16>>0]|0;k=oc(d[b+17>>0]|0|0,0,8)|0;e=y;g=oc(d[b+18>>0]|0|0,0,16)|0;e=e|y;i=b+19|0;f=oc(d[i>>0]|0|0,0,24)|0;j=a+40|0;c[j>>2]=k|h|g|f&16777216;c[j+4>>2]=e;i=d[i>>0]|0;j=oc(d[b+20>>0]|0|0,0,8)|0;e=y;f=oc(d[b+21>>0]|0|0,0,16)|0;e=e|y;g=b+22|0;h=oc(d[g>>0]|0|0,0,24)|0;e=nc(j|i|f|h|0,e|y|0,1)|0;h=a+48|0;c[h>>2]=e&67108863;c[h+4>>2]=0;g=d[g>>0]|0;h=oc(d[b+23>>0]|0|0,0,8)|0;e=y;f=oc(d[b+24>>0]|0|0,0,16)|0;e=e|y;i=b+25|0;j=oc(d[i>>0]|0|0,0,24)|0;e=nc(h|g|f|j|0,e|y|0,3)|0;j=a+56|0;c[j>>2]=e&33554431;c[j+4>>2]=0;i=d[i>>0]|0;j=oc(d[b+26>>0]|0|0,0,8)|0;e=y;f=oc(d[b+27>>0]|0|0,0,16)|0;e=e|y;g=b+28|0;h=oc(d[g>>0]|0|0,0,24)|0;e=nc(j|i|f|h|0,e|y|0,4)|0;h=a+64|0;c[h>>2]=e&67108863;c[h+4>>2]=0;g=d[g>>0]|0;h=oc(d[b+29>>0]|0|0,0,8)|0;e=y;f=oc(d[b+30>>0]|0|0,0,16)|0;e=e|y;b=oc(d[b+31>>0]|0|0,0,24)|0;e=nc(h|g|f|b|0,e|y|0,6)|0;b=a+72|0;c[b>>2]=e&33554431;c[b+4>>2]=0;return}function xa(b,d,e,f){b=b|0;d=d|0;e=e|0;f=f|0;var g=0,h=0,i=0,j=0,k=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0;v=l;l=l+1216|0;g=v+1064|0;q=v+912|0;p=v+760|0;r=v+608|0;o=v+456|0;n=v+304|0;m=v+152|0;j=v;mc(q+8|0,0,144)|0;k=q;c[k>>2]=1;c[k+4>>2]=0;mc(p+8|0,0,144)|0;k=p;c[k>>2]=1;c[k+4>>2]=0;mc(r|0,0,152)|0;mc(o|0,0,152)|0;mc(n+8|0,0,144)|0;k=n;c[k>>2]=1;c[k+4>>2]=0;mc(m|0,0,152)|0;mc(j+8|0,0,144)|0;k=j;c[k>>2]=1;c[k+4>>2]=0;k=g+80|0;i=k+72|0;do{c[k>>2]=0;k=k+4|0}while((k|0)<(i|0));k=g;h=f;i=k+80|0;do{c[k>>2]=c[h>>2];k=k+4|0;h=h+4|0}while((k|0)<(i|0));u=0;i=m;k=o;m=q;o=r;while(1){q=a[e+(31-u)>>0]|0;r=0;t=j;h=i;s=n;n=m;j=o;i=p;m=g;while(1){g=q&255;q=g>>>7;Ka(i,m,q,0);Ka(j,n,q,0);La(h,t,k,s,i,j,m,n,f);Ka(h,k,q,0);Ka(t,s,q,0);r=r+1|0;if((r|0)==8)break;else{x=m;w=n;o=i;p=j;q=g<<1&255;m=k;i=h;j=t;n=s;k=x;s=w;h=o;t=p}}u=u+1|0;if((u|0)==32)break;else{g=k;k=m;m=s;o=t;p=h}}k=b;i=k+80|0;do{c[k>>2]=c[h>>2];k=k+4|0;h=h+4|0}while((k|0)<(i|0));k=d;h=t;i=k+80|0;do{c[k>>2]=c[h>>2];k=k+4|0;h=h+4|0}while((k|0)<(i|0));l=v;return}function ya(a,b){a=a|0;b=b|0;var c=0,d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,m=0,n=0;h=l;l=l+800|0;n=h+720|0;m=h+640|0;f=h+560|0;k=h+480|0;i=h+400|0;j=h+320|0;g=h+240|0;c=h+160|0;d=h+80|0;e=h;Ia(n,b);Ia(e,n);Ia(d,e);za(m,d,b);za(f,m,n);Ia(d,f);za(k,d,m);Ia(d,k);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);za(i,d,k);Ia(d,i);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);za(j,e,i);Ia(d,j);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);za(d,e,j);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);za(g,d,i);Ia(d,g);Ia(e,d);b=2;do{Ia(d,e);Ia(e,d);b=b+2|0}while((b|0)<50);za(c,e,g);Ia(e,c);Ia(d,e);b=2;do{Ia(e,d);Ia(d,e);b=b+2|0}while((b|0)<100);za(e,d,c);Ia(d,e);Ia(e,d);b=2;do{Ia(d,e);Ia(e,d);b=b+2|0}while((b|0)<50);za(d,e,g);Ia(e,d);Ia(d,e);Ia(e,d);Ia(d,e);Ia(e,d);za(a,e,f);l=h;return}function za(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0;e=l;l=l+160|0;f=e;Da(f,b,d);Ea(f);Fa(f);b=f;d=a+80|0;do{c[a>>2]=c[b>>2];a=a+4|0;b=b+4|0}while((a|0)<(d|0));l=e;return}function Aa(b,d){b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,y=0,z=0,A=0,B=0,C=0,D=0,E=0,F=0,G=0,H=0,I=0;e=l;l=l+48|0;v=e;B=c[d>>2]|0;c[v>>2]=B;n=c[d+8>>2]|0;s=v+4|0;c[s>>2]=n;m=c[d+16>>2]|0;q=v+8|0;c[q>>2]=m;u=c[d+24>>2]|0;o=v+12|0;c[o>>2]=u;i=c[d+32>>2]|0;k=v+16|0;c[k>>2]=i;z=c[d+40>>2]|0;j=v+20|0;c[j>>2]=z;y=c[d+48>>2]|0;h=v+24|0;c[h>>2]=y;t=c[d+56>>2]|0;g=v+28|0;c[g>>2]=t;w=c[d+64>>2]|0;f=v+32|0;c[f>>2]=w;x=c[d+72>>2]|0;d=v+36|0;c[d>>2]=x;A=(B>>31&B)>>26;n=A+n|0;I=(n>>31&n)>>25;m=I+m|0;H=(m>>31&m)>>26;u=H+u|0;G=(u>>31&u)>>25;i=G+i|0;F=(i>>31&i)>>26;z=F+z|0;E=(z>>31&z)>>25;y=E+y|0;D=(y>>31&y)>>26;t=D+t|0;C=(t>>31&t)>>25;w=C+w|0;p=(w>>31&w)>>26;x=p+x|0;r=(x>>31&x)>>25;B=(r*19|0)+((0-A<<26)+B)|0;A=(B>>31&B)>>26;n=A+((0-I<<25)+n)|0;I=(n>>31&n)>>25;n=(0-I<<25)+n|0;m=I+((0-H<<26)+m)|0;H=(m>>31&m)>>26;m=(0-H<<26)+m|0;u=H+((0-G<<25)+u)|0;G=(u>>31&u)>>25;u=(0-G<<25)+u|0;i=G+((0-F<<26)+i)|0;F=(i>>31&i)>>26;i=(0-F<<26)+i|0;z=F+((0-E<<25)+z)|0;E=(z>>31&z)>>25;z=(0-E<<25)+z|0;y=E+((0-D<<26)+y)|0;D=(y>>31&y)>>26;y=(0-D<<26)+y|0;t=D+((0-C<<25)+t)|0;C=(t>>31&t)>>25;t=(0-C<<25)+t|0;w=C+((0-p<<26)+w)|0;p=(w>>31&w)>>26;w=(0-p<<26)+w|0;x=p+((N(r,-33554432)|0)+x)|0;r=(x>>31&x)>>25;x=(N(r,-33554432)|0)+x|0;B=(r*19|0)+((0-A<<26)+B)|0;c[s>>2]=n;c[q>>2]=m;c[o>>2]=u;c[k>>2]=i;c[j>>2]=z;c[h>>2]=y;c[g>>2]=t;c[f>>2]=w;c[d>>2]=x;c[v>>2]=B;A=(B>>31&B)>>26;B=(N(A,-67108864)|0)+B|0;n=A+n+(B>>26)|0;m=m+(n>>25)|0;u=u+(m>>26)|0;i=i+(u>>25)|0;z=z+(i>>26)|0;y=y+(z>>25)|0;t=t+(y>>26)|0;w=w+(t>>25)|0;x=x+(w>>26)|0;A=(x>>25)*19|0;r=(B&67108863)+A>>26;p=(n&33554431)+r>>25;r=n+r&33554431;n=(m&67108863)+p>>26;p=m+p&67108863;m=(u&33554431)+n>>25;n=u+n&33554431;u=(i&67108863)+m>>26;m=i+m&67108863;i=(z&33554431)+u>>25;u=z+u&33554431;z=(y&67108863)+i>>26;i=y+i&67108863;y=(t&33554431)+z>>25;z=t+z&33554431;t=(w&67108863)+y>>26;y=w+y&67108863;w=x+t&33554431;t=(B+A&67108863)+(((x&33554431)+t>>25)*19|0)|0;x=Ba(t)|0;x=(Ca(r,33554431)|0)&x;x=(Ca(p,67108863)|0)&x;x=(Ca(n,33554431)|0)&x;x=(Ca(m,67108863)|0)&x;x=(Ca(u,33554431)|0)&x;x=(Ca(i,67108863)|0)&x;x=(Ca(z,33554431)|0)&x;x=(Ca(y,67108863)|0)&x;x=(Ca(w,33554431)|0)&x;t=t-(x&67108845)|0;c[v>>2]=t;v=x&33554431;r=r-v|0;x=x&67108863;p=p-x|0;n=n-v|0;m=m-x|0;c[j>>2]=u-v;i=i-x|0;u=r<<2;c[s>>2]=u;s=p<<3;c[q>>2]=s;q=n<<5;c[o>>2]=q;o=m<<6;c[k>>2]=o;k=i<<1;c[h>>2]=k;c[g>>2]=z-v<<3;c[f>>2]=y-x<<4;c[d>>2]=w-v<<6;a[b>>0]=t;a[b+1>>0]=t>>>8;a[b+2>>0]=t>>>16;a[b+3>>0]=u|t>>>24;a[b+4>>0]=r>>>6;a[b+5>>0]=r>>>14;a[b+6>>0]=s|r>>>22;a[b+7>>0]=p>>>5;a[b+8>>0]=p>>>13;a[b+9>>0]=q|p>>>21;a[b+10>>0]=n>>>3;a[b+11>>0]=n>>>11;a[b+12>>0]=o|n>>>19;a[b+13>>0]=m>>>2;a[b+14>>0]=m>>>10;a[b+15>>0]=m>>>18;j=c[j>>2]|0;a[b+16>>0]=j;a[b+17>>0]=j>>>8;a[b+18>>0]=j>>>16;a[b+19>>0]=k|j>>>24;a[b+20>>0]=i>>>7;h=c[h>>2]|0;a[b+21>>0]=h>>>16;g=c[g>>2]|0;a[b+22>>0]=g|h>>>24;a[b+23>>0]=g>>>8;a[b+24>>0]=g>>>16;f=c[f>>2]|0;a[b+25>>0]=f|g>>>24;a[b+26>>0]=f>>>8;a[b+27>>0]=f>>>16;d=c[d>>2]|0;a[b+28>>0]=d|f>>>24;a[b+29>>0]=d>>>8;a[b+30>>0]=d>>>16;a[b+31>>0]=d>>>24;l=e;return}function Ba(a){a=a|0;return ~(a+-67108845>>31)|0}function Ca(a,b){a=a|0;b=b|0;b=~a^b;b=b<<16&b;b=b<<8&b;b=b<<4&b;b=b<<2&b;return (b<<1&b)>>31|0}function Da(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,z=0,A=0;h=jc(0,c[b>>2]|0,32)|0;n=y;w=jc(0,c[d>>2]|0,32)|0;n=qc(w|0,y|0,h|0,n|0)|0;h=a;c[h>>2]=n;c[h+4>>2]=y;h=jc(0,c[b>>2]|0,32)|0;n=y;w=d+8|0;s=jc(0,c[w>>2]|0,32)|0;n=qc(s|0,y|0,h|0,n|0)|0;h=y;s=b+8|0;r=jc(0,c[s>>2]|0,32)|0;p=y;v=jc(0,c[d>>2]|0,32)|0;p=qc(v|0,y|0,r|0,p|0)|0;h=lc(p|0,y|0,n|0,h|0)|0;n=a+8|0;c[n>>2]=h;c[n+4>>2]=y;n=jc(0,c[s>>2]|0,31)|0;h=y;p=jc(0,c[w>>2]|0,32)|0;h=qc(p|0,y|0,n|0,h|0)|0;n=y;p=jc(0,c[b>>2]|0,32)|0;r=y;v=d+16|0;l=jc(0,c[v>>2]|0,32)|0;r=qc(l|0,y|0,p|0,r|0)|0;n=lc(r|0,y|0,h|0,n|0)|0;h=y;r=b+16|0;p=jc(0,c[r>>2]|0,32)|0;l=y;u=jc(0,c[d>>2]|0,32)|0;l=qc(u|0,y|0,p|0,l|0)|0;l=lc(n|0,h|0,l|0,y|0)|0;h=a+16|0;c[h>>2]=l;c[h+4>>2]=y;h=jc(0,c[s>>2]|0,32)|0;l=y;n=jc(0,c[v>>2]|0,32)|0;l=qc(n|0,y|0,h|0,l|0)|0;h=y;n=jc(0,c[r>>2]|0,32)|0;p=y;u=jc(0,c[w>>2]|0,32)|0;p=qc(u|0,y|0,n|0,p|0)|0;h=lc(p|0,y|0,l|0,h|0)|0;l=y;p=jc(0,c[b>>2]|0,32)|0;n=y;u=d+24|0;g=jc(0,c[u>>2]|0,32)|0;n=qc(g|0,y|0,p|0,n|0)|0;n=lc(h|0,l|0,n|0,y|0)|0;l=y;h=b+24|0;p=jc(0,c[h>>2]|0,32)|0;g=y;j=jc(0,c[d>>2]|0,32)|0;g=qc(j|0,y|0,p|0,g|0)|0;g=lc(n|0,l|0,g|0,y|0)|0;l=a+24|0;c[l>>2]=g;c[l+4>>2]=y;l=jc(0,c[r>>2]|0,32)|0;g=y;n=jc(0,c[v>>2]|0,32)|0;g=qc(n|0,y|0,l|0,g|0)|0;l=y;n=jc(0,c[s>>2]|0,32)|0;p=y;j=jc(0,c[u>>2]|0,32)|0;p=qc(j|0,y|0,n|0,p|0)|0;n=y;j=jc(0,c[h>>2]|0,32)|0;q=y;o=jc(0,c[w>>2]|0,32)|0;q=qc(o|0,y|0,j|0,q|0)|0;n=lc(q|0,y|0,p|0,n|0)|0;n=oc(n|0,y|0,1)|0;l=lc(n|0,y|0,g|0,l|0)|0;g=y;n=jc(0,c[b>>2]|0,32)|0;p=y;q=d+32|0;j=jc(0,c[q>>2]|0,32)|0;p=qc(j|0,y|0,n|0,p|0)|0;p=lc(l|0,g|0,p|0,y|0)|0;g=y;l=b+32|0;n=jc(0,c[l>>2]|0,32)|0;j=y;o=jc(0,c[d>>2]|0,32)|0;j=qc(o|0,y|0,n|0,j|0)|0;j=lc(p|0,g|0,j|0,y|0)|0;g=a+32|0;c[g>>2]=j;c[g+4>>2]=y;g=jc(0,c[r>>2]|0,32)|0;j=y;p=jc(0,c[u>>2]|0,32)|0;j=qc(p|0,y|0,g|0,j|0)|0;g=y;p=jc(0,c[h>>2]|0,32)|0;n=y;o=jc(0,c[v>>2]|0,32)|0;n=qc(o|0,y|0,p|0,n|0)|0;g=lc(n|0,y|0,j|0,g|0)|0;j=y;n=jc(0,c[s>>2]|0,32)|0;p=y;o=jc(0,c[q>>2]|0,32)|0;p=qc(o|0,y|0,n|0,p|0)|0;p=lc(g|0,j|0,p|0,y|0)|0;j=y;g=jc(0,c[l>>2]|0,32)|0;n=y;o=jc(0,c[w>>2]|0,32)|0;n=qc(o|0,y|0,g|0,n|0)|0;n=lc(p|0,j|0,n|0,y|0)|0;j=y;p=jc(0,c[b>>2]|0,32)|0;g=y;o=d+40|0;t=jc(0,c[o>>2]|0,32)|0;g=qc(t|0,y|0,p|0,g|0)|0;g=lc(n|0,j|0,g|0,y|0)|0;j=y;n=b+40|0;p=jc(0,c[n>>2]|0,32)|0;t=y;k=jc(0,c[d>>2]|0,32)|0;t=qc(k|0,y|0,p|0,t|0)|0;t=lc(g|0,j|0,t|0,y|0)|0;j=a+40|0;c[j>>2]=t;c[j+4>>2]=y;j=jc(0,c[h>>2]|0,32)|0;t=y;g=jc(0,c[u>>2]|0,32)|0;t=qc(g|0,y|0,j|0,t|0)|0;j=y;g=jc(0,c[s>>2]|0,32)|0;p=y;k=jc(0,c[o>>2]|0,32)|0;p=qc(k|0,y|0,g|0,p|0)|0;j=lc(p|0,y|0,t|0,j|0)|0;t=y;p=jc(0,c[n>>2]|0,32)|0;g=y;k=jc(0,c[w>>2]|0,32)|0;g=qc(k|0,y|0,p|0,g|0)|0;g=lc(j|0,t|0,g|0,y|0)|0;g=oc(g|0,y|0,1)|0;t=y;j=jc(0,c[r>>2]|0,32)|0;p=y;k=jc(0,c[q>>2]|0,32)|0;p=qc(k|0,y|0,j|0,p|0)|0;p=lc(g|0,t|0,p|0,y|0)|0;t=y;g=jc(0,c[l>>2]|0,32)|0;j=y;k=jc(0,c[v>>2]|0,32)|0;j=qc(k|0,y|0,g|0,j|0)|0;j=lc(p|0,t|0,j|0,y|0)|0;t=y;p=jc(0,c[b>>2]|0,32)|0;g=y;k=d+48|0;x=jc(0,c[k>>2]|0,32)|0;g=qc(x|0,y|0,p|0,g|0)|0;g=lc(j|0,t|0,g|0,y|0)|0;t=y;j=b+48|0;p=jc(0,c[j>>2]|0,32)|0;x=y;m=jc(0,c[d>>2]|0,32)|0;x=qc(m|0,y|0,p|0,x|0)|0;x=lc(g|0,t|0,x|0,y|0)|0;t=a+48|0;c[t>>2]=x;c[t+4>>2]=y;t=jc(0,c[h>>2]|0,32)|0;x=y;g=jc(0,c[q>>2]|0,32)|0;x=qc(g|0,y|0,t|0,x|0)|0;t=y;g=jc(0,c[l>>2]|0,32)|0;p=y;m=jc(0,c[u>>2]|0,32)|0;p=qc(m|0,y|0,g|0,p|0)|0;t=lc(p|0,y|0,x|0,t|0)|0;x=y;p=jc(0,c[r>>2]|0,32)|0;g=y;m=jc(0,c[o>>2]|0,32)|0;g=qc(m|0,y|0,p|0,g|0)|0;g=lc(t|0,x|0,g|0,y|0)|0;x=y;t=jc(0,c[n>>2]|0,32)|0;p=y;m=jc(0,c[v>>2]|0,32)|0;p=qc(m|0,y|0,t|0,p|0)|0;p=lc(g|0,x|0,p|0,y|0)|0;x=y;g=jc(0,c[s>>2]|0,32)|0;t=y;m=jc(0,c[k>>2]|0,32)|0;t=qc(m|0,y|0,g|0,t|0)|0;t=lc(p|0,x|0,t|0,y|0)|0;x=y;p=jc(0,c[j>>2]|0,32)|0;g=y;m=jc(0,c[w>>2]|0,32)|0;g=qc(m|0,y|0,p|0,g|0)|0;g=lc(t|0,x|0,g|0,y|0)|0;x=y;t=jc(0,c[b>>2]|0,32)|0;p=y;m=d+56|0;z=jc(0,c[m>>2]|0,32)|0;p=qc(z|0,y|0,t|0,p|0)|0;p=lc(g|0,x|0,p|0,y|0)|0;x=y;g=b+56|0;t=jc(0,c[g>>2]|0,32)|0;z=y;i=jc(0,c[d>>2]|0,32)|0;z=qc(i|0,y|0,t|0,z|0)|0;z=lc(p|0,x|0,z|0,y|0)|0;x=a+56|0;c[x>>2]=z;c[x+4>>2]=y;x=jc(0,c[l>>2]|0,32)|0;z=y;p=jc(0,c[q>>2]|0,32)|0;z=qc(p|0,y|0,x|0,z|0)|0;x=y;p=jc(0,c[h>>2]|0,32)|0;t=y;i=jc(0,c[o>>2]|0,32)|0;t=qc(i|0,y|0,p|0,t|0)|0;p=y;i=jc(0,c[n>>2]|0,32)|0;f=y;e=jc(0,c[u>>2]|0,32)|0;f=qc(e|0,y|0,i|0,f|0)|0;p=lc(f|0,y|0,t|0,p|0)|0;t=y;f=jc(0,c[s>>2]|0,32)|0;i=y;e=jc(0,c[m>>2]|0,32)|0;i=qc(e|0,y|0,f|0,i|0)|0;i=lc(p|0,t|0,i|0,y|0)|0;t=y;p=jc(0,c[g>>2]|0,32)|0;f=y;e=jc(0,c[w>>2]|0,32)|0;f=qc(e|0,y|0,p|0,f|0)|0;f=lc(i|0,t|0,f|0,y|0)|0;f=oc(f|0,y|0,1)|0;x=lc(f|0,y|0,z|0,x|0)|0;z=y;f=jc(0,c[r>>2]|0,32)|0;t=y;i=jc(0,c[k>>2]|0,32)|0;t=qc(i|0,y|0,f|0,t|0)|0;t=lc(x|0,z|0,t|0,y|0)|0;z=y;x=jc(0,c[j>>2]|0,32)|0;f=y;i=jc(0,c[v>>2]|0,32)|0;f=qc(i|0,y|0,x|0,f|0)|0;f=lc(t|0,z|0,f|0,y|0)|0;z=y;t=jc(0,c[b>>2]|0,32)|0;x=y;i=d+64|0;p=jc(0,c[i>>2]|0,32)|0;x=qc(p|0,y|0,t|0,x|0)|0;x=lc(f|0,z|0,x|0,y|0)|0;z=y;f=b+64|0;t=jc(0,c[f>>2]|0,32)|0;p=y;e=jc(0,c[d>>2]|0,32)|0;p=qc(e|0,y|0,t|0,p|0)|0;p=lc(x|0,z|0,p|0,y|0)|0;z=a+64|0;c[z>>2]=p;c[z+4>>2]=y;z=jc(0,c[l>>2]|0,32)|0;p=y;x=jc(0,c[o>>2]|0,32)|0;p=qc(x|0,y|0,z|0,p|0)|0;z=y;x=jc(0,c[n>>2]|0,32)|0;t=y;e=jc(0,c[q>>2]|0,32)|0;t=qc(e|0,y|0,x|0,t|0)|0;z=lc(t|0,y|0,p|0,z|0)|0;p=y;t=jc(0,c[h>>2]|0,32)|0;x=y;e=jc(0,c[k>>2]|0,32)|0;x=qc(e|0,y|0,t|0,x|0)|0;x=lc(z|0,p|0,x|0,y|0)|0;p=y;z=jc(0,c[j>>2]|0,32)|0;t=y;e=jc(0,c[u>>2]|0,32)|0;t=qc(e|0,y|0,z|0,t|0)|0;t=lc(x|0,p|0,t|0,y|0)|0;p=y;x=jc(0,c[r>>2]|0,32)|0;z=y;e=jc(0,c[m>>2]|0,32)|0;z=qc(e|0,y|0,x|0,z|0)|0;z=lc(t|0,p|0,z|0,y|0)|0;p=y;t=jc(0,c[g>>2]|0,32)|0;x=y;e=jc(0,c[v>>2]|0,32)|0;x=qc(e|0,y|0,t|0,x|0)|0;x=lc(z|0,p|0,x|0,y|0)|0;p=y;z=jc(0,c[s>>2]|0,32)|0;t=y;e=jc(0,c[i>>2]|0,32)|0;t=qc(e|0,y|0,z|0,t|0)|0;t=lc(x|0,p|0,t|0,y|0)|0;p=y;x=jc(0,c[f>>2]|0,32)|0;z=y;e=jc(0,c[w>>2]|0,32)|0;z=qc(e|0,y|0,x|0,z|0)|0;z=lc(t|0,p|0,z|0,y|0)|0;p=y;t=jc(0,c[b>>2]|0,32)|0;x=y;e=d+72|0;A=jc(0,c[e>>2]|0,32)|0;x=qc(A|0,y|0,t|0,x|0)|0;x=lc(z|0,p|0,x|0,y|0)|0;p=y;b=b+72|0;z=jc(0,c[b>>2]|0,32)|0;t=y;d=jc(0,c[d>>2]|0,32)|0;t=qc(d|0,y|0,z|0,t|0)|0;t=lc(x|0,p|0,t|0,y|0)|0;d=a+72|0;c[d>>2]=t;c[d+4>>2]=y;d=jc(0,c[n>>2]|0,32)|0;t=y;p=jc(0,c[o>>2]|0,32)|0;t=qc(p|0,y|0,d|0,t|0)|0;d=y;p=jc(0,c[h>>2]|0,32)|0;x=y;z=jc(0,c[m>>2]|0,32)|0;x=qc(z|0,y|0,p|0,x|0)|0;d=lc(x|0,y|0,t|0,d|0)|0;t=y;x=jc(0,c[g>>2]|0,32)|0;p=y;z=jc(0,c[u>>2]|0,32)|0;p=qc(z|0,y|0,x|0,p|0)|0;p=lc(d|0,t|0,p|0,y|0)|0;t=y;d=jc(0,c[s>>2]|0,32)|0;s=y;x=jc(0,c[e>>2]|0,32)|0;s=qc(x|0,y|0,d|0,s|0)|0;s=lc(p|0,t|0,s|0,y|0)|0;t=y;p=jc(0,c[b>>2]|0,32)|0;d=y;w=jc(0,c[w>>2]|0,32)|0;d=qc(w|0,y|0,p|0,d|0)|0;d=lc(s|0,t|0,d|0,y|0)|0;d=oc(d|0,y|0,1)|0;t=y;s=jc(0,c[l>>2]|0,32)|0;p=y;w=jc(0,c[k>>2]|0,32)|0;p=qc(w|0,y|0,s|0,p|0)|0;p=lc(d|0,t|0,p|0,y|0)|0;t=y;d=jc(0,c[j>>2]|0,32)|0;s=y;w=jc(0,c[q>>2]|0,32)|0;s=qc(w|0,y|0,d|0,s|0)|0;s=lc(p|0,t|0,s|0,y|0)|0;t=y;p=jc(0,c[r>>2]|0,32)|0;d=y;w=jc(0,c[i>>2]|0,32)|0;d=qc(w|0,y|0,p|0,d|0)|0;d=lc(s|0,t|0,d|0,y|0)|0;t=y;s=jc(0,c[f>>2]|0,32)|0;p=y;w=jc(0,c[v>>2]|0,32)|0;p=qc(w|0,y|0,s|0,p|0)|0;p=lc(d|0,t|0,p|0,y|0)|0;t=a+80|0;c[t>>2]=p;c[t+4>>2]=y;t=jc(0,c[n>>2]|0,32)|0;p=y;d=jc(0,c[k>>2]|0,32)|0;p=qc(d|0,y|0,t|0,p|0)|0;t=y;d=jc(0,c[j>>2]|0,32)|0;s=y;w=jc(0,c[o>>2]|0,32)|0;s=qc(w|0,y|0,d|0,s|0)|0;t=lc(s|0,y|0,p|0,t|0)|0;p=y;s=jc(0,c[l>>2]|0,32)|0;d=y;w=jc(0,c[m>>2]|0,32)|0;d=qc(w|0,y|0,s|0,d|0)|0;d=lc(t|0,p|0,d|0,y|0)|0;p=y;t=jc(0,c[g>>2]|0,32)|0;s=y;w=jc(0,c[q>>2]|0,32)|0;s=qc(w|0,y|0,t|0,s|0)|0;s=lc(d|0,p|0,s|0,y|0)|0;p=y;d=jc(0,c[h>>2]|0,32)|0;t=y;w=jc(0,c[i>>2]|0,32)|0;t=qc(w|0,y|0,d|0,t|0)|0;t=lc(s|0,p|0,t|0,y|0)|0;p=y;s=jc(0,c[f>>2]|0,32)|0;d=y;w=jc(0,c[u>>2]|0,32)|0;d=qc(w|0,y|0,s|0,d|0)|0;d=lc(t|0,p|0,d|0,y|0)|0;p=y;r=jc(0,c[r>>2]|0,32)|0;t=y;s=jc(0,c[e>>2]|0,32)|0;t=qc(s|0,y|0,r|0,t|0)|0;t=lc(d|0,p|0,t|0,y|0)|0;p=y;d=jc(0,c[b>>2]|0,32)|0;r=y;v=jc(0,c[v>>2]|0,32)|0;r=qc(v|0,y|0,d|0,r|0)|0;r=lc(t|0,p|0,r|0,y|0)|0;p=a+88|0;c[p>>2]=r;c[p+4>>2]=y;p=jc(0,c[j>>2]|0,32)|0;r=y;t=jc(0,c[k>>2]|0,32)|0;r=qc(t|0,y|0,p|0,r|0)|0;p=y;t=jc(0,c[n>>2]|0,32)|0;d=y;v=jc(0,c[m>>2]|0,32)|0;d=qc(v|0,y|0,t|0,d|0)|0;t=y;v=jc(0,c[g>>2]|0,32)|0;s=y;w=jc(0,c[o>>2]|0,32)|0;s=qc(w|0,y|0,v|0,s|0)|0;t=lc(s|0,y|0,d|0,t|0)|0;d=y;h=jc(0,c[h>>2]|0,32)|0;s=y;v=jc(0,c[e>>2]|0,32)|0;s=qc(v|0,y|0,h|0,s|0)|0;s=lc(t|0,d|0,s|0,y|0)|0;d=y;t=jc(0,c[b>>2]|0,32)|0;h=y;u=jc(0,c[u>>2]|0,32)|0;h=qc(u|0,y|0,t|0,h|0)|0;h=lc(s|0,d|0,h|0,y|0)|0;h=oc(h|0,y|0,1)|0;p=lc(h|0,y|0,r|0,p|0)|0;r=y;h=jc(0,c[l>>2]|0,32)|0;d=y;s=jc(0,c[i>>2]|0,32)|0;d=qc(s|0,y|0,h|0,d|0)|0;d=lc(p|0,r|0,d|0,y|0)|0;r=y;p=jc(0,c[f>>2]|0,32)|0;h=y;s=jc(0,c[q>>2]|0,32)|0;h=qc(s|0,y|0,p|0,h|0)|0;h=lc(d|0,r|0,h|0,y|0)|0;r=a+96|0;c[r>>2]=h;c[r+4>>2]=y;r=jc(0,c[j>>2]|0,32)|0;h=y;d=jc(0,c[m>>2]|0,32)|0;h=qc(d|0,y|0,r|0,h|0)|0;r=y;d=jc(0,c[g>>2]|0,32)|0;p=y;s=jc(0,c[k>>2]|0,32)|0;p=qc(s|0,y|0,d|0,p|0)|0;r=lc(p|0,y|0,h|0,r|0)|0;h=y;p=jc(0,c[n>>2]|0,32)|0;d=y;s=jc(0,c[i>>2]|0,32)|0;d=qc(s|0,y|0,p|0,d|0)|0;d=lc(r|0,h|0,d|0,y|0)|0;h=y;r=jc(0,c[f>>2]|0,32)|0;p=y;s=jc(0,c[o>>2]|0,32)|0;p=qc(s|0,y|0,r|0,p|0)|0;p=lc(d|0,h|0,p|0,y|0)|0;h=y;l=jc(0,c[l>>2]|0,32)|0;d=y;r=jc(0,c[e>>2]|0,32)|0;d=qc(r|0,y|0,l|0,d|0)|0;d=lc(p|0,h|0,d|0,y|0)|0;h=y;p=jc(0,c[b>>2]|0,32)|0;l=y;q=jc(0,c[q>>2]|0,32)|0;l=qc(q|0,y|0,p|0,l|0)|0;l=lc(d|0,h|0,l|0,y|0)|0;h=a+104|0;c[h>>2]=l;c[h+4>>2]=y;h=jc(0,c[g>>2]|0,32)|0;l=y;d=jc(0,c[m>>2]|0,32)|0;l=qc(d|0,y|0,h|0,l|0)|0;h=y;d=jc(0,c[n>>2]|0,32)|0;n=y;p=jc(0,c[e>>2]|0,32)|0;n=qc(p|0,y|0,d|0,n|0)|0;h=lc(n|0,y|0,l|0,h|0)|0;l=y;n=jc(0,c[b>>2]|0,32)|0;d=y;o=jc(0,c[o>>2]|0,32)|0;d=qc(o|0,y|0,n|0,d|0)|0;d=lc(h|0,l|0,d|0,y|0)|0;d=oc(d|0,y|0,1)|0;l=y;h=jc(0,c[j>>2]|0,32)|0;n=y;o=jc(0,c[i>>2]|0,32)|0;n=qc(o|0,y|0,h|0,n|0)|0;n=lc(d|0,l|0,n|0,y|0)|0;l=y;d=jc(0,c[f>>2]|0,32)|0;h=y;o=jc(0,c[k>>2]|0,32)|0;h=qc(o|0,y|0,d|0,h|0)|0;h=lc(n|0,l|0,h|0,y|0)|0;l=a+112|0;c[l>>2]=h;c[l+4>>2]=y;l=jc(0,c[g>>2]|0,32)|0;h=y;n=jc(0,c[i>>2]|0,32)|0;h=qc(n|0,y|0,l|0,h|0)|0;l=y;n=jc(0,c[f>>2]|0,32)|0;d=y;o=jc(0,c[m>>2]|0,32)|0;d=qc(o|0,y|0,n|0,d|0)|0;l=lc(d|0,y|0,h|0,l|0)|0;h=y;d=jc(0,c[j>>2]|0,32)|0;j=y;n=jc(0,c[e>>2]|0,32)|0;j=qc(n|0,y|0,d|0,j|0)|0;j=lc(l|0,h|0,j|0,y|0)|0;h=y;l=jc(0,c[b>>2]|0,32)|0;d=y;k=jc(0,c[k>>2]|0,32)|0;d=qc(k|0,y|0,l|0,d|0)|0;d=lc(j|0,h|0,d|0,y|0)|0;h=a+120|0;c[h>>2]=d;c[h+4>>2]=y;h=jc(0,c[f>>2]|0,32)|0;d=y;j=jc(0,c[i>>2]|0,32)|0;d=qc(j|0,y|0,h|0,d|0)|0;h=y;g=jc(0,c[g>>2]|0,32)|0;j=y;l=jc(0,c[e>>2]|0,32)|0;j=qc(l|0,y|0,g|0,j|0)|0;g=y;l=jc(0,c[b>>2]|0,32)|0;k=y;m=jc(0,c[m>>2]|0,32)|0;k=qc(m|0,y|0,l|0,k|0)|0;g=lc(k|0,y|0,j|0,g|0)|0;g=oc(g|0,y|0,1)|0;h=lc(g|0,y|0,d|0,h|0)|0;d=a+128|0;c[d>>2]=h;c[d+4>>2]=y;f=jc(0,c[f>>2]|0,32)|0;d=y;h=jc(0,c[e>>2]|0,32)|0;d=qc(h|0,y|0,f|0,d|0)|0;f=y;h=jc(0,c[b>>2]|0,32)|0;g=y;i=jc(0,c[i>>2]|0,32)|0;g=qc(i|0,y|0,h|0,g|0)|0;f=lc(g|0,y|0,d|0,f|0)|0;d=a+136|0;c[d>>2]=f;c[d+4>>2]=y;d=jc(0,c[b>>2]|0,31)|0;b=y;e=jc(0,c[e>>2]|0,32)|0;b=qc(e|0,y|0,d|0,b|0)|0;d=a+144|0;c[d>>2]=b;c[d+4>>2]=y;return}function Ea(a){a=a|0;var b=0,d=0,e=0,f=0,g=0,h=0,i=0;b=a+144|0;i=c[b>>2]|0;b=c[b+4>>2]|0;g=a+64|0;f=g;d=c[f>>2]|0;f=c[f+4>>2]|0;h=qc(i|0,b|0,18,0)|0;e=y;b=lc(d|0,f|0,i|0,b|0)|0;e=lc(b|0,y|0,h|0,e|0)|0;c[g>>2]=e;c[g+4>>2]=y;g=a+136|0;e=c[g>>2]|0;g=c[g+4>>2]|0;h=a+56|0;b=h;i=c[b>>2]|0;b=c[b+4>>2]|0;f=qc(e|0,g|0,18,0)|0;d=y;g=lc(i|0,b|0,e|0,g|0)|0;d=lc(g|0,y|0,f|0,d|0)|0;c[h>>2]=d;c[h+4>>2]=y;h=a+128|0;d=c[h>>2]|0;h=c[h+4>>2]|0;f=a+48|0;g=f;e=c[g>>2]|0;g=c[g+4>>2]|0;b=qc(d|0,h|0,18,0)|0;i=y;h=lc(e|0,g|0,d|0,h|0)|0;i=lc(h|0,y|0,b|0,i|0)|0;c[f>>2]=i;c[f+4>>2]=y;f=a+120|0;i=c[f>>2]|0;f=c[f+4>>2]|0;b=a+40|0;h=b;d=c[h>>2]|0;h=c[h+4>>2]|0;g=qc(i|0,f|0,18,0)|0;e=y;f=lc(d|0,h|0,i|0,f|0)|0;e=lc(f|0,y|0,g|0,e|0)|0;c[b>>2]=e;c[b+4>>2]=y;b=a+112|0;e=c[b>>2]|0;b=c[b+4>>2]|0;g=a+32|0;f=g;i=c[f>>2]|0;f=c[f+4>>2]|0;h=qc(e|0,b|0,18,0)|0;d=y;b=lc(i|0,f|0,e|0,b|0)|0;d=lc(b|0,y|0,h|0,d|0)|0;c[g>>2]=d;c[g+4>>2]=y;g=a+104|0;d=c[g>>2]|0;g=c[g+4>>2]|0;h=a+24|0;b=h;e=c[b>>2]|0;b=c[b+4>>2]|0;f=qc(d|0,g|0,18,0)|0;i=y;g=lc(e|0,b|0,d|0,g|0)|0;i=lc(g|0,y|0,f|0,i|0)|0;c[h>>2]=i;c[h+4>>2]=y;h=a+96|0;i=c[h>>2]|0;h=c[h+4>>2]|0;f=a+16|0;g=f;d=c[g>>2]|0;g=c[g+4>>2]|0;b=qc(i|0,h|0,18,0)|0;e=y;h=lc(d|0,g|0,i|0,h|0)|0;e=lc(h|0,y|0,b|0,e|0)|0;c[f>>2]=e;c[f+4>>2]=y;f=a+88|0;e=c[f>>2]|0;f=c[f+4>>2]|0;b=a+8|0;h=b;i=c[h>>2]|0;h=c[h+4>>2]|0;g=qc(e|0,f|0,18,0)|0;d=y;f=lc(i|0,h|0,e|0,f|0)|0;d=lc(f|0,y|0,g|0,d|0)|0;c[b>>2]=d;c[b+4>>2]=y;b=a+80|0;d=c[b>>2]|0;b=c[b+4>>2]|0;g=oc(d|0,b|0,4)|0;f=a;g=lc(c[f>>2]|0,c[f+4>>2]|0,g|0,y|0)|0;f=y;e=oc(d|0,b|0,1)|0;e=lc(g|0,f|0,e|0,y|0)|0;b=lc(e|0,y|0,d|0,b|0)|0;c[a>>2]=b;c[a+4>>2]=y;return}function Fa(a){a=a|0;var b=0,d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0;h=a;d=c[h>>2]|0;h=c[h+4>>2]|0;f=Ga(d,h)|0;i=y;k=oc(f|0,i|0,26)|0;k=kc(d|0,h|0,k|0,y|0)|0;h=y;d=a+8|0;m=d;i=lc(c[m>>2]|0,c[m+4>>2]|0,f|0,i|0)|0;f=y;m=Ha(i,f)|0;b=y;g=oc(m|0,b|0,25)|0;g=kc(i|0,f|0,g|0,y|0)|0;f=y;i=a+16|0;e=i;b=lc(c[e>>2]|0,c[e+4>>2]|0,m|0,b|0)|0;m=y;e=Ga(b,m)|0;j=y;l=oc(e|0,j|0,26)|0;l=kc(b|0,m|0,l|0,y|0)|0;c[i>>2]=l;c[i+4>>2]=y;i=a+24|0;l=i;j=lc(c[l>>2]|0,c[l+4>>2]|0,e|0,j|0)|0;e=y;l=Ha(j,e)|0;m=y;b=oc(l|0,m|0,25)|0;b=kc(j|0,e|0,b|0,y|0)|0;c[i>>2]=b;c[i+4>>2]=y;i=a+32|0;b=i;m=lc(c[b>>2]|0,c[b+4>>2]|0,l|0,m|0)|0;l=y;b=Ga(m,l)|0;e=y;j=oc(b|0,e|0,26)|0;j=kc(m|0,l|0,j|0,y|0)|0;c[i>>2]=j;c[i+4>>2]=y;i=a+40|0;j=i;e=lc(c[j>>2]|0,c[j+4>>2]|0,b|0,e|0)|0;b=y;j=Ha(e,b)|0;l=y;m=oc(j|0,l|0,25)|0;m=kc(e|0,b|0,m|0,y|0)|0;c[i>>2]=m;c[i+4>>2]=y;i=a+48|0;m=i;l=lc(c[m>>2]|0,c[m+4>>2]|0,j|0,l|0)|0;j=y;m=Ga(l,j)|0;b=y;e=oc(m|0,b|0,26)|0;e=kc(l|0,j|0,e|0,y|0)|0;c[i>>2]=e;c[i+4>>2]=y;i=a+56|0;e=i;b=lc(c[e>>2]|0,c[e+4>>2]|0,m|0,b|0)|0;m=y;e=Ha(b,m)|0;j=y;l=oc(e|0,j|0,25)|0;l=kc(b|0,m|0,l|0,y|0)|0;c[i>>2]=l;c[i+4>>2]=y;i=a+64|0;l=i;j=lc(c[l>>2]|0,c[l+4>>2]|0,e|0,j|0)|0;e=y;l=Ga(j,e)|0;m=y;b=oc(l|0,m|0,26)|0;b=kc(j|0,e|0,b|0,y|0)|0;c[i>>2]=b;c[i+4>>2]=y;i=a+72|0;b=i;m=lc(c[b>>2]|0,c[b+4>>2]|0,l|0,m|0)|0;l=y;b=Ha(m,l)|0;e=y;j=oc(b|0,e|0,25)|0;j=kc(m|0,l|0,j|0,y|0)|0;c[i>>2]=j;c[i+4>>2]=y;i=qc(b|0,e|0,18,0)|0;j=y;e=lc(k|0,h|0,b|0,e|0)|0;j=lc(e|0,y|0,i|0,j|0)|0;i=y;e=a+80|0;c[e>>2]=0;c[e+4>>2]=0;e=Ga(j,i)|0;b=y;h=oc(e|0,b|0,26)|0;h=kc(j|0,i|0,h|0,y|0)|0;c[a>>2]=h;c[a+4>>2]=y;b=lc(g|0,f|0,e|0,b|0)|0;a=d;c[a>>2]=b;c[a+4>>2]=y;return}function Ga(a,b){a=a|0;b=b|0;b=lc(b>>31>>>6|0,0,a|0,b|0)|0;b=jc(b|0,y|0,26)|0;return b|0}function Ha(a,b){a=a|0;b=b|0;b=lc(b>>31>>>7|0,0,a|0,b|0)|0;b=jc(b|0,y|0,25)|0;return b|0}function Ia(a,b){a=a|0;b=b|0;var d=0,e=0;e=l;l=l+160|0;d=e;Ja(d,b);Ea(d);Fa(d);b=d;d=a+80|0;do{c[a>>2]=c[b>>2];a=a+4|0;b=b+4|0}while((a|0)<(d|0));l=e;return}function Ja(a,b){a=a|0;b=b|0;var d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0;l=jc(0,c[b>>2]|0,32)|0;e=y;e=qc(l|0,e|0,l|0,e|0)|0;l=a;c[l>>2]=e;c[l+4>>2]=y;l=jc(0,c[b>>2]|0,31)|0;e=y;o=b+8|0;m=jc(0,c[o>>2]|0,32)|0;e=qc(m|0,y|0,l|0,e|0)|0;l=a+8|0;c[l>>2]=e;c[l+4>>2]=y;l=jc(0,c[o>>2]|0,32)|0;e=y;e=qc(l|0,e|0,l|0,e|0)|0;l=y;m=jc(0,c[b>>2]|0,32)|0;g=y;k=b+16|0;p=jc(0,c[k>>2]|0,32)|0;g=qc(p|0,y|0,m|0,g|0)|0;l=lc(g|0,y|0,e|0,l|0)|0;l=oc(l|0,y|0,1)|0;e=a+16|0;c[e>>2]=l;c[e+4>>2]=y;e=jc(0,c[o>>2]|0,32)|0;l=y;g=jc(0,c[k>>2]|0,32)|0;l=qc(g|0,y|0,e|0,l|0)|0;e=y;g=jc(0,c[b>>2]|0,32)|0;m=y;p=b+24|0;f=jc(0,c[p>>2]|0,32)|0;m=qc(f|0,y|0,g|0,m|0)|0;e=lc(m|0,y|0,l|0,e|0)|0;e=oc(e|0,y|0,1)|0;l=a+24|0;c[l>>2]=e;c[l+4>>2]=y;l=jc(0,c[k>>2]|0,32)|0;e=y;e=qc(l|0,e|0,l|0,e|0)|0;l=y;m=jc(0,c[o>>2]|0,30)|0;g=y;f=jc(0,c[p>>2]|0,32)|0;g=qc(f|0,y|0,m|0,g|0)|0;l=lc(g|0,y|0,e|0,l|0)|0;e=y;g=jc(0,c[b>>2]|0,31)|0;m=y;f=b+32|0;j=jc(0,c[f>>2]|0,32)|0;m=qc(j|0,y|0,g|0,m|0)|0;m=lc(l|0,e|0,m|0,y|0)|0;e=a+32|0;c[e>>2]=m;c[e+4>>2]=y;e=jc(0,c[k>>2]|0,32)|0;m=y;l=jc(0,c[p>>2]|0,32)|0;m=qc(l|0,y|0,e|0,m|0)|0;e=y;l=jc(0,c[o>>2]|0,32)|0;g=y;j=jc(0,c[f>>2]|0,32)|0;g=qc(j|0,y|0,l|0,g|0)|0;e=lc(g|0,y|0,m|0,e|0)|0;m=y;g=jc(0,c[b>>2]|0,32)|0;l=y;j=b+40|0;i=jc(0,c[j>>2]|0,32)|0;l=qc(i|0,y|0,g|0,l|0)|0;l=lc(e|0,m|0,l|0,y|0)|0;l=oc(l|0,y|0,1)|0;m=a+40|0;c[m>>2]=l;c[m+4>>2]=y;m=jc(0,c[p>>2]|0,32)|0;l=y;l=qc(m|0,l|0,m|0,l|0)|0;m=y;e=jc(0,c[k>>2]|0,32)|0;g=y;i=jc(0,c[f>>2]|0,32)|0;g=qc(i|0,y|0,e|0,g|0)|0;m=lc(g|0,y|0,l|0,m|0)|0;l=y;g=jc(0,c[b>>2]|0,32)|0;e=y;i=b+48|0;h=jc(0,c[i>>2]|0,32)|0;e=qc(h|0,y|0,g|0,e|0)|0;e=lc(m|0,l|0,e|0,y|0)|0;l=y;m=jc(0,c[o>>2]|0,31)|0;g=y;h=jc(0,c[j>>2]|0,32)|0;g=qc(h|0,y|0,m|0,g|0)|0;g=lc(e|0,l|0,g|0,y|0)|0;g=oc(g|0,y|0,1)|0;l=a+48|0;c[l>>2]=g;c[l+4>>2]=y;l=jc(0,c[p>>2]|0,32)|0;g=y;e=jc(0,c[f>>2]|0,32)|0;g=qc(e|0,y|0,l|0,g|0)|0;l=y;e=jc(0,c[k>>2]|0,32)|0;m=y;h=jc(0,c[j>>2]|0,32)|0;m=qc(h|0,y|0,e|0,m|0)|0;l=lc(m|0,y|0,g|0,l|0)|0;g=y;m=jc(0,c[o>>2]|0,32)|0;e=y;h=jc(0,c[i>>2]|0,32)|0;e=qc(h|0,y|0,m|0,e|0)|0;e=lc(l|0,g|0,e|0,y|0)|0;g=y;l=jc(0,c[b>>2]|0,32)|0;m=y;h=b+56|0;q=jc(0,c[h>>2]|0,32)|0;m=qc(q|0,y|0,l|0,m|0)|0;m=lc(e|0,g|0,m|0,y|0)|0;m=oc(m|0,y|0,1)|0;g=a+56|0;c[g>>2]=m;c[g+4>>2]=y;g=jc(0,c[f>>2]|0,32)|0;m=y;m=qc(g|0,m|0,g|0,m|0)|0;g=y;e=jc(0,c[k>>2]|0,32)|0;l=y;q=jc(0,c[i>>2]|0,32)|0;l=qc(q|0,y|0,e|0,l|0)|0;e=y;q=jc(0,c[b>>2]|0,32)|0;n=y;d=b+64|0;s=jc(0,c[d>>2]|0,32)|0;n=qc(s|0,y|0,q|0,n|0)|0;e=lc(n|0,y|0,l|0,e|0)|0;l=y;n=jc(0,c[o>>2]|0,32)|0;q=y;s=jc(0,c[h>>2]|0,32)|0;q=qc(s|0,y|0,n|0,q|0)|0;n=y;s=jc(0,c[p>>2]|0,32)|0;r=y;t=jc(0,c[j>>2]|0,32)|0;r=qc(t|0,y|0,s|0,r|0)|0;n=lc(r|0,y|0,q|0,n|0)|0;n=oc(n|0,y|0,1)|0;n=lc(e|0,l|0,n|0,y|0)|0;n=oc(n|0,y|0,1)|0;g=lc(n|0,y|0,m|0,g|0)|0;m=a+64|0;c[m>>2]=g;c[m+4>>2]=y;m=jc(0,c[f>>2]|0,32)|0;g=y;n=jc(0,c[j>>2]|0,32)|0;g=qc(n|0,y|0,m|0,g|0)|0;m=y;n=jc(0,c[p>>2]|0,32)|0;l=y;e=jc(0,c[i>>2]|0,32)|0;l=qc(e|0,y|0,n|0,l|0)|0;m=lc(l|0,y|0,g|0,m|0)|0;g=y;l=jc(0,c[k>>2]|0,32)|0;n=y;e=jc(0,c[h>>2]|0,32)|0;n=qc(e|0,y|0,l|0,n|0)|0;n=lc(m|0,g|0,n|0,y|0)|0;g=y;m=jc(0,c[o>>2]|0,32)|0;l=y;e=jc(0,c[d>>2]|0,32)|0;l=qc(e|0,y|0,m|0,l|0)|0;l=lc(n|0,g|0,l|0,y|0)|0;g=y;n=jc(0,c[b>>2]|0,32)|0;m=y;e=b+72|0;b=jc(0,c[e>>2]|0,32)|0;b=qc(b|0,y|0,n|0,m|0)|0;b=lc(l|0,g|0,b|0,y|0)|0;b=oc(b|0,y|0,1)|0;g=a+72|0;c[g>>2]=b;c[g+4>>2]=y;g=jc(0,c[j>>2]|0,32)|0;b=y;b=qc(g|0,b|0,g|0,b|0)|0;g=y;l=jc(0,c[f>>2]|0,32)|0;m=y;n=jc(0,c[i>>2]|0,32)|0;m=qc(n|0,y|0,l|0,m|0)|0;g=lc(m|0,y|0,b|0,g|0)|0;b=y;m=jc(0,c[k>>2]|0,32)|0;l=y;n=jc(0,c[d>>2]|0,32)|0;l=qc(n|0,y|0,m|0,l|0)|0;l=lc(g|0,b|0,l|0,y|0)|0;b=y;g=jc(0,c[p>>2]|0,32)|0;m=y;n=jc(0,c[h>>2]|0,32)|0;m=qc(n|0,y|0,g|0,m|0)|0;g=y;o=jc(0,c[o>>2]|0,32)|0;n=y;q=jc(0,c[e>>2]|0,32)|0;n=qc(q|0,y|0,o|0,n|0)|0;g=lc(n|0,y|0,m|0,g|0)|0;g=oc(g|0,y|0,1)|0;g=lc(l|0,b|0,g|0,y|0)|0;g=oc(g|0,y|0,1)|0;b=a+80|0;c[b>>2]=g;c[b+4>>2]=y;b=jc(0,c[j>>2]|0,32)|0;g=y;l=jc(0,c[i>>2]|0,32)|0;g=qc(l|0,y|0,b|0,g|0)|0;b=y;l=jc(0,c[f>>2]|0,32)|0;m=y;n=jc(0,c[h>>2]|0,32)|0;m=qc(n|0,y|0,l|0,m|0)|0;b=lc(m|0,y|0,g|0,b|0)|0;g=y;m=jc(0,c[p>>2]|0,32)|0;l=y;n=jc(0,c[d>>2]|0,32)|0;l=qc(n|0,y|0,m|0,l|0)|0;l=lc(b|0,g|0,l|0,y|0)|0;g=y;b=jc(0,c[k>>2]|0,32)|0;k=y;m=jc(0,c[e>>2]|0,32)|0;k=qc(m|0,y|0,b|0,k|0)|0;k=lc(l|0,g|0,k|0,y|0)|0;k=oc(k|0,y|0,1)|0;g=a+88|0;c[g>>2]=k;c[g+4>>2]=y;g=jc(0,c[i>>2]|0,32)|0;k=y;k=qc(g|0,k|0,g|0,k|0)|0;g=y;l=jc(0,c[f>>2]|0,32)|0;b=y;m=jc(0,c[d>>2]|0,32)|0;b=qc(m|0,y|0,l|0,b|0)|0;l=y;m=jc(0,c[j>>2]|0,32)|0;n=y;o=jc(0,c[h>>2]|0,32)|0;n=qc(o|0,y|0,m|0,n|0)|0;m=y;p=jc(0,c[p>>2]|0,32)|0;o=y;q=jc(0,c[e>>2]|0,32)|0;o=qc(q|0,y|0,p|0,o|0)|0;m=lc(o|0,y|0,n|0,m|0)|0;m=oc(m|0,y|0,1)|0;l=lc(m|0,y|0,b|0,l|0)|0;l=oc(l|0,y|0,1)|0;g=lc(l|0,y|0,k|0,g|0)|0;k=a+96|0;c[k>>2]=g;c[k+4>>2]=y;k=jc(0,c[i>>2]|0,32)|0;g=y;l=jc(0,c[h>>2]|0,32)|0;g=qc(l|0,y|0,k|0,g|0)|0;k=y;l=jc(0,c[j>>2]|0,32)|0;b=y;m=jc(0,c[d>>2]|0,32)|0;b=qc(m|0,y|0,l|0,b|0)|0;k=lc(b|0,y|0,g|0,k|0)|0;g=y;f=jc(0,c[f>>2]|0,32)|0;b=y;l=jc(0,c[e>>2]|0,32)|0;b=qc(l|0,y|0,f|0,b|0)|0;b=lc(k|0,g|0,b|0,y|0)|0;b=oc(b|0,y|0,1)|0;g=a+104|0;c[g>>2]=b;c[g+4>>2]=y;g=jc(0,c[h>>2]|0,32)|0;b=y;b=qc(g|0,b|0,g|0,b|0)|0;g=y;k=jc(0,c[i>>2]|0,32)|0;f=y;l=jc(0,c[d>>2]|0,32)|0;f=qc(l|0,y|0,k|0,f|0)|0;g=lc(f|0,y|0,b|0,g|0)|0;b=y;j=jc(0,c[j>>2]|0,31)|0;f=y;k=jc(0,c[e>>2]|0,32)|0;f=qc(k|0,y|0,j|0,f|0)|0;f=lc(g|0,b|0,f|0,y|0)|0;f=oc(f|0,y|0,1)|0;b=a+112|0;c[b>>2]=f;c[b+4>>2]=y;b=jc(0,c[h>>2]|0,32)|0;f=y;g=jc(0,c[d>>2]|0,32)|0;f=qc(g|0,y|0,b|0,f|0)|0;b=y;i=jc(0,c[i>>2]|0,32)|0;g=y;j=jc(0,c[e>>2]|0,32)|0;g=qc(j|0,y|0,i|0,g|0)|0;b=lc(g|0,y|0,f|0,b|0)|0;b=oc(b|0,y|0,1)|0;f=a+120|0;c[f>>2]=b;c[f+4>>2]=y;f=jc(0,c[d>>2]|0,32)|0;b=y;b=qc(f|0,b|0,f|0,b|0)|0;f=y;h=jc(0,c[h>>2]|0,30)|0;g=y;i=jc(0,c[e>>2]|0,32)|0;g=qc(i|0,y|0,h|0,g|0)|0;f=lc(g|0,y|0,b|0,f|0)|0;b=a+128|0;c[b>>2]=f;c[b+4>>2]=y;b=jc(0,c[d>>2]|0,31)|0;d=y;f=jc(0,c[e>>2]|0,32)|0;d=qc(f|0,y|0,b|0,d|0)|0;b=a+136|0;c[b>>2]=d;c[b+4>>2]=y;e=c[e>>2]|0;b=jc(0,e|0,32)|0;d=y;e=jc(0,e|0,31)|0;d=qc(e|0,y|0,b|0,d|0)|0;b=a+144|0;c[b>>2]=d;c[b+4>>2]=y;return}function Ka(a,b,d,e){a=a|0;b=b|0;d=d|0;e=e|0;var f=0,g=0,h=0,i=0,j=0,k=0;d=kc(0,0,d|0,e|0)|0;i=y;g=a;e=c[g>>2]|0;g=c[g+4>>2]|0;f=b;h=(c[f>>2]^e)&d;f=(c[f+4>>2]^g)&i;e=jc(0,h^e|0,32)|0;g=a;c[g>>2]=e;c[g+4>>2]=y;g=b;h=jc(0,c[g>>2]^h|0,32)|0;g=b;c[g>>2]=h;c[g+4>>2]=y;g=a+8|0;h=g;f=c[h>>2]|0;h=c[h+4>>2]|0;e=b+8|0;j=e;k=(c[j>>2]^f)&d;j=(c[j+4>>2]^h)&i;f=jc(0,k^f|0,32)|0;c[g>>2]=f;c[g+4>>2]=y;g=e;k=jc(0,c[g>>2]^k|0,32)|0;c[e>>2]=k;c[e+4>>2]=y;e=a+16|0;k=e;g=c[k>>2]|0;k=c[k+4>>2]|0;j=b+16|0;f=j;h=(c[f>>2]^g)&d;f=(c[f+4>>2]^k)&i;g=jc(0,h^g|0,32)|0;c[e>>2]=g;c[e+4>>2]=y;e=j;h=jc(0,c[e>>2]^h|0,32)|0;c[j>>2]=h;c[j+4>>2]=y;j=a+24|0;h=j;e=c[h>>2]|0;h=c[h+4>>2]|0;f=b+24|0;g=f;k=(c[g>>2]^e)&d;g=(c[g+4>>2]^h)&i;e=jc(0,k^e|0,32)|0;c[j>>2]=e;c[j+4>>2]=y;j=f;k=jc(0,c[j>>2]^k|0,32)|0;c[f>>2]=k;c[f+4>>2]=y;f=a+32|0;k=f;j=c[k>>2]|0;k=c[k+4>>2]|0;g=b+32|0;e=g;h=(c[e>>2]^j)&d;e=(c[e+4>>2]^k)&i;j=jc(0,h^j|0,32)|0;c[f>>2]=j;c[f+4>>2]=y;f=g;h=jc(0,c[f>>2]^h|0,32)|0;c[g>>2]=h;c[g+4>>2]=y;g=a+40|0;h=g;f=c[h>>2]|0;h=c[h+4>>2]|0;e=b+40|0;j=e;k=(c[j>>2]^f)&d;j=(c[j+4>>2]^h)&i;f=jc(0,k^f|0,32)|0;c[g>>2]=f;c[g+4>>2]=y;g=e;k=jc(0,c[g>>2]^k|0,32)|0;c[e>>2]=k;c[e+4>>2]=y;e=a+48|0;k=e;g=c[k>>2]|0;k=c[k+4>>2]|0;j=b+48|0;f=j;h=(c[f>>2]^g)&d;f=(c[f+4>>2]^k)&i;g=jc(0,h^g|0,32)|0;c[e>>2]=g;c[e+4>>2]=y;e=j;h=jc(0,c[e>>2]^h|0,32)|0;c[j>>2]=h;c[j+4>>2]=y;j=a+56|0;h=j;e=c[h>>2]|0;h=c[h+4>>2]|0;f=b+56|0;g=f;k=(c[g>>2]^e)&d;g=(c[g+4>>2]^h)&i;e=jc(0,k^e|0,32)|0;c[j>>2]=e;c[j+4>>2]=y;j=f;k=jc(0,c[j>>2]^k|0,32)|0;c[f>>2]=k;c[f+4>>2]=y;f=a+64|0;k=f;j=c[k>>2]|0;k=c[k+4>>2]|0;g=b+64|0;e=g;h=(c[e>>2]^j)&d;e=(c[e+4>>2]^k)&i;j=jc(0,h^j|0,32)|0;c[f>>2]=j;c[f+4>>2]=y;f=g;h=jc(0,c[f>>2]^h|0,32)|0;c[g>>2]=h;c[g+4>>2]=y;g=a+72|0;h=g;f=c[h>>2]|0;h=c[h+4>>2]|0;e=b+72|0;a=e;d=(c[a>>2]^f)&d;a=(c[a+4>>2]^h)&i;f=jc(0,d^f|0,32)|0;b=g;c[b>>2]=f;c[b+4>>2]=y;b=e;d=jc(0,c[b>>2]^d|0,32)|0;c[e>>2]=d;c[e+4>>2]=y;return}function La(a,b,d,e,f,g,h,i,j){a=a|0;b=b|0;d=d|0;e=e|0;f=f|0;g=g|0;h=h|0;i=i|0;j=j|0;var k=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0;v=l;l=l+1232|0;t=v+1144|0;k=v+1064|0;m=v+912|0;n=v+760|0;o=v+608|0;p=v+456|0;q=v+304|0;r=v+152|0;s=v;u=t;w=f;x=u+80|0;do{c[u>>2]=c[w>>2];u=u+4|0;w=w+4|0}while((u|0)<(x|0));Ma(f,g);Na(g,t);u=k;w=h;x=u+80|0;do{c[u>>2]=c[w>>2];u=u+4|0;w=w+4|0}while((u|0)<(x|0));Ma(h,i);Na(i,k);Da(p,h,g);Da(q,f,i);Ea(p);Fa(p);Ea(q);Fa(q);u=k;w=p;x=u+80|0;do{c[u>>2]=c[w>>2];u=u+4|0;w=w+4|0}while((u|0)<(x|0));Ma(p,q);Na(q,k);Ia(s,p);Ia(r,q);Da(q,r,j);Ea(q);Fa(q);u=d;w=s;x=u+80|0;do{c[u>>2]=c[w>>2];u=u+4|0;w=w+4|0}while((u|0)<(x|0));u=e;w=q;x=u+80|0;do{c[u>>2]=c[w>>2];u=u+4|0;w=w+4|0}while((u|0)<(x|0));Ia(n,f);Ia(o,g);Da(a,n,o);Ea(a);Fa(a);Na(o,n);u=m+80|0;x=u+72|0;do{c[u>>2]=0;u=u+4|0}while((u|0)<(x|0));Oa(m,o);Fa(m);Ma(m,n);Da(b,o,m);Ea(b);Fa(b);l=v;return}function Ma(a,b){a=a|0;b=b|0;var d=0,e=0,f=0;e=a;d=b;e=lc(c[d>>2]|0,c[d+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;d=a;c[d>>2]=e;c[d+4>>2]=y;d=a+8|0;e=d;f=b+8|0;e=lc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=a+16|0;e=d;f=b+16|0;e=lc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=a+24|0;e=d;f=b+24|0;e=lc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=a+32|0;e=d;f=b+32|0;e=lc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=a+40|0;e=d;f=b+40|0;e=lc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=a+48|0;e=d;f=b+48|0;e=lc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=a+56|0;e=d;f=b+56|0;e=lc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=a+64|0;e=d;f=b+64|0;e=lc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=a+72|0;a=d;b=b+72|0;a=lc(c[b>>2]|0,c[b+4>>2]|0,c[a>>2]|0,c[a+4>>2]|0)|0;b=d;c[b>>2]=a;c[b+4>>2]=y;return}function Na(a,b){a=a|0;b=b|0;var d=0,e=0,f=0;e=b;f=a;f=kc(c[e>>2]|0,c[e+4>>2]|0,c[f>>2]|0,c[f+4>>2]|0)|0;e=a;c[e>>2]=f;c[e+4>>2]=y;e=b+8|0;f=a+8|0;d=f;d=kc(c[e>>2]|0,c[e+4>>2]|0,c[d>>2]|0,c[d+4>>2]|0)|0;c[f>>2]=d;c[f+4>>2]=y;f=b+16|0;d=a+16|0;e=d;e=kc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=b+24|0;e=a+24|0;f=e;f=kc(c[d>>2]|0,c[d+4>>2]|0,c[f>>2]|0,c[f+4>>2]|0)|0;c[e>>2]=f;c[e+4>>2]=y;e=b+32|0;f=a+32|0;d=f;d=kc(c[e>>2]|0,c[e+4>>2]|0,c[d>>2]|0,c[d+4>>2]|0)|0;c[f>>2]=d;c[f+4>>2]=y;f=b+40|0;d=a+40|0;e=d;e=kc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=b+48|0;e=a+48|0;f=e;f=kc(c[d>>2]|0,c[d+4>>2]|0,c[f>>2]|0,c[f+4>>2]|0)|0;c[e>>2]=f;c[e+4>>2]=y;e=b+56|0;f=a+56|0;d=f;d=kc(c[e>>2]|0,c[e+4>>2]|0,c[d>>2]|0,c[d+4>>2]|0)|0;c[f>>2]=d;c[f+4>>2]=y;f=b+64|0;d=a+64|0;e=d;e=kc(c[f>>2]|0,c[f+4>>2]|0,c[e>>2]|0,c[e+4>>2]|0)|0;c[d>>2]=e;c[d+4>>2]=y;d=b+72|0;b=a+72|0;a=b;a=kc(c[d>>2]|0,c[d+4>>2]|0,c[a>>2]|0,c[a+4>>2]|0)|0;c[b>>2]=a;c[b+4>>2]=y;return}function Oa(a,b){a=a|0;b=b|0;var d=0,e=0;e=b;e=qc(c[e>>2]|0,c[e+4>>2]|0,121665,0)|0;d=a;c[d>>2]=e;c[d+4>>2]=y;d=b+8|0;d=qc(c[d>>2]|0,c[d+4>>2]|0,121665,0)|0;e=a+8|0;c[e>>2]=d;c[e+4>>2]=y;e=b+16|0;e=qc(c[e>>2]|0,c[e+4>>2]|0,121665,0)|0;d=a+16|0;c[d>>2]=e;c[d+4>>2]=y;d=b+24|0;d=qc(c[d>>2]|0,c[d+4>>2]|0,121665,0)|0;e=a+24|0;c[e>>2]=d;c[e+4>>2]=y;e=b+32|0;e=qc(c[e>>2]|0,c[e+4>>2]|0,121665,0)|0;d=a+32|0;c[d>>2]=e;c[d+4>>2]=y;d=b+40|0;d=qc(c[d>>2]|0,c[d+4>>2]|0,121665,0)|0;e=a+40|0;c[e>>2]=d;c[e+4>>2]=y;e=b+48|0;e=qc(c[e>>2]|0,c[e+4>>2]|0,121665,0)|0;d=a+48|0;c[d>>2]=e;c[d+4>>2]=y;d=b+56|0;d=qc(c[d>>2]|0,c[d+4>>2]|0,121665,0)|0;e=a+56|0;c[e>>2]=d;c[e+4>>2]=y;e=b+64|0;e=qc(c[e>>2]|0,c[e+4>>2]|0,121665,0)|0;d=a+64|0;c[d>>2]=e;c[d+4>>2]=y;d=b+72|0;d=qc(c[d>>2]|0,c[d+4>>2]|0,121665,0)|0;b=a+72|0;c[b>>2]=d;c[b+4>>2]=y;return}function Pa(a){a=a|0;var b=0;b=a+40|0;do{c[a>>2]=0;a=a+4|0}while((a|0)<(b|0));return}function Qa(a){a=a|0;var b=0;c[a>>2]=1;a=a+4|0;b=a+36|0;do{c[a>>2]=0;a=a+4|0}while((a|0)<(b|0));return}function Ra(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0;m=(c[d+4>>2]|0)+(c[b+4>>2]|0)|0;l=(c[d+8>>2]|0)+(c[b+8>>2]|0)|0;k=(c[d+12>>2]|0)+(c[b+12>>2]|0)|0;j=(c[d+16>>2]|0)+(c[b+16>>2]|0)|0;i=(c[d+20>>2]|0)+(c[b+20>>2]|0)|0;h=(c[d+24>>2]|0)+(c[b+24>>2]|0)|0;g=(c[d+28>>2]|0)+(c[b+28>>2]|0)|0;f=(c[d+32>>2]|0)+(c[b+32>>2]|0)|0;e=(c[d+36>>2]|0)+(c[b+36>>2]|0)|0;c[a>>2]=(c[d>>2]|0)+(c[b>>2]|0);c[a+4>>2]=m;c[a+8>>2]=l;c[a+12>>2]=k;c[a+16>>2]=j;c[a+20>>2]=i;c[a+24>>2]=h;c[a+28>>2]=g;c[a+32>>2]=f;c[a+36>>2]=e;return}function Sa(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,y=0,z=0,A=0,B=0,C=0,D=0,E=0,F=0;E=c[a>>2]|0;B=a+4|0;C=c[B>>2]|0;y=a+8|0;z=c[y>>2]|0;v=a+12|0;w=c[v>>2]|0;s=a+16|0;t=c[s>>2]|0;p=a+20|0;q=c[p>>2]|0;m=a+24|0;n=c[m>>2]|0;j=a+28|0;k=c[j>>2]|0;g=a+32|0;h=c[g>>2]|0;e=a+36|0;f=c[e>>2]|0;F=0-d|0;D=(c[b+4>>2]^C)&F;A=(c[b+8>>2]^z)&F;x=(c[b+12>>2]^w)&F;u=(c[b+16>>2]^t)&F;r=(c[b+20>>2]^q)&F;o=(c[b+24>>2]^n)&F;l=(c[b+28>>2]^k)&F;i=(c[b+32>>2]^h)&F;d=(c[b+36>>2]^f)&F;c[a>>2]=(c[b>>2]^E)&F^E;c[B>>2]=D^C;c[y>>2]=A^z;c[v>>2]=x^w;c[s>>2]=u^t;c[p>>2]=r^q;c[m>>2]=o^n;c[j>>2]=l^k;c[g>>2]=i^h;c[e>>2]=d^f;return}function Ta(a,b){a=a|0;b=b|0;var d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0;l=c[b+4>>2]|0;k=c[b+8>>2]|0;j=c[b+12>>2]|0;i=c[b+16>>2]|0;h=c[b+20>>2]|0;g=c[b+24>>2]|0;f=c[b+28>>2]|0;e=c[b+32>>2]|0;d=c[b+36>>2]|0;c[a>>2]=c[b>>2];c[a+4>>2]=l;c[a+8>>2]=k;c[a+12>>2]=j;c[a+16>>2]=i;c[a+20>>2]=h;c[a+24>>2]=g;c[a+28>>2]=f;c[a+32>>2]=e;c[a+36>>2]=d;return}function Ua(b,d){b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,z=0,A=0,B=0,C=0,D=0,E=0;z=Va(d)|0;k=y;j=Wa(a[d+4>>0]|0,a[d+5>>0]|0,a[d+6>>0]|0)|0;j=oc(j|0,y|0,6)|0;l=y;w=Wa(a[d+7>>0]|0,a[d+8>>0]|0,a[d+9>>0]|0)|0;w=oc(w|0,y|0,5)|0;i=y;C=Wa(a[d+10>>0]|0,a[d+11>>0]|0,a[d+12>>0]|0)|0;C=oc(C|0,y|0,3)|0;B=y;s=Wa(a[d+13>>0]|0,a[d+14>>0]|0,a[d+15>>0]|0)|0;s=oc(s|0,y|0,2)|0;g=y;f=Va(d+16|0)|0;h=y;p=Wa(a[d+20>>0]|0,a[d+21>>0]|0,a[d+22>>0]|0)|0;p=oc(p|0,y|0,7)|0;e=y;v=Wa(a[d+23>>0]|0,a[d+24>>0]|0,a[d+25>>0]|0)|0;v=oc(v|0,y|0,5)|0;u=y;n=Wa(a[d+26>>0]|0,a[d+27>>0]|0,a[d+28>>0]|0)|0;n=oc(n|0,y|0,4)|0;o=y;r=Wa(a[d+29>>0]|0,a[d+30>>0]|0,a[d+31>>0]|0)|0;r=oc(r|0,y|0,2)|0;r=r&33554428;d=lc(r|0,0,16777216,0)|0;d=nc(d|0,y|0,25)|0;q=y;A=kc(0,0,d|0,q|0)|0;k=lc(A&19|0,0,z|0,k|0)|0;z=y;q=oc(d|0,q|0,25)|0;d=y;A=lc(j|0,l|0,16777216,0)|0;A=jc(A|0,y|0,25)|0;E=y;i=lc(w|0,i|0,A|0,E|0)|0;w=y;E=oc(A|0,E|0,25)|0;E=kc(j|0,l|0,E|0,y|0)|0;l=y;j=lc(C|0,B|0,16777216,0)|0;j=jc(j|0,y|0,25)|0;A=y;g=lc(s|0,g|0,j|0,A|0)|0;s=y;A=oc(j|0,A|0,25)|0;j=y;t=lc(f|0,h|0,16777216,0)|0;t=jc(t|0,y|0,25)|0;x=y;e=lc(p|0,e|0,t|0,x|0)|0;p=y;x=oc(t|0,x|0,25)|0;x=kc(f|0,h|0,x|0,y|0)|0;h=y;f=lc(v|0,u|0,16777216,0)|0;f=jc(f|0,y|0,25)|0;t=y;o=lc(n|0,o|0,f|0,t|0)|0;n=y;t=oc(f|0,t|0,25)|0;f=y;D=lc(k|0,z|0,33554432,0)|0;D=jc(D|0,y|0,26)|0;m=y;l=lc(E|0,l|0,D|0,m|0)|0;m=oc(D|0,m|0,26)|0;m=kc(k|0,z|0,m|0,y|0)|0;z=lc(i|0,w|0,33554432,0)|0;z=jc(z|0,y|0,26)|0;k=y;B=lc(C|0,B|0,z|0,k|0)|0;j=kc(B|0,y|0,A|0,j|0)|0;k=oc(z|0,k|0,26)|0;k=kc(i|0,w|0,k|0,y|0)|0;w=lc(g|0,s|0,33554432,0)|0;w=jc(w|0,y|0,26)|0;i=y;h=lc(x|0,h|0,w|0,i|0)|0;i=oc(w|0,i|0,26)|0;i=kc(g|0,s|0,i|0,y|0)|0;s=lc(e|0,p|0,33554432,0)|0;s=jc(s|0,y|0,26)|0;g=y;u=lc(v|0,u|0,s|0,g|0)|0;f=kc(u|0,y|0,t|0,f|0)|0;g=oc(s|0,g|0,26)|0;g=kc(e|0,p|0,g|0,y|0)|0;p=lc(o|0,n|0,33554432,0)|0;p=jc(p|0,y|0,26)|0;e=y;r=lc(r|0,0,p|0,e|0)|0;d=kc(r|0,y|0,q|0,d|0)|0;e=oc(p|0,e|0,26)|0;e=kc(o|0,n|0,e|0,y|0)|0;c[b>>2]=m;c[b+4>>2]=l;c[b+8>>2]=k;c[b+12>>2]=j;c[b+16>>2]=i;c[b+20>>2]=h;c[b+24>>2]=g;c[b+28>>2]=f;c[b+32>>2]=e;c[b+36>>2]=d;return}function Va(a){a=a|0;var b=0,c=0,e=0,f=0;c=d[a>>0]|0;e=oc(d[a+1>>0]|0|0,0,8)|0;f=y;b=oc(d[a+2>>0]|0|0,0,16)|0;f=f|y;a=oc(d[a+3>>0]|0|0,0,24)|0;y=f|y;return e|c|b|a|0}function Wa(a,b,c){a=a|0;b=b|0;c=c|0;var d=0;b=oc(b&255|0,0,8)|0;d=y;c=oc(c&255|0,0,16)|0;y=d|y;return b|a&255|c|0}function Xa(a,b){a=a|0;b=b|0;var c=0,d=0,e=0,f=0,g=0;g=l;l=l+160|0;d=g+120|0;e=g+80|0;f=g+40|0;c=g;cb(d,b);cb(e,d);cb(e,e);_a(e,b,e);_a(d,d,e);cb(f,d);_a(e,e,f);cb(f,e);cb(f,f);cb(f,f);cb(f,f);cb(f,f);_a(e,f,e);cb(f,e);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);_a(f,f,e);cb(c,f);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);cb(c,c);_a(f,c,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);_a(e,f,e);cb(f,e);b=1;do{cb(f,f);b=b+1|0}while((b|0)!=50);_a(f,f,e);cb(c,f);b=1;do{cb(c,c);b=b+1|0}while((b|0)!=100);_a(f,c,f);cb(f,f);b=1;do{cb(f,f);b=b+1|0}while((b|0)!=50);_a(e,f,e);cb(e,e);cb(e,e);cb(e,e);cb(e,e);cb(e,e);_a(a,e,d);l=g;return}function Ya(b){b=b|0;var c=0,d=0;d=l;l=l+32|0;c=d;eb(c,b);l=d;return a[c>>0]&1|0}function Za(a){a=a|0;var b=0,c=0;b=l;l=l+32|0;c=b;eb(c,a);a=qa(c,33460)|0;l=b;return a|0}function _a(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,z=0,A=0,B=0,C=0,D=0,E=0,F=0,G=0,H=0,I=0,J=0,K=0,L=0,M=0,N=0,O=0,P=0,Q=0,R=0,S=0,T=0,U=0,V=0,W=0,X=0,Y=0,Z=0,_=0,$=0,aa=0,ba=0,ca=0,da=0,ea=0,fa=0,ga=0,ha=0,ia=0,ja=0,ka=0,la=0,ma=0,na=0,oa=0,pa=0,qa=0,ra=0,sa=0,ta=0,ua=0,va=0,wa=0,xa=0,ya=0,za=0,Aa=0,Ba=0,Ca=0,Da=0,Ea=0,Fa=0,Ga=0,Ha=0,Ia=0,Ja=0,Ka=0,La=0,Ma=0,Na=0,Oa=0,Pa=0,Qa=0,Ra=0,Sa=0,Ta=0,Ua=0,Va=0,Wa=0,Xa=0,Ya=0,Za=0,_a=0,$a=0,ab=0,bb=0,cb=0,db=0,eb=0,fb=0,gb=0,hb=0,ib=0,jb=0,kb=0,lb=0,mb=0,nb=0,ob=0,pb=0,qb=0,rb=0,sb=0,tb=0,ub=0,vb=0,wb=0,xb=0,yb=0,zb=0,Ab=0,Bb=0,Cb=0,Db=0,Eb=0,Fb=0,Gb=0,Hb=0,Ib=0,Jb=0,Kb=0,Lb=0,Mb=0,Nb=0,Ob=0,Pb=0,Qb=0,Rb=0,Sb=0,Tb=0,Ub=0,Vb=0,Wb=0,Xb=0,Yb=0,Zb=0,_b=0,$b=0,ac=0,bc=0,cc=0,dc=0,ec=0,fc=0,gc=0,hc=0,ic=0,mc=0,nc=0,pc=0,rc=0,sc=0,tc=0,uc=0,vc=0,wc=0,xc=0,yc=0,zc=0,Ac=0,Bc=0,Cc=0,Dc=0,Ec=0,Fc=0,Gc=0,Hc=0,Ic=0,Jc=0,Kc=0,Lc=0,Mc=0,Nc=0,Oc=0,Pc=0,Qc=0,Rc=0,Sc=0,Tc=0,Uc=0,Vc=0,Wc=0,Xc=0;l=c[b>>2]|0;s=c[b+4>>2]|0;j=c[b+8>>2]|0;Rb=c[b+12>>2]|0;e=c[b+16>>2]|0;za=c[b+20>>2]|0;ya=c[b+24>>2]|0;zb=c[b+28>>2]|0;h=c[b+32>>2]|0;ga=c[b+36>>2]|0;H=c[d>>2]|0;J=c[d+4>>2]|0;F=c[d+8>>2]|0;D=c[d+12>>2]|0;B=c[d+16>>2]|0;z=c[d+20>>2]|0;w=c[d+24>>2]|0;u=c[d+28>>2]|0;k=c[d+32>>2]|0;t=c[d+36>>2]|0;Tc=J*19|0;bc=F*19|0;rb=D*19|0;Ha=B*19|0;mc=z*19|0;Db=w*19|0;Ta=u*19|0;Xc=k*19|0;Vc=t*19|0;p=s<<1;f=Rb<<1;M=za<<1;i=zb<<1;d=ga<<1;o=((l|0)<0)<<31>>31;I=((H|0)<0)<<31>>31;Rc=qc(H|0,I|0,l|0,o|0)|0;Qc=y;K=((J|0)<0)<<31>>31;Bc=qc(J|0,K|0,l|0,o|0)|0;Ac=y;G=((F|0)<0)<<31>>31;ub=qc(F|0,G|0,l|0,o|0)|0;tb=y;E=((D|0)<0)<<31>>31;Ka=qc(D|0,E|0,l|0,o|0)|0;Ja=y;C=((B|0)<0)<<31>>31;rc=qc(B|0,C|0,l|0,o|0)|0;pc=y;A=((z|0)<0)<<31>>31;Gb=qc(z|0,A|0,l|0,o|0)|0;Fb=y;x=((w|0)<0)<<31>>31;Wa=qc(w|0,x|0,l|0,o|0)|0;Va=y;v=((u|0)<0)<<31>>31;ja=qc(u|0,v|0,l|0,o|0)|0;ia=y;Uc=((k|0)<0)<<31>>31;P=qc(k|0,Uc|0,l|0,o|0)|0;O=y;o=qc(t|0,((t|0)<0)<<31>>31|0,l|0,o|0)|0;l=y;t=((s|0)<0)<<31>>31;dc=qc(H|0,I|0,s|0,t|0)|0;ec=y;n=((p|0)<0)<<31>>31;yb=qc(J|0,K|0,p|0,n|0)|0;xb=y;Ma=qc(F|0,G|0,s|0,t|0)|0;La=y;tc=qc(D|0,E|0,p|0,n|0)|0;sc=y;Ib=qc(B|0,C|0,s|0,t|0)|0;Hb=y;Ya=qc(z|0,A|0,p|0,n|0)|0;Xa=y;la=qc(w|0,x|0,s|0,t|0)|0;ka=y;R=qc(u|0,v|0,p|0,n|0)|0;Q=y;t=qc(k|0,Uc|0,s|0,t|0)|0;s=y;Uc=((Vc|0)<0)<<31>>31;n=qc(Vc|0,Uc|0,p|0,n|0)|0;p=y;k=((j|0)<0)<<31>>31;wb=qc(H|0,I|0,j|0,k|0)|0;vb=y;Qa=qc(J|0,K|0,j|0,k|0)|0;Pa=y;vc=qc(F|0,G|0,j|0,k|0)|0;uc=y;Kb=qc(D|0,E|0,j|0,k|0)|0;Jb=y;_a=qc(B|0,C|0,j|0,k|0)|0;Za=y;na=qc(z|0,A|0,j|0,k|0)|0;ma=y;T=qc(w|0,x|0,j|0,k|0)|0;S=y;v=qc(u|0,v|0,j|0,k|0)|0;u=y;Wc=((Xc|0)<0)<<31>>31;Dc=qc(Xc|0,Wc|0,j|0,k|0)|0;Cc=y;k=qc(Vc|0,Uc|0,j|0,k|0)|0;j=y;Sb=((Rb|0)<0)<<31>>31;Oa=qc(H|0,I|0,Rb|0,Sb|0)|0;Na=y;fa=((f|0)<0)<<31>>31;zc=qc(J|0,K|0,f|0,fa|0)|0;yc=y;Mb=qc(F|0,G|0,Rb|0,Sb|0)|0;Lb=y;ab=qc(D|0,E|0,f|0,fa|0)|0;$a=y;pa=qc(B|0,C|0,Rb|0,Sb|0)|0;oa=y;V=qc(z|0,A|0,f|0,fa|0)|0;U=y;x=qc(w|0,x|0,Rb|0,Sb|0)|0;w=y;Ua=((Ta|0)<0)<<31>>31;Fc=qc(Ta|0,Ua|0,f|0,fa|0)|0;Ec=y;Sb=qc(Xc|0,Wc|0,Rb|0,Sb|0)|0;Rb=y;fa=qc(Vc|0,Uc|0,f|0,fa|0)|0;f=y;N=((e|0)<0)<<31>>31;xc=qc(H|0,I|0,e|0,N|0)|0;wc=y;Qb=qc(J|0,K|0,e|0,N|0)|0;Pb=y;cb=qc(F|0,G|0,e|0,N|0)|0;bb=y;ra=qc(D|0,E|0,e|0,N|0)|0;qa=y;X=qc(B|0,C|0,e|0,N|0)|0;W=y;A=qc(z|0,A|0,e|0,N|0)|0;z=y;Eb=((Db|0)<0)<<31>>31;Hc=qc(Db|0,Eb|0,e|0,N|0)|0;Gc=y;Ub=qc(Ta|0,Ua|0,e|0,N|0)|0;Tb=y;ib=qc(Xc|0,Wc|0,e|0,N|0)|0;hb=y;N=qc(Vc|0,Uc|0,e|0,N|0)|0;e=y;Aa=((za|0)<0)<<31>>31;Ob=qc(H|0,I|0,za|0,Aa|0)|0;Nb=y;b=((M|0)<0)<<31>>31;gb=qc(J|0,K|0,M|0,b|0)|0;fb=y;ta=qc(F|0,G|0,za|0,Aa|0)|0;sa=y;Z=qc(D|0,E|0,M|0,b|0)|0;Y=y;C=qc(B|0,C|0,za|0,Aa|0)|0;B=y;nc=((mc|0)<0)<<31>>31;Jc=qc(mc|0,nc|0,M|0,b|0)|0;Ic=y;Wb=qc(Db|0,Eb|0,za|0,Aa|0)|0;Vb=y;kb=qc(Ta|0,Ua|0,M|0,b|0)|0;jb=y;Aa=qc(Xc|0,Wc|0,za|0,Aa|0)|0;za=y;b=qc(Vc|0,Uc|0,M|0,b|0)|0;M=y;g=((ya|0)<0)<<31>>31;eb=qc(H|0,I|0,ya|0,g|0)|0;db=y;xa=qc(J|0,K|0,ya|0,g|0)|0;wa=y;$=qc(F|0,G|0,ya|0,g|0)|0;_=y;E=qc(D|0,E|0,ya|0,g|0)|0;D=y;Ia=((Ha|0)<0)<<31>>31;Lc=qc(Ha|0,Ia|0,ya|0,g|0)|0;Kc=y;Yb=qc(mc|0,nc|0,ya|0,g|0)|0;Xb=y;mb=qc(Db|0,Eb|0,ya|0,g|0)|0;lb=y;Ca=qc(Ta|0,Ua|0,ya|0,g|0)|0;Ba=y;m=qc(Xc|0,Wc|0,ya|0,g|0)|0;r=y;g=qc(Vc|0,Uc|0,ya|0,g|0)|0;ya=y;Ab=((zb|0)<0)<<31>>31;va=qc(H|0,I|0,zb|0,Ab|0)|0;ua=y;ea=((i|0)<0)<<31>>31;da=qc(J|0,K|0,i|0,ea|0)|0;ca=y;G=qc(F|0,G|0,zb|0,Ab|0)|0;F=y;sb=((rb|0)<0)<<31>>31;Nc=qc(rb|0,sb|0,i|0,ea|0)|0;Mc=y;_b=qc(Ha|0,Ia|0,zb|0,Ab|0)|0;Zb=y;ob=qc(mc|0,nc|0,i|0,ea|0)|0;nb=y;Ea=qc(Db|0,Eb|0,zb|0,Ab|0)|0;Da=y;gc=qc(Ta|0,Ua|0,i|0,ea|0)|0;fc=y;Ab=qc(Xc|0,Wc|0,zb|0,Ab|0)|0;zb=y;ea=qc(Vc|0,Uc|0,i|0,ea|0)|0;i=y;L=((h|0)<0)<<31>>31;ba=qc(H|0,I|0,h|0,L|0)|0;aa=y;K=qc(J|0,K|0,h|0,L|0)|0;J=y;cc=((bc|0)<0)<<31>>31;Pc=qc(bc|0,cc|0,h|0,L|0)|0;Oc=y;ac=qc(rb|0,sb|0,h|0,L|0)|0;$b=y;qb=qc(Ha|0,Ia|0,h|0,L|0)|0;pb=y;Ga=qc(mc|0,nc|0,h|0,L|0)|0;Fa=y;ic=qc(Db|0,Eb|0,h|0,L|0)|0;hc=y;Cb=qc(Ta|0,Ua|0,h|0,L|0)|0;Bb=y;Sa=qc(Xc|0,Wc|0,h|0,L|0)|0;Ra=y;L=qc(Vc|0,Uc|0,h|0,L|0)|0;h=y;ha=((ga|0)<0)<<31>>31;I=qc(H|0,I|0,ga|0,ha|0)|0;H=y;q=((d|0)<0)<<31>>31;Tc=qc(Tc|0,((Tc|0)<0)<<31>>31|0,d|0,q|0)|0;Sc=y;cc=qc(bc|0,cc|0,ga|0,ha|0)|0;bc=y;sb=qc(rb|0,sb|0,d|0,q|0)|0;rb=y;Ia=qc(Ha|0,Ia|0,ga|0,ha|0)|0;Ha=y;nc=qc(mc|0,nc|0,d|0,q|0)|0;mc=y;Eb=qc(Db|0,Eb|0,ga|0,ha|0)|0;Db=y;Ua=qc(Ta|0,Ua|0,d|0,q|0)|0;Ta=y;ha=qc(Xc|0,Wc|0,ga|0,ha|0)|0;ga=y;q=qc(Vc|0,Uc|0,d|0,q|0)|0;d=y;Qc=lc(Tc|0,Sc|0,Rc|0,Qc|0)|0;Oc=lc(Qc|0,y|0,Pc|0,Oc|0)|0;Mc=lc(Oc|0,y|0,Nc|0,Mc|0)|0;Kc=lc(Mc|0,y|0,Lc|0,Kc|0)|0;Ic=lc(Kc|0,y|0,Jc|0,Ic|0)|0;Gc=lc(Ic|0,y|0,Hc|0,Gc|0)|0;Ec=lc(Gc|0,y|0,Fc|0,Ec|0)|0;Cc=lc(Ec|0,y|0,Dc|0,Cc|0)|0;p=lc(Cc|0,y|0,n|0,p|0)|0;n=y;ec=lc(Bc|0,Ac|0,dc|0,ec|0)|0;dc=y;wc=lc(zc|0,yc|0,xc|0,wc|0)|0;uc=lc(wc|0,y|0,vc|0,uc|0)|0;sc=lc(uc|0,y|0,tc|0,sc|0)|0;pc=lc(sc|0,y|0,rc|0,pc|0)|0;mc=lc(pc|0,y|0,nc|0,mc|0)|0;hc=lc(mc|0,y|0,ic|0,hc|0)|0;fc=lc(hc|0,y|0,gc|0,fc|0)|0;r=lc(fc|0,y|0,m|0,r|0)|0;M=lc(r|0,y|0,b|0,M|0)|0;b=y;r=lc(p|0,n|0,33554432,0)|0;r=jc(r|0,y|0,26)|0;m=y;bc=lc(ec|0,dc|0,cc|0,bc|0)|0;$b=lc(bc|0,y|0,ac|0,$b|0)|0;Zb=lc($b|0,y|0,_b|0,Zb|0)|0;Xb=lc(Zb|0,y|0,Yb|0,Xb|0)|0;Vb=lc(Xb|0,y|0,Wb|0,Vb|0)|0;Tb=lc(Vb|0,y|0,Ub|0,Tb|0)|0;Rb=lc(Tb|0,y|0,Sb|0,Rb|0)|0;j=lc(Rb|0,y|0,k|0,j|0)|0;j=lc(j|0,y|0,r|0,m|0)|0;k=y;m=oc(r|0,m|0,26)|0;m=kc(p|0,n|0,m|0,y|0)|0;n=y;p=lc(M|0,b|0,33554432,0)|0;p=jc(p|0,y|0,26)|0;r=y;Nb=lc(Qb|0,Pb|0,Ob|0,Nb|0)|0;Lb=lc(Nb|0,y|0,Mb|0,Lb|0)|0;Jb=lc(Lb|0,y|0,Kb|0,Jb|0)|0;Hb=lc(Jb|0,y|0,Ib|0,Hb|0)|0;Fb=lc(Hb|0,y|0,Gb|0,Fb|0)|0;Db=lc(Fb|0,y|0,Eb|0,Db|0)|0;Bb=lc(Db|0,y|0,Cb|0,Bb|0)|0;zb=lc(Bb|0,y|0,Ab|0,zb|0)|0;ya=lc(zb|0,y|0,g|0,ya|0)|0;ya=lc(ya|0,y|0,p|0,r|0)|0;g=y;r=oc(p|0,r|0,26)|0;r=kc(M|0,b|0,r|0,y|0)|0;b=y;M=lc(j|0,k|0,16777216,0)|0;M=jc(M|0,y|0,25)|0;p=y;vb=lc(yb|0,xb|0,wb|0,vb|0)|0;tb=lc(vb|0,y|0,ub|0,tb|0)|0;rb=lc(tb|0,y|0,sb|0,rb|0)|0;pb=lc(rb|0,y|0,qb|0,pb|0)|0;nb=lc(pb|0,y|0,ob|0,nb|0)|0;lb=lc(nb|0,y|0,mb|0,lb|0)|0;jb=lc(lb|0,y|0,kb|0,jb|0)|0;hb=lc(jb|0,y|0,ib|0,hb|0)|0;f=lc(hb|0,y|0,fa|0,f|0)|0;f=lc(f|0,y|0,M|0,p|0)|0;fa=y;p=oc(M|0,p|0,25)|0;p=kc(j|0,k|0,p|0,y|0)|0;k=y;j=lc(ya|0,g|0,16777216,0)|0;j=jc(j|0,y|0,25)|0;M=y;db=lc(gb|0,fb|0,eb|0,db|0)|0;bb=lc(db|0,y|0,cb|0,bb|0)|0;$a=lc(bb|0,y|0,ab|0,$a|0)|0;Za=lc($a|0,y|0,_a|0,Za|0)|0;Xa=lc(Za|0,y|0,Ya|0,Xa|0)|0;Va=lc(Xa|0,y|0,Wa|0,Va|0)|0;Ta=lc(Va|0,y|0,Ua|0,Ta|0)|0;Ra=lc(Ta|0,y|0,Sa|0,Ra|0)|0;i=lc(Ra|0,y|0,ea|0,i|0)|0;i=lc(i|0,y|0,j|0,M|0)|0;ea=y;M=oc(j|0,M|0,25)|0;M=kc(ya|0,g|0,M|0,y|0)|0;g=y;ya=lc(f|0,fa|0,33554432,0)|0;ya=jc(ya|0,y|0,26)|0;j=y;Na=lc(Qa|0,Pa|0,Oa|0,Na|0)|0;La=lc(Na|0,y|0,Ma|0,La|0)|0;Ja=lc(La|0,y|0,Ka|0,Ja|0)|0;Ha=lc(Ja|0,y|0,Ia|0,Ha|0)|0;Fa=lc(Ha|0,y|0,Ga|0,Fa|0)|0;Da=lc(Fa|0,y|0,Ea|0,Da|0)|0;Ba=lc(Da|0,y|0,Ca|0,Ba|0)|0;za=lc(Ba|0,y|0,Aa|0,za|0)|0;e=lc(za|0,y|0,N|0,e|0)|0;e=lc(e|0,y|0,ya|0,j|0)|0;N=y;j=oc(ya|0,j|0,26)|0;j=kc(f|0,fa|0,j|0,y|0)|0;fa=lc(i|0,ea|0,33554432,0)|0;fa=jc(fa|0,y|0,26)|0;f=y;ua=lc(xa|0,wa|0,va|0,ua|0)|0;sa=lc(ua|0,y|0,ta|0,sa|0)|0;qa=lc(sa|0,y|0,ra|0,qa|0)|0;oa=lc(qa|0,y|0,pa|0,oa|0)|0;ma=lc(oa|0,y|0,na|0,ma|0)|0;ka=lc(ma|0,y|0,la|0,ka|0)|0;ia=lc(ka|0,y|0,ja|0,ia|0)|0;ga=lc(ia|0,y|0,ha|0,ga|0)|0;h=lc(ga|0,y|0,L|0,h|0)|0;h=lc(h|0,y|0,fa|0,f|0)|0;L=y;f=oc(fa|0,f|0,26)|0;f=kc(i|0,ea|0,f|0,y|0)|0;ea=lc(e|0,N|0,16777216,0)|0;ea=jc(ea|0,y|0,25)|0;i=y;b=lc(ea|0,i|0,r|0,b|0)|0;r=y;i=oc(ea|0,i|0,25)|0;i=kc(e|0,N|0,i|0,y|0)|0;N=lc(h|0,L|0,16777216,0)|0;N=jc(N|0,y|0,25)|0;e=y;aa=lc(da|0,ca|0,ba|0,aa|0)|0;_=lc(aa|0,y|0,$|0,_|0)|0;Y=lc(_|0,y|0,Z|0,Y|0)|0;W=lc(Y|0,y|0,X|0,W|0)|0;U=lc(W|0,y|0,V|0,U|0)|0;S=lc(U|0,y|0,T|0,S|0)|0;Q=lc(S|0,y|0,R|0,Q|0)|0;O=lc(Q|0,y|0,P|0,O|0)|0;d=lc(O|0,y|0,q|0,d|0)|0;d=lc(d|0,y|0,N|0,e|0)|0;q=y;e=oc(N|0,e|0,25)|0;e=kc(h|0,L|0,e|0,y|0)|0;L=lc(b|0,r|0,33554432,0)|0;L=jc(L|0,y|0,26)|0;h=y;g=lc(M|0,g|0,L|0,h|0)|0;h=oc(L|0,h|0,26)|0;h=kc(b|0,r|0,h|0,y|0)|0;r=lc(d|0,q|0,33554432,0)|0;r=jc(r|0,y|0,26)|0;b=y;H=lc(K|0,J|0,I|0,H|0)|0;F=lc(H|0,y|0,G|0,F|0)|0;D=lc(F|0,y|0,E|0,D|0)|0;B=lc(D|0,y|0,C|0,B|0)|0;z=lc(B|0,y|0,A|0,z|0)|0;w=lc(z|0,y|0,x|0,w|0)|0;u=lc(w|0,y|0,v|0,u|0)|0;s=lc(u|0,y|0,t|0,s|0)|0;l=lc(s|0,y|0,o|0,l|0)|0;l=lc(l|0,y|0,r|0,b|0)|0;o=y;b=oc(r|0,b|0,26)|0;b=kc(d|0,q|0,b|0,y|0)|0;q=lc(l|0,o|0,16777216,0)|0;q=jc(q|0,y|0,25)|0;d=y;r=qc(q|0,d|0,19,0)|0;n=lc(r|0,y|0,m|0,n|0)|0;m=y;d=oc(q|0,d|0,25)|0;d=kc(l|0,o|0,d|0,y|0)|0;o=lc(n|0,m|0,33554432,0)|0;o=jc(o|0,y|0,26)|0;l=y;k=lc(p|0,k|0,o|0,l|0)|0;l=oc(o|0,l|0,26)|0;l=kc(n|0,m|0,l|0,y|0)|0;c[a>>2]=l;c[a+4>>2]=k;c[a+8>>2]=j;c[a+12>>2]=i;c[a+16>>2]=h;c[a+20>>2]=g;c[a+24>>2]=f;c[a+28>>2]=e;c[a+32>>2]=b;c[a+36>>2]=d;return}function $a(a,b){a=a|0;b=b|0;var d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0;l=0-(c[b+4>>2]|0)|0;k=0-(c[b+8>>2]|0)|0;j=0-(c[b+12>>2]|0)|0;i=0-(c[b+16>>2]|0)|0;h=0-(c[b+20>>2]|0)|0;g=0-(c[b+24>>2]|0)|0;f=0-(c[b+28>>2]|0)|0;e=0-(c[b+32>>2]|0)|0;d=0-(c[b+36>>2]|0)|0;c[a>>2]=0-(c[b>>2]|0);c[a+4>>2]=l;c[a+8>>2]=k;c[a+12>>2]=j;c[a+16>>2]=i;c[a+20>>2]=h;c[a+24>>2]=g;c[a+28>>2]=f;c[a+32>>2]=e;c[a+36>>2]=d;return}function ab(a,b){a=a|0;b=b|0;var c=0,d=0,e=0,f=0,g=0;g=l;l=l+128|0;e=g+80|0;f=g+40|0;d=g;cb(e,b);cb(f,e);cb(f,f);_a(f,b,f);_a(e,e,f);cb(e,e);_a(e,f,e);cb(f,e);cb(f,f);cb(f,f);cb(f,f);cb(f,f);_a(e,f,e);cb(f,e);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);_a(f,f,e);cb(d,f);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);cb(d,d);_a(f,d,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);cb(f,f);_a(e,f,e);cb(f,e);c=1;do{cb(f,f);c=c+1|0}while((c|0)!=50);_a(f,f,e);cb(d,f);c=1;do{cb(d,d);c=c+1|0}while((c|0)!=100);_a(f,d,f);cb(f,f);c=1;do{cb(f,f);c=c+1|0}while((c|0)!=50);_a(e,f,e);cb(e,e);cb(e,e);_a(a,e,b);l=g;return}function bb(a,b){a=a|0;b=b|0;var d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,z=0,A=0,B=0,C=0,D=0,E=0,F=0,G=0,H=0,I=0,J=0,K=0,L=0,M=0,N=0,O=0,P=0,Q=0,R=0,S=0,T=0,U=0,V=0,W=0,X=0,Y=0,Z=0,_=0,$=0,aa=0,ba=0,ca=0,da=0,ea=0,fa=0,ga=0,ha=0,ia=0,ja=0,ka=0,la=0,ma=0,na=0,oa=0,pa=0,qa=0,ra=0,sa=0,ta=0,ua=0,va=0,wa=0,xa=0,ya=0,za=0,Aa=0,Ba=0,Ca=0,Da=0,Ea=0,Fa=0,Ga=0,Ha=0,Ia=0,Ja=0,Ka=0,La=0,Ma=0,Na=0,Oa=0,Pa=0,Qa=0,Ra=0,Sa=0,Ta=0,Ua=0,Va=0,Wa=0,Xa=0,Ya=0,Za=0,_a=0,$a=0,ab=0,bb=0,cb=0,db=0,eb=0,fb=0,gb=0;bb=c[b>>2]|0;La=c[b+4>>2]|0;j=c[b+8>>2]|0;da=c[b+12>>2]|0;e=c[b+16>>2]|0;db=c[b+20>>2]|0;x=c[b+24>>2]|0;pa=c[b+28>>2]|0;h=c[b+32>>2]|0;b=c[b+36>>2]|0;l=bb<<1;n=La<<1;Xa=j<<1;f=da<<1;Fa=e<<1;d=db<<1;oa=x<<1;i=pa<<1;Wa=db*38|0;Ja=x*19|0;fa=pa*38|0;X=h*19|0;gb=b*38|0;cb=((bb|0)<0)<<31>>31;cb=qc(bb|0,cb|0,bb|0,cb|0)|0;bb=y;o=((l|0)<0)<<31>>31;Ma=((La|0)<0)<<31>>31;Ua=qc(l|0,o|0,La|0,Ma|0)|0;Ta=y;k=((j|0)<0)<<31>>31;Oa=qc(j|0,k|0,l|0,o|0)|0;Na=y;ea=((da|0)<0)<<31>>31;Ea=qc(da|0,ea|0,l|0,o|0)|0;Da=y;u=((e|0)<0)<<31>>31;sa=qc(e|0,u|0,l|0,o|0)|0;ra=y;eb=((db|0)<0)<<31>>31;ia=qc(db|0,eb|0,l|0,o|0)|0;ha=y;g=((x|0)<0)<<31>>31;_=qc(x|0,g|0,l|0,o|0)|0;Z=y;qa=((pa|0)<0)<<31>>31;Q=qc(pa|0,qa|0,l|0,o|0)|0;P=y;s=((h|0)<0)<<31>>31;G=qc(h|0,s|0,l|0,o|0)|0;F=y;q=((b|0)<0)<<31>>31;o=qc(b|0,q|0,l|0,o|0)|0;l=y;p=((n|0)<0)<<31>>31;Ma=qc(n|0,p|0,La|0,Ma|0)|0;La=y;Ca=qc(n|0,p|0,j|0,k|0)|0;Ba=y;w=((f|0)<0)<<31>>31;wa=qc(f|0,w|0,n|0,p|0)|0;va=y;ma=qc(e|0,u|0,n|0,p|0)|0;la=y;t=((d|0)<0)<<31>>31;aa=qc(d|0,t|0,n|0,p|0)|0;$=y;S=qc(x|0,g|0,n|0,p|0)|0;R=y;v=((i|0)<0)<<31>>31;I=qc(i|0,v|0,n|0,p|0)|0;H=y;m=qc(h|0,s|0,n|0,p|0)|0;r=y;fb=((gb|0)<0)<<31>>31;p=qc(gb|0,fb|0,n|0,p|0)|0;n=y;ua=qc(j|0,k|0,j|0,k|0)|0;ta=y;Ya=((Xa|0)<0)<<31>>31;ka=qc(Xa|0,Ya|0,da|0,ea|0)|0;ja=y;ca=qc(e|0,u|0,Xa|0,Ya|0)|0;ba=y;W=qc(db|0,eb|0,Xa|0,Ya|0)|0;V=y;O=qc(x|0,g|0,Xa|0,Ya|0)|0;N=y;A=qc(pa|0,qa|0,Xa|0,Ya|0)|0;z=y;Y=((X|0)<0)<<31>>31;Ya=qc(X|0,Y|0,Xa|0,Ya|0)|0;Xa=y;k=qc(gb|0,fb|0,j|0,k|0)|0;j=y;ea=qc(f|0,w|0,da|0,ea|0)|0;da=y;U=qc(f|0,w|0,e|0,u|0)|0;T=y;K=qc(d|0,t|0,f|0,w|0)|0;J=y;E=qc(x|0,g|0,f|0,w|0)|0;D=y;ga=((fa|0)<0)<<31>>31;_a=qc(fa|0,ga|0,f|0,w|0)|0;Za=y;Qa=qc(X|0,Y|0,f|0,w|0)|0;Pa=y;w=qc(gb|0,fb|0,f|0,w|0)|0;f=y;M=qc(e|0,u|0,e|0,u|0)|0;L=y;Ga=((Fa|0)<0)<<31>>31;C=qc(Fa|0,Ga|0,db|0,eb|0)|0;B=y;Ka=((Ja|0)<0)<<31>>31;ab=qc(Ja|0,Ka|0,Fa|0,Ga|0)|0;$a=y;Sa=qc(fa|0,ga|0,e|0,u|0)|0;Ra=y;Ga=qc(X|0,Y|0,Fa|0,Ga|0)|0;Fa=y;u=qc(gb|0,fb|0,e|0,u|0)|0;e=y;eb=qc(Wa|0,((Wa|0)<0)<<31>>31|0,db|0,eb|0)|0;db=y;Wa=qc(Ja|0,Ka|0,d|0,t|0)|0;Va=y;Ia=qc(fa|0,ga|0,d|0,t|0)|0;Ha=y;ya=qc(X|0,Y|0,d|0,t|0)|0;xa=y;t=qc(gb|0,fb|0,d|0,t|0)|0;d=y;Ka=qc(Ja|0,Ka|0,x|0,g|0)|0;Ja=y;Aa=qc(fa|0,ga|0,x|0,g|0)|0;za=y;oa=qc(X|0,Y|0,oa|0,((oa|0)<0)<<31>>31|0)|0;na=y;g=qc(gb|0,fb|0,x|0,g|0)|0;x=y;qa=qc(fa|0,ga|0,pa|0,qa|0)|0;pa=y;ga=qc(X|0,Y|0,i|0,v|0)|0;fa=y;v=qc(gb|0,fb|0,i|0,v|0)|0;i=y;Y=qc(X|0,Y|0,h|0,s|0)|0;X=y;s=qc(gb|0,fb|0,h|0,s|0)|0;h=y;q=qc(gb|0,fb|0,b|0,q|0)|0;b=y;bb=lc(eb|0,db|0,cb|0,bb|0)|0;$a=lc(bb|0,y|0,ab|0,$a|0)|0;Za=lc($a|0,y|0,_a|0,Za|0)|0;Xa=lc(Za|0,y|0,Ya|0,Xa|0)|0;n=lc(Xa|0,y|0,p|0,n|0)|0;p=y;Ta=lc(Wa|0,Va|0,Ua|0,Ta|0)|0;Ra=lc(Ta|0,y|0,Sa|0,Ra|0)|0;Pa=lc(Ra|0,y|0,Qa|0,Pa|0)|0;j=lc(Pa|0,y|0,k|0,j|0)|0;k=y;La=lc(Oa|0,Na|0,Ma|0,La|0)|0;Ja=lc(La|0,y|0,Ka|0,Ja|0)|0;Ha=lc(Ja|0,y|0,Ia|0,Ha|0)|0;Fa=lc(Ha|0,y|0,Ga|0,Fa|0)|0;f=lc(Fa|0,y|0,w|0,f|0)|0;w=y;Ba=lc(Ea|0,Da|0,Ca|0,Ba|0)|0;za=lc(Ba|0,y|0,Aa|0,za|0)|0;xa=lc(za|0,y|0,ya|0,xa|0)|0;e=lc(xa|0,y|0,u|0,e|0)|0;u=y;ta=lc(wa|0,va|0,ua|0,ta|0)|0;ra=lc(ta|0,y|0,sa|0,ra|0)|0;pa=lc(ra|0,y|0,qa|0,pa|0)|0;na=lc(pa|0,y|0,oa|0,na|0)|0;d=lc(na|0,y|0,t|0,d|0)|0;t=y;ja=lc(ma|0,la|0,ka|0,ja|0)|0;ha=lc(ja|0,y|0,ia|0,ha|0)|0;fa=lc(ha|0,y|0,ga|0,fa|0)|0;x=lc(fa|0,y|0,g|0,x|0)|0;g=y;ba=lc(ea|0,da|0,ca|0,ba|0)|0;$=lc(ba|0,y|0,aa|0,$|0)|0;Z=lc($|0,y|0,_|0,Z|0)|0;X=lc(Z|0,y|0,Y|0,X|0)|0;i=lc(X|0,y|0,v|0,i|0)|0;v=y;T=lc(W|0,V|0,U|0,T|0)|0;R=lc(T|0,y|0,S|0,R|0)|0;P=lc(R|0,y|0,Q|0,P|0)|0;h=lc(P|0,y|0,s|0,h|0)|0;s=y;L=lc(O|0,N|0,M|0,L|0)|0;J=lc(L|0,y|0,K|0,J|0)|0;H=lc(J|0,y|0,I|0,H|0)|0;F=lc(H|0,y|0,G|0,F|0)|0;b=lc(F|0,y|0,q|0,b|0)|0;q=y;B=lc(E|0,D|0,C|0,B|0)|0;z=lc(B|0,y|0,A|0,z|0)|0;r=lc(z|0,y|0,m|0,r|0)|0;l=lc(r|0,y|0,o|0,l|0)|0;o=y;p=oc(n|0,p|0,1)|0;n=y;k=oc(j|0,k|0,1)|0;j=y;w=oc(f|0,w|0,1)|0;f=y;u=oc(e|0,u|0,1)|0;e=y;t=oc(d|0,t|0,1)|0;d=y;g=oc(x|0,g|0,1)|0;x=y;v=oc(i|0,v|0,1)|0;i=y;s=oc(h|0,s|0,1)|0;h=y;q=oc(b|0,q|0,1)|0;b=y;o=oc(l|0,o|0,1)|0;l=y;r=lc(p|0,n|0,33554432,0)|0;r=jc(r|0,y|0,26)|0;m=y;j=lc(r|0,m|0,k|0,j|0)|0;k=y;m=oc(r|0,m|0,26)|0;m=kc(p|0,n|0,m|0,y|0)|0;n=y;p=lc(t|0,d|0,33554432,0)|0;p=jc(p|0,y|0,26)|0;r=y;x=lc(p|0,r|0,g|0,x|0)|0;g=y;r=oc(p|0,r|0,26)|0;r=kc(t|0,d|0,r|0,y|0)|0;d=y;t=lc(j|0,k|0,16777216,0)|0;t=jc(t|0,y|0,25)|0;p=y;f=lc(t|0,p|0,w|0,f|0)|0;w=y;p=oc(t|0,p|0,25)|0;p=kc(j|0,k|0,p|0,y|0)|0;k=y;j=lc(x|0,g|0,16777216,0)|0;j=jc(j|0,y|0,25)|0;t=y;i=lc(j|0,t|0,v|0,i|0)|0;v=y;t=oc(j|0,t|0,25)|0;t=kc(x|0,g|0,t|0,y|0)|0;g=y;x=lc(f|0,w|0,33554432,0)|0;x=jc(x|0,y|0,26)|0;j=y;e=lc(x|0,j|0,u|0,e|0)|0;u=y;j=oc(x|0,j|0,26)|0;j=kc(f|0,w|0,j|0,y|0)|0;w=lc(i|0,v|0,33554432,0)|0;w=jc(w|0,y|0,26)|0;f=y;h=lc(w|0,f|0,s|0,h|0)|0;s=y;f=oc(w|0,f|0,26)|0;f=kc(i|0,v|0,f|0,y|0)|0;v=lc(e|0,u|0,16777216,0)|0;v=jc(v|0,y|0,25)|0;i=y;d=lc(v|0,i|0,r|0,d|0)|0;r=y;i=oc(v|0,i|0,25)|0;i=kc(e|0,u|0,i|0,y|0)|0;u=lc(h|0,s|0,16777216,0)|0;u=jc(u|0,y|0,25)|0;e=y;b=lc(u|0,e|0,q|0,b|0)|0;q=y;e=oc(u|0,e|0,25)|0;e=kc(h|0,s|0,e|0,y|0)|0;s=lc(d|0,r|0,33554432,0)|0;s=jc(s|0,y|0,26)|0;h=y;g=lc(t|0,g|0,s|0,h|0)|0;h=oc(s|0,h|0,26)|0;h=kc(d|0,r|0,h|0,y|0)|0;r=lc(b|0,q|0,33554432,0)|0;r=jc(r|0,y|0,26)|0;d=y;l=lc(r|0,d|0,o|0,l|0)|0;o=y;d=oc(r|0,d|0,26)|0;d=kc(b|0,q|0,d|0,y|0)|0;q=lc(l|0,o|0,16777216,0)|0;q=jc(q|0,y|0,25)|0;b=y;r=qc(q|0,b|0,19,0)|0;n=lc(r|0,y|0,m|0,n|0)|0;m=y;b=oc(q|0,b|0,25)|0;b=kc(l|0,o|0,b|0,y|0)|0;o=lc(n|0,m|0,33554432,0)|0;o=jc(o|0,y|0,26)|0;l=y;k=lc(p|0,k|0,o|0,l|0)|0;l=oc(o|0,l|0,26)|0;l=kc(n|0,m|0,l|0,y|0)|0;c[a>>2]=l;c[a+4>>2]=k;c[a+8>>2]=j;c[a+12>>2]=i;c[a+16>>2]=h;c[a+20>>2]=g;c[a+24>>2]=f;c[a+28>>2]=e;c[a+32>>2]=d;c[a+36>>2]=b;return}function cb(a,b){a=a|0;b=b|0;var d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,z=0,A=0,B=0,C=0,D=0,E=0,F=0,G=0,H=0,I=0,J=0,K=0,L=0,M=0,N=0,O=0,P=0,Q=0,R=0,S=0,T=0,U=0,V=0,W=0,X=0,Y=0,Z=0,_=0,$=0,aa=0,ba=0,ca=0,da=0,ea=0,fa=0,ga=0,ha=0,ia=0,ja=0,ka=0,la=0,ma=0,na=0,oa=0,pa=0,qa=0,ra=0,sa=0,ta=0,ua=0,va=0,wa=0,xa=0,ya=0,za=0,Aa=0,Ba=0,Ca=0,Da=0,Ea=0,Fa=0,Ga=0,Ha=0,Ia=0,Ja=0,Ka=0,La=0,Ma=0,Na=0,Oa=0,Pa=0,Qa=0,Ra=0,Sa=0,Ta=0,Ua=0,Va=0,Wa=0,Xa=0,Ya=0,Za=0,_a=0,$a=0,ab=0,bb=0,cb=0,db=0,eb=0,fb=0,gb=0;bb=c[b>>2]|0;ua=c[b+4>>2]|0;j=c[b+8>>2]|0;la=c[b+12>>2]|0;e=c[b+16>>2]|0;db=c[b+20>>2]|0;Y=c[b+24>>2]|0;La=c[b+28>>2]|0;h=c[b+32>>2]|0;b=c[b+36>>2]|0;l=bb<<1;p=ua<<1;Xa=j<<1;f=la<<1;na=e<<1;C=db<<1;m=Y<<1;i=La<<1;Ka=db*38|0;ra=Y*19|0;va=La*38|0;da=h*19|0;gb=b*38|0;cb=((bb|0)<0)<<31>>31;cb=qc(bb|0,cb|0,bb|0,cb|0)|0;bb=y;o=((l|0)<0)<<31>>31;ta=((ua|0)<0)<<31>>31;Ia=qc(l|0,o|0,ua|0,ta|0)|0;Ha=y;k=((j|0)<0)<<31>>31;Wa=qc(j|0,k|0,l|0,o|0)|0;Va=y;ma=((la|0)<0)<<31>>31;Ua=qc(la|0,ma|0,l|0,o|0)|0;Ta=y;D=((e|0)<0)<<31>>31;Oa=qc(e|0,D|0,l|0,o|0)|0;Na=y;eb=((db|0)<0)<<31>>31;ya=qc(db|0,eb|0,l|0,o|0)|0;xa=y;g=((Y|0)<0)<<31>>31;ga=qc(Y|0,g|0,l|0,o|0)|0;fa=y;Ma=((La|0)<0)<<31>>31;R=qc(La|0,Ma|0,l|0,o|0)|0;Q=y;B=((h|0)<0)<<31>>31;F=qc(h|0,B|0,l|0,o|0)|0;E=y;q=((b|0)<0)<<31>>31;o=qc(b|0,q|0,l|0,o|0)|0;l=y;n=((p|0)<0)<<31>>31;ta=qc(p|0,n|0,ua|0,ta|0)|0;ua=y;ba=qc(p|0,n|0,j|0,k|0)|0;ca=y;P=((f|0)<0)<<31>>31;Sa=qc(f|0,P|0,p|0,n|0)|0;Ra=y;Ca=qc(e|0,D|0,p|0,n|0)|0;Ba=y;d=((C|0)<0)<<31>>31;ia=qc(C|0,d|0,p|0,n|0)|0;ha=y;T=qc(Y|0,g|0,p|0,n|0)|0;S=y;O=((i|0)<0)<<31>>31;H=qc(i|0,O|0,p|0,n|0)|0;G=y;t=qc(h|0,B|0,p|0,n|0)|0;s=y;fb=((gb|0)<0)<<31>>31;n=qc(gb|0,fb|0,p|0,n|0)|0;p=y;Qa=qc(j|0,k|0,j|0,k|0)|0;Pa=y;Ya=((Xa|0)<0)<<31>>31;Aa=qc(Xa|0,Ya|0,la|0,ma|0)|0;za=y;ka=qc(e|0,D|0,Xa|0,Ya|0)|0;ja=y;X=qc(db|0,eb|0,Xa|0,Ya|0)|0;W=y;N=qc(Y|0,g|0,Xa|0,Ya|0)|0;M=y;v=qc(La|0,Ma|0,Xa|0,Ya|0)|0;u=y;ea=((da|0)<0)<<31>>31;Ya=qc(da|0,ea|0,Xa|0,Ya|0)|0;Xa=y;k=qc(gb|0,fb|0,j|0,k|0)|0;j=y;ma=qc(f|0,P|0,la|0,ma|0)|0;la=y;V=qc(f|0,P|0,e|0,D|0)|0;U=y;J=qc(C|0,d|0,f|0,P|0)|0;I=y;A=qc(Y|0,g|0,f|0,P|0)|0;z=y;wa=((va|0)<0)<<31>>31;_a=qc(va|0,wa|0,f|0,P|0)|0;Za=y;Ea=qc(da|0,ea|0,f|0,P|0)|0;Da=y;P=qc(gb|0,fb|0,f|0,P|0)|0;f=y;L=qc(e|0,D|0,e|0,D|0)|0;K=y;oa=((na|0)<0)<<31>>31;x=qc(na|0,oa|0,db|0,eb|0)|0;w=y;sa=((ra|0)<0)<<31>>31;ab=qc(ra|0,sa|0,na|0,oa|0)|0;$a=y;Ga=qc(va|0,wa|0,e|0,D|0)|0;Fa=y;oa=qc(da|0,ea|0,na|0,oa|0)|0;na=y;D=qc(gb|0,fb|0,e|0,D|0)|0;e=y;eb=qc(Ka|0,((Ka|0)<0)<<31>>31|0,db|0,eb|0)|0;db=y;Ka=qc(ra|0,sa|0,C|0,d|0)|0;Ja=y;qa=qc(va|0,wa|0,C|0,d|0)|0;pa=y;_=qc(da|0,ea|0,C|0,d|0)|0;Z=y;d=qc(gb|0,fb|0,C|0,d|0)|0;C=y;sa=qc(ra|0,sa|0,Y|0,g|0)|0;ra=y;aa=qc(va|0,wa|0,Y|0,g|0)|0;$=y;m=qc(da|0,ea|0,m|0,((m|0)<0)<<31>>31|0)|0;r=y;g=qc(gb|0,fb|0,Y|0,g|0)|0;Y=y;Ma=qc(va|0,wa|0,La|0,Ma|0)|0;La=y;wa=qc(da|0,ea|0,i|0,O|0)|0;va=y;O=qc(gb|0,fb|0,i|0,O|0)|0;i=y;ea=qc(da|0,ea|0,h|0,B|0)|0;da=y;B=qc(gb|0,fb|0,h|0,B|0)|0;h=y;q=qc(gb|0,fb|0,b|0,q|0)|0;b=y;bb=lc(eb|0,db|0,cb|0,bb|0)|0;$a=lc(bb|0,y|0,ab|0,$a|0)|0;Za=lc($a|0,y|0,_a|0,Za|0)|0;Xa=lc(Za|0,y|0,Ya|0,Xa|0)|0;p=lc(Xa|0,y|0,n|0,p|0)|0;n=y;ua=lc(Wa|0,Va|0,ta|0,ua|0)|0;ta=y;ca=lc(Ua|0,Ta|0,ba|0,ca|0)|0;ba=y;Pa=lc(Sa|0,Ra|0,Qa|0,Pa|0)|0;Na=lc(Pa|0,y|0,Oa|0,Na|0)|0;La=lc(Na|0,y|0,Ma|0,La|0)|0;r=lc(La|0,y|0,m|0,r|0)|0;C=lc(r|0,y|0,d|0,C|0)|0;d=y;r=lc(p|0,n|0,33554432,0)|0;r=jc(r|0,y|0,26)|0;m=y;Ha=lc(Ka|0,Ja|0,Ia|0,Ha|0)|0;Fa=lc(Ha|0,y|0,Ga|0,Fa|0)|0;Da=lc(Fa|0,y|0,Ea|0,Da|0)|0;j=lc(Da|0,y|0,k|0,j|0)|0;j=lc(j|0,y|0,r|0,m|0)|0;k=y;m=oc(r|0,m|0,26)|0;m=kc(p|0,n|0,m|0,y|0)|0;n=y;p=lc(C|0,d|0,33554432,0)|0;p=jc(p|0,y|0,26)|0;r=y;za=lc(Ca|0,Ba|0,Aa|0,za|0)|0;xa=lc(za|0,y|0,ya|0,xa|0)|0;va=lc(xa|0,y|0,wa|0,va|0)|0;Y=lc(va|0,y|0,g|0,Y|0)|0;Y=lc(Y|0,y|0,p|0,r|0)|0;g=y;r=oc(p|0,r|0,26)|0;r=kc(C|0,d|0,r|0,y|0)|0;d=y;C=lc(j|0,k|0,16777216,0)|0;C=jc(C|0,y|0,25)|0;p=y;ra=lc(ua|0,ta|0,sa|0,ra|0)|0;pa=lc(ra|0,y|0,qa|0,pa|0)|0;na=lc(pa|0,y|0,oa|0,na|0)|0;f=lc(na|0,y|0,P|0,f|0)|0;f=lc(f|0,y|0,C|0,p|0)|0;P=y;p=oc(C|0,p|0,25)|0;p=kc(j|0,k|0,p|0,y|0)|0;k=y;j=lc(Y|0,g|0,16777216,0)|0;j=jc(j|0,y|0,25)|0;C=y;ja=lc(ma|0,la|0,ka|0,ja|0)|0;ha=lc(ja|0,y|0,ia|0,ha|0)|0;fa=lc(ha|0,y|0,ga|0,fa|0)|0;da=lc(fa|0,y|0,ea|0,da|0)|0;i=lc(da|0,y|0,O|0,i|0)|0;i=lc(i|0,y|0,j|0,C|0)|0;O=y;C=oc(j|0,C|0,25)|0;C=kc(Y|0,g|0,C|0,y|0)|0;g=y;Y=lc(f|0,P|0,33554432,0)|0;Y=jc(Y|0,y|0,26)|0;j=y;$=lc(ca|0,ba|0,aa|0,$|0)|0;Z=lc($|0,y|0,_|0,Z|0)|0;e=lc(Z|0,y|0,D|0,e|0)|0;e=lc(e|0,y|0,Y|0,j|0)|0;D=y;j=oc(Y|0,j|0,26)|0;j=kc(f|0,P|0,j|0,y|0)|0;P=lc(i|0,O|0,33554432,0)|0;P=jc(P|0,y|0,26)|0;f=y;U=lc(X|0,W|0,V|0,U|0)|0;S=lc(U|0,y|0,T|0,S|0)|0;Q=lc(S|0,y|0,R|0,Q|0)|0;h=lc(Q|0,y|0,B|0,h|0)|0;h=lc(h|0,y|0,P|0,f|0)|0;B=y;f=oc(P|0,f|0,26)|0;f=kc(i|0,O|0,f|0,y|0)|0;O=lc(e|0,D|0,16777216,0)|0;O=jc(O|0,y|0,25)|0;i=y;d=lc(O|0,i|0,r|0,d|0)|0;r=y;i=oc(O|0,i|0,25)|0;i=kc(e|0,D|0,i|0,y|0)|0;D=lc(h|0,B|0,16777216,0)|0;D=jc(D|0,y|0,25)|0;e=y;K=lc(N|0,M|0,L|0,K|0)|0;I=lc(K|0,y|0,J|0,I|0)|0;G=lc(I|0,y|0,H|0,G|0)|0;E=lc(G|0,y|0,F|0,E|0)|0;b=lc(E|0,y|0,q|0,b|0)|0;b=lc(b|0,y|0,D|0,e|0)|0;q=y;e=oc(D|0,e|0,25)|0;e=kc(h|0,B|0,e|0,y|0)|0;B=lc(d|0,r|0,33554432,0)|0;B=jc(B|0,y|0,26)|0;h=y;g=lc(C|0,g|0,B|0,h|0)|0;h=oc(B|0,h|0,26)|0;h=kc(d|0,r|0,h|0,y|0)|0;r=lc(b|0,q|0,33554432,0)|0;r=jc(r|0,y|0,26)|0;d=y;w=lc(A|0,z|0,x|0,w|0)|0;u=lc(w|0,y|0,v|0,u|0)|0;s=lc(u|0,y|0,t|0,s|0)|0;l=lc(s|0,y|0,o|0,l|0)|0;l=lc(l|0,y|0,r|0,d|0)|0;o=y;d=oc(r|0,d|0,26)|0;d=kc(b|0,q|0,d|0,y|0)|0;q=lc(l|0,o|0,16777216,0)|0;q=jc(q|0,y|0,25)|0;b=y;r=qc(q|0,b|0,19,0)|0;n=lc(r|0,y|0,m|0,n|0)|0;m=y;b=oc(q|0,b|0,25)|0;b=kc(l|0,o|0,b|0,y|0)|0;o=lc(n|0,m|0,33554432,0)|0;o=jc(o|0,y|0,26)|0;l=y;k=lc(p|0,k|0,o|0,l|0)|0;l=oc(o|0,l|0,26)|0;l=kc(n|0,m|0,l|0,y|0)|0;c[a>>2]=l;c[a+4>>2]=k;c[a+8>>2]=j;c[a+12>>2]=i;c[a+16>>2]=h;c[a+20>>2]=g;c[a+24>>2]=f;c[a+28>>2]=e;c[a+32>>2]=d;c[a+36>>2]=b;return}function db(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0;m=(c[b+4>>2]|0)-(c[d+4>>2]|0)|0;l=(c[b+8>>2]|0)-(c[d+8>>2]|0)|0;k=(c[b+12>>2]|0)-(c[d+12>>2]|0)|0;j=(c[b+16>>2]|0)-(c[d+16>>2]|0)|0;i=(c[b+20>>2]|0)-(c[d+20>>2]|0)|0;h=(c[b+24>>2]|0)-(c[d+24>>2]|0)|0;g=(c[b+28>>2]|0)-(c[d+28>>2]|0)|0;f=(c[b+32>>2]|0)-(c[d+32>>2]|0)|0;e=(c[b+36>>2]|0)-(c[d+36>>2]|0)|0;c[a>>2]=(c[b>>2]|0)-(c[d>>2]|0);c[a+4>>2]=m;c[a+8>>2]=l;c[a+12>>2]=k;c[a+16>>2]=j;c[a+20>>2]=i;c[a+24>>2]=h;c[a+28>>2]=g;c[a+32>>2]=f;c[a+36>>2]=e;return}function eb(b,d){b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0;m=c[d>>2]|0;l=c[d+4>>2]|0;k=c[d+8>>2]|0;j=c[d+12>>2]|0;i=c[d+16>>2]|0;h=c[d+20>>2]|0;g=c[d+24>>2]|0;f=c[d+28>>2]|0;o=c[d+32>>2]|0;e=c[d+36>>2]|0;m=(((((((((((((e*19|0)+16777216>>25)+m>>26)+l>>25)+k>>26)+j>>25)+i>>26)+h>>25)+g>>26)+f>>25)+o>>26)+e>>25)*19|0)+m|0;n=m>>26;l=n+l|0;n=m-(n<<26)|0;m=l>>25;k=m+k|0;m=l-(m<<25)|0;l=k>>26;j=l+j|0;l=k-(l<<26)|0;k=j>>25;i=k+i|0;k=j-(k<<25)|0;j=i>>26;h=j+h|0;j=i-(j<<26)|0;i=h>>25;g=i+g|0;i=h-(i<<25)|0;h=g>>26;f=h+f|0;h=g-(h<<26)|0;g=f>>25;d=g+o|0;g=f-(g<<25)|0;f=d>>26;e=f+e|0;f=d-(f<<26)|0;d=e&33554431;a[b>>0]=n;a[b+1>>0]=n>>>8;a[b+2>>0]=n>>>16;a[b+3>>0]=m<<2|n>>>24;a[b+4>>0]=m>>>6;a[b+5>>0]=m>>>14;a[b+6>>0]=l<<3|m>>>22;a[b+7>>0]=l>>>5;a[b+8>>0]=l>>>13;a[b+9>>0]=k<<5|l>>>21;a[b+10>>0]=k>>>3;a[b+11>>0]=k>>>11;a[b+12>>0]=j<<6|k>>>19;a[b+13>>0]=j>>>2;a[b+14>>0]=j>>>10;a[b+15>>0]=j>>>18;a[b+16>>0]=i;a[b+17>>0]=i>>>8;a[b+18>>0]=i>>>16;a[b+19>>0]=h<<1|i>>>24;a[b+20>>0]=h>>>7;a[b+21>>0]=h>>>15;a[b+22>>0]=g<<3|h>>>23;a[b+23>>0]=g>>>5;a[b+24>>0]=g>>>13;a[b+25>>0]=f<<4|g>>>21;a[b+26>>0]=f>>>4;a[b+27>>0]=f>>>12;a[b+28>>0]=f>>>20|d<<6;a[b+29>>0]=e>>>2;a[b+30>>0]=e>>>10;a[b+31>>0]=d>>>18;return}function fb(a,b,c){a=a|0;b=b|0;c=c|0;var d=0,e=0,f=0,g=0,h=0;d=l;l=l+48|0;f=d;g=b+40|0;Ra(a,g,b);h=a+40|0;db(h,g,b);g=a+80|0;_a(g,a,c);_a(h,h,c+40|0);e=a+120|0;_a(e,c+120|0,b+120|0);_a(a,b+80|0,c+80|0);Ra(f,a,a);db(a,g,h);Ra(h,g,h);Ra(g,f,e);db(e,f,e);l=d;return}function gb(b,c,d,e){b=b|0;c=c|0;d=d|0;e=e|0;var f=0,g=0,h=0,i=0,j=0,k=0,m=0;k=l;l=l+2272|0;f=k+2016|0;g=k+1760|0;h=k+480|0;i=k+320|0;j=k+160|0;m=k;hb(f,c);hb(g,e);sb(h,d);qb(i,d);mb(m,i);fb(i,m,h);mb(j,i);c=h+160|0;sb(c,j);fb(i,m,c);mb(j,i);c=h+320|0;sb(c,j);fb(i,m,c);mb(j,i);c=h+480|0;sb(c,j);fb(i,m,c);mb(j,i);c=h+640|0;sb(c,j);fb(i,m,c);mb(j,i);c=h+800|0;sb(c,j);fb(i,m,c);mb(j,i);c=h+960|0;sb(c,j);fb(i,m,c);mb(j,i);sb(h+1120|0,j);nb(b);c=255;while(1){if(a[f+c>>0]|0)break;if(a[g+c>>0]|0)break;d=c+-1|0;if((c|0)>0)c=d;else{c=d;break}}if((c|0)<=-1){l=k;return}while(1){ob(i,b);d=a[f+c>>0]|0;if(d<<24>>24<=0){if(d<<24>>24<0){mb(j,i);Ab(i,j,h+((((d<<24>>24)/-2|0)<<24>>24)*160|0)|0)}}else{mb(j,i);fb(i,j,h+(((d&255)>>>1&255)*160|0)|0)}d=a[g+c>>0]|0;if(d<<24>>24<=0){if(d<<24>>24<0){mb(j,i);kb(i,j,712+((((d<<24>>24)/-2|0)<<24>>24)*120|0)|0)}}else{mb(j,i);jb(i,j,712+(((d&255)>>>1&255)*120|0)|0)}lb(b,i);if((c|0)>0)c=c+-1|0;else break}l=k;return}function hb(b,c){b=b|0;c=c|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0;e=0;do{a[b+e>>0]=(d[c+(e>>3)>>0]|0)>>>(e&7)&1;e=e+1|0}while((e|0)!=256);j=0;do{k=b+j|0;a:do if(a[k>>0]|0){i=1;do{e=i+j|0;if((e|0)>=256)break a;g=b+e|0;c=a[g>>0]|0;b:do if(c<<24>>24){h=a[k>>0]|0;c=c<<24>>24<<i;f=h+c|0;if((f|0)<16){a[k>>0]=f;a[g>>0]=0;break}c=h-c|0;if((c|0)<=-16)break a;a[k>>0]=c;while(1){c=b+e|0;if(!(a[c>>0]|0))break;a[c>>0]=0;e=e+1|0;if((e|0)>=256)break b}a[c>>0]=1}while(0);i=i+1|0}while((i|0)<7)}while(0);j=j+1|0}while((j|0)!=256);return}function ib(a,b){a=a|0;b=b|0;var c=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0;h=l;l=l+208|0;c=h+160|0;i=h+120|0;j=h+80|0;e=h+40|0;f=h;g=a+40|0;Ua(g,b);k=a+80|0;Qa(k);cb(c,g);_a(i,c,1672);db(c,c,k);Ra(i,i,k);cb(j,i);_a(j,j,i);cb(a,j);_a(a,a,i);_a(a,a,c);ab(a,a);_a(a,a,j);_a(a,a,c);cb(e,a);_a(e,e,i);db(f,e,c);do if(Za(f)|0){Ra(f,e,c);if(!(Za(f)|0)){_a(a,a,1712);break}else{k=-1;l=h;return k|0}}while(0);k=Ya(a)|0;if((k|0)==((d[b+31>>0]|0)>>>7|0))$a(a,a);_a(a+120|0,a,g);k=0;l=h;return k|0}function jb(a,b,c){a=a|0;b=b|0;c=c|0;var d=0,e=0,f=0,g=0,h=0;d=l;l=l+48|0;f=d;g=b+40|0;Ra(a,g,b);h=a+40|0;db(h,g,b);g=a+80|0;_a(g,a,c);_a(h,h,c+40|0);e=a+120|0;_a(e,c+80|0,b+120|0);c=b+80|0;Ra(f,c,c);db(a,g,h);Ra(h,g,h);Ra(g,f,e);db(e,f,e);l=d;return}function kb(a,b,c){a=a|0;b=b|0;c=c|0;var d=0,e=0,f=0,g=0,h=0;d=l;l=l+48|0;f=d;g=b+40|0;Ra(a,g,b);h=a+40|0;db(h,g,b);g=a+80|0;_a(g,a,c+40|0);_a(h,h,c);e=a+120|0;_a(e,c+80|0,b+120|0);c=b+80|0;Ra(f,c,c);db(a,g,h);Ra(h,g,h);db(g,f,e);Ra(e,f,e);l=d;return}function lb(a,b){a=a|0;b=b|0;var c=0,d=0;c=b+120|0;_a(a,b,c);d=b+80|0;_a(a+40|0,b+40|0,d);_a(a+80|0,d,c);return}function mb(a,b){a=a|0;b=b|0;var c=0,d=0,e=0;d=b+120|0;_a(a,b,d);c=b+40|0;e=b+80|0;_a(a+40|0,c,e);_a(a+80|0,e,d);_a(a+120|0,b,c);return}function nb(a){a=a|0;Pa(a);Qa(a+40|0);Qa(a+80|0);return}function ob(a,b){a=a|0;b=b|0;var c=0,d=0,e=0,f=0,g=0,h=0;c=l;l=l+48|0;g=c;cb(a,b);d=a+80|0;h=b+40|0;cb(d,h);e=a+120|0;bb(e,b+80|0);f=a+40|0;Ra(f,b,h);cb(g,f);Ra(f,d,a);db(d,d,a);db(a,g,f);db(e,e,d);l=c;return}function pb(a){a=a|0;Pa(a);Qa(a+40|0);Qa(a+80|0);Pa(a+120|0);return}function qb(a,b){a=a|0;b=b|0;var c=0,d=0;c=l;l=l+128|0;d=c;tb(d,b);ob(a,d);l=c;return}function rb(b,c){b=b|0;c=c|0;var e=0,f=0,g=0,h=0;e=l;l=l+128|0;h=e+80|0;f=e+40|0;g=e;Xa(h,c+80|0);_a(f,c,h);_a(g,c+40|0,h);eb(b,g);f=(Ya(f)|0)<<7;c=b+31|0;a[c>>0]=(d[c>>0]|0)^f;l=e;return}function sb(a,b){a=a|0;b=b|0;var c=0;c=b+40|0;Ra(a,c,b);db(a+40|0,c,b);Ta(a+80|0,b+80|0);_a(a+120|0,b+120|0,1752);return}function tb(a,b){a=a|0;b=b|0;Ta(a,b);Ta(a+40|0,b+40|0);Ta(a+80|0,b+80|0);return}function ub(a){a=a|0;Qa(a);Qa(a+40|0);Pa(a+80|0);return}function vb(b,c){b=b|0;c=c|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,m=0;j=l;l=l+464|0;g=j+400|0;h=j+240|0;f=j+120|0;i=j;e=0;do{m=a[c+e>>0]|0;k=e<<1;a[g+k>>0]=m&15;a[g+(k|1)>>0]=(m&255)>>>4;e=e+1|0}while((e|0)!=32);e=0;c=0;do{m=g+c|0;k=(d[m>>0]|0)+e|0;e=(k<<24)+134217728>>28;a[m>>0]=k-(e<<4);c=c+1|0}while((c|0)!=63);m=g+63|0;a[m>>0]=(d[m>>0]|0)+e;pb(b);e=1;do{wb(i,(e|0)/2|0,a[g+e>>0]|0);jb(h,b,i);mb(b,h);e=e+2|0}while((e|0)<64);qb(h,b);lb(f,h);ob(h,f);lb(f,h);ob(h,f);lb(f,h);ob(h,f);mb(b,h);e=0;do{wb(i,(e|0)/2|0,a[g+e>>0]|0);jb(h,b,i);mb(b,h);e=e+2|0}while((e|0)<64);l=j;return}function wb(a,b,c){a=a|0;b=b|0;c=c|0;var d=0,e=0,f=0;d=l;l=l+128|0;f=d;e=xb(c)|0;c=c<<24>>24;c=c-((c&0-(e&255))<<1)&255;ub(a);zb(a,1792+(b*960|0)|0,yb(c,1)|0);zb(a,1792+(b*960|0)+120|0,yb(c,2)|0);zb(a,1792+(b*960|0)+240|0,yb(c,3)|0);zb(a,1792+(b*960|0)+360|0,yb(c,4)|0);zb(a,1792+(b*960|0)+480|0,yb(c,5)|0);zb(a,1792+(b*960|0)+600|0,yb(c,6)|0);zb(a,1792+(b*960|0)+720|0,yb(c,7)|0);zb(a,1792+(b*960|0)+840|0,yb(c,8)|0);Ta(f,a+40|0);Ta(f+40|0,a);$a(f+80|0,a+80|0);zb(a,f,e);l=d;return}function xb(a){a=a|0;a=a<<24>>24;a=nc(a|0,((a|0)<0)<<31>>31|0,63)|0;return a&255|0}function yb(a,b){a=a|0;b=b|0;return (((b^a)&255)+-1|0)>>>31&255|0}function zb(a,b,c){a=a|0;b=b|0;c=c|0;c=c&255;Sa(a,b,c);Sa(a+40|0,b+40|0,c);Sa(a+80|0,b+80|0,c);return}function Ab(a,b,c){a=a|0;b=b|0;c=c|0;var d=0,e=0,f=0,g=0,h=0;d=l;l=l+48|0;f=d;g=b+40|0;Ra(a,g,b);h=a+40|0;db(h,g,b);g=a+80|0;_a(g,a,c+40|0);_a(h,h,c);e=a+120|0;_a(e,c+120|0,b+120|0);_a(a,b+80|0,c+80|0);Ra(f,a,a);db(a,g,h);Ra(h,g,h);db(g,f,e);Ra(e,f,e);l=d;return}function Bb(b,c){b=b|0;c=c|0;var e=0,f=0,g=0,h=0;e=l;l=l+128|0;h=e+80|0;f=e+40|0;g=e;Xa(h,c+80|0);_a(f,c,h);_a(g,c+40|0,h);eb(b,g);f=(Ya(f)|0)<<7;c=b+31|0;a[c>>0]=(d[c>>0]|0)^f;l=e;return}function Cb(b,e,f,g,h,i){b=b|0;e=e|0;f=f|0;g=g|0;h=h|0;i=i|0;var j=0,k=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0;t=l;l=l+480|0;n=t+440|0;o=t+408|0;p=t+376|0;q=t+312|0;j=t+280|0;k=t+120|0;m=t;if((!(h>>>0<0|(h|0)==0&g>>>0<64)?(d[f+63>>0]|0)<=31:0)?(ib(k,i)|0)==0:0){s=n;r=s+32|0;do{a[s>>0]=a[i>>0]|0;s=s+1|0;i=i+1|0}while((s|0)<(r|0));s=o;i=f;r=s+32|0;do{a[s>>0]=a[i>>0]|0;s=s+1|0;i=i+1|0}while((s|0)<(r|0));s=p;i=f+32|0;r=s+32|0;do{a[s>>0]=a[i>>0]|0;s=s+1|0;i=i+1|0}while((s|0)<(r|0));tc(b|0,f|0,g|0)|0;s=b+32|0;i=n;r=s+32|0;do{a[s>>0]=a[i>>0]|0;s=s+1|0;i=i+1|0}while((s|0)<(r|0));ta(q,b,g,h)|0;Gb(q);gb(m,q,k,p);Bb(j,m);if(!(qa(j,o)|0)){i=lc(g|0,h|0,-64,-1)|0;j=y;tc(b|0,b+64|0,i|0)|0;s=b+g+-64|0;r=s+64|0;do{a[s>>0]=0;s=s+1|0}while((s|0)<(r|0));s=e;c[s>>2]=i;c[s+4>>2]=j;s=0;l=t;return s|0}}s=e;c[s>>2]=-1;c[s+4>>2]=-1;mc(b|0,0,g|0)|0;s=-1;l=t;return s|0}function Db(b,c,d,e){b=b|0;c=c|0;d=d|0;e=e|0;var f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,z=0,A=0,B=0,C=0,D=0,E=0,F=0,G=0,H=0,I=0,J=0,K=0,L=0,M=0,N=0,O=0,P=0,Q=0,R=0,S=0,T=0,U=0,V=0,W=0,X=0,Y=0,Z=0,_=0,$=0,aa=0,ba=0,ca=0,da=0,ea=0,fa=0,ga=0,ha=0,ia=0,ja=0,ka=0,la=0,ma=0,na=0,oa=0,pa=0,qa=0,ra=0,sa=0,ta=0,ua=0,va=0,wa=0,xa=0,ya=0,za=0,Aa=0,Ba=0,Ca=0,Da=0,Ea=0,Fa=0,Ga=0,Ha=0,Ia=0,Ja=0,Ka=0,La=0,Ma=0,Na=0,Oa=0,Pa=0,Qa=0,Ra=0,Sa=0,Ta=0,Ua=0,Va=0,Wa=0,Xa=0,Ya=0,Za=0,_a=0,$a=0,ab=0,bb=0,cb=0,db=0,eb=0,fb=0,gb=0,hb=0,ib=0,jb=0,kb=0,lb=0,mb=0,nb=0,ob=0,pb=0,qb=0,rb=0,sb=0,tb=0,ub=0,vb=0,wb=0,xb=0,yb=0,zb=0,Ab=0,Bb=0,Cb=0,Db=0,Gb=0,Hb=0,Ib=0,Jb=0,Kb=0,Lb=0,Mb=0,Nb=0,Ob=0,Pb=0,Qb=0,Rb=0,Sb=0,Tb=0,Ub=0,Vb=0,Wb=0,Xb=0,Yb=0,Zb=0,_b=0,$b=0,ac=0,bc=0,cc=0,dc=0,ec=0,fc=0,gc=0,hc=0,ic=0,mc=0,pc=0,rc=0,sc=0,tc=0,uc=0,vc=0,wc=0,xc=0,yc=0,zc=0,Ac=0;pb=c+2|0;N=Eb(a[c>>0]|0,a[c+1>>0]|0,a[pb>>0]|0)|0;N=N&2097151;pb=Fb(pb)|0;pb=nc(pb|0,y|0,5)|0;pb=pb&2097151;mb=c+7|0;A=Eb(a[c+5>>0]|0,a[c+6>>0]|0,a[mb>>0]|0)|0;A=nc(A|0,y|0,2)|0;A=A&2097151;mb=Fb(mb)|0;mb=nc(mb|0,y|0,7)|0;mb=mb&2097151;z=Fb(c+10|0)|0;z=nc(z|0,y|0,4)|0;z=z&2097151;La=c+15|0;i=Eb(a[c+13>>0]|0,a[c+14>>0]|0,a[La>>0]|0)|0;i=nc(i|0,y|0,1)|0;i=i&2097151;La=Fb(La)|0;La=nc(La|0,y|0,6)|0;La=La&2097151;ba=Eb(a[c+18>>0]|0,a[c+19>>0]|0,a[c+20>>0]|0)|0;ba=nc(ba|0,y|0,3)|0;ba=ba&2097151;Ka=c+23|0;kb=Eb(a[c+21>>0]|0,a[c+22>>0]|0,a[Ka>>0]|0)|0;kb=kb&2097151;Ka=Fb(Ka)|0;Ka=nc(Ka|0,y|0,5)|0;Ka=Ka&2097151;n=c+28|0;yc=Eb(a[c+26>>0]|0,a[c+27>>0]|0,a[n>>0]|0)|0;yc=nc(yc|0,y|0,2)|0;yc=yc&2097151;n=Fb(n)|0;n=nc(n|0,y|0,7)|0;Ca=y;Xa=d+2|0;aa=Eb(a[d>>0]|0,a[d+1>>0]|0,a[Xa>>0]|0)|0;aa=aa&2097151;Xa=Fb(Xa)|0;Xa=nc(Xa|0,y|0,5)|0;Xa=Xa&2097151;o=d+7|0;p=Eb(a[d+5>>0]|0,a[d+6>>0]|0,a[o>>0]|0)|0;p=nc(p|0,y|0,2)|0;p=p&2097151;o=Fb(o)|0;o=nc(o|0,y|0,7)|0;o=o&2097151;da=Fb(d+10|0)|0;da=nc(da|0,y|0,4)|0;da=da&2097151;l=d+15|0;Sa=Eb(a[d+13>>0]|0,a[d+14>>0]|0,a[l>>0]|0)|0;Sa=nc(Sa|0,y|0,1)|0;Sa=Sa&2097151;l=Fb(l)|0;l=nc(l|0,y|0,6)|0;l=l&2097151;qa=Eb(a[d+18>>0]|0,a[d+19>>0]|0,a[d+20>>0]|0)|0;qa=nc(qa|0,y|0,3)|0;qa=qa&2097151;Ha=d+23|0;xa=Eb(a[d+21>>0]|0,a[d+22>>0]|0,a[Ha>>0]|0)|0;xa=xa&2097151;Ha=Fb(Ha)|0;Ha=nc(Ha|0,y|0,5)|0;Ha=Ha&2097151;w=d+28|0;J=Eb(a[d+26>>0]|0,a[d+27>>0]|0,a[w>>0]|0)|0;J=nc(J|0,y|0,2)|0;J=J&2097151;w=Fb(w)|0;w=nc(w|0,y|0,7)|0;Aa=y;ya=e+2|0;V=Eb(a[e>>0]|0,a[e+1>>0]|0,a[ya>>0]|0)|0;ya=Fb(ya)|0;ya=nc(ya|0,y|0,5)|0;Pa=e+7|0;Ea=Eb(a[e+5>>0]|0,a[e+6>>0]|0,a[Pa>>0]|0)|0;Ea=nc(Ea|0,y|0,2)|0;Pa=Fb(Pa)|0;Pa=nc(Pa|0,y|0,7)|0;wa=Fb(e+10|0)|0;wa=nc(wa|0,y|0,4)|0;hb=e+15|0;ga=Eb(a[e+13>>0]|0,a[e+14>>0]|0,a[hb>>0]|0)|0;ga=nc(ga|0,y|0,1)|0;hb=Fb(hb)|0;hb=nc(hb|0,y|0,6)|0;g=Eb(a[e+18>>0]|0,a[e+19>>0]|0,a[e+20>>0]|0)|0;g=nc(g|0,y|0,3)|0;F=e+23|0;X=Eb(a[e+21>>0]|0,a[e+22>>0]|0,a[F>>0]|0)|0;F=Fb(F)|0;F=nc(F|0,y|0,5)|0;c=e+28|0;M=Eb(a[e+26>>0]|0,a[e+27>>0]|0,a[c>>0]|0)|0;M=nc(M|0,y|0,2)|0;c=Fb(c)|0;c=nc(c|0,y|0,7)|0;h=y;za=qc(aa|0,0,N|0,0)|0;za=lc(V&2097151|0,0,za|0,y|0)|0;V=y;xc=qc(Xa|0,0,N|0,0)|0;wc=y;vc=qc(aa|0,0,pb|0,0)|0;la=y;ta=qc(p|0,0,N|0,0)|0;Da=y;ua=qc(Xa|0,0,pb|0,0)|0;pc=y;ha=qc(aa|0,0,A|0,0)|0;ha=lc(ua|0,pc|0,ha|0,y|0)|0;Da=lc(ha|0,y|0,ta|0,Da|0)|0;Ea=lc(Da|0,y|0,Ea&2097151|0,0)|0;Da=y;ta=qc(o|0,0,N|0,0)|0;ha=y;pc=qc(p|0,0,pb|0,0)|0;ua=y;uc=qc(Xa|0,0,A|0,0)|0;tc=y;sc=qc(aa|0,0,mb|0,0)|0;rc=y;Ga=qc(da|0,0,N|0,0)|0;va=y;bc=qc(o|0,0,pb|0,0)|0;fa=y;dc=qc(p|0,0,A|0,0)|0;Fa=y;ec=qc(Xa|0,0,mb|0,0)|0;fc=y;cc=qc(aa|0,0,z|0,0)|0;cc=lc(ec|0,fc|0,cc|0,y|0)|0;Fa=lc(cc|0,y|0,dc|0,Fa|0)|0;fa=lc(Fa|0,y|0,bc|0,fa|0)|0;va=lc(fa|0,y|0,Ga|0,va|0)|0;wa=lc(va|0,y|0,wa&2097151|0,0)|0;va=y;Ga=qc(Sa|0,0,N|0,0)|0;fa=y;bc=qc(da|0,0,pb|0,0)|0;Fa=y;dc=qc(o|0,0,A|0,0)|0;cc=y;fc=qc(p|0,0,mb|0,0)|0;ec=y;mc=qc(Xa|0,0,z|0,0)|0;ic=y;hc=qc(aa|0,0,i|0,0)|0;gc=y;ca=qc(l|0,0,N|0,0)|0;bb=y;Qb=qc(Sa|0,0,pb|0,0)|0;B=y;Sb=qc(da|0,0,A|0,0)|0;W=y;Ub=qc(o|0,0,mb|0,0)|0;Rb=y;Wb=qc(p|0,0,z|0,0)|0;Tb=y;Xb=qc(Xa|0,0,i|0,0)|0;Yb=y;Vb=qc(aa|0,0,La|0,0)|0;Vb=lc(Xb|0,Yb|0,Vb|0,y|0)|0;Tb=lc(Vb|0,y|0,Wb|0,Tb|0)|0;Rb=lc(Tb|0,y|0,Ub|0,Rb|0)|0;W=lc(Rb|0,y|0,Sb|0,W|0)|0;B=lc(W|0,y|0,Qb|0,B|0)|0;bb=lc(B|0,y|0,ca|0,bb|0)|0;hb=lc(bb|0,y|0,hb&2097151|0,0)|0;bb=y;ca=qc(qa|0,0,N|0,0)|0;B=y;Qb=qc(l|0,0,pb|0,0)|0;W=y;Sb=qc(Sa|0,0,A|0,0)|0;Rb=y;Ub=qc(da|0,0,mb|0,0)|0;Tb=y;Wb=qc(o|0,0,z|0,0)|0;Vb=y;Yb=qc(p|0,0,i|0,0)|0;Xb=y;ac=qc(Xa|0,0,La|0,0)|0;$b=y;_b=qc(aa|0,0,ba|0,0)|0;Zb=y;ra=qc(xa|0,0,N|0,0)|0;Y=y;xb=qc(qa|0,0,pb|0,0)|0;G=y;zb=qc(l|0,0,A|0,0)|0;sa=y;Bb=qc(Sa|0,0,mb|0,0)|0;yb=y;Db=qc(da|0,0,z|0,0)|0;Ab=y;Hb=qc(o|0,0,i|0,0)|0;Cb=y;Jb=qc(p|0,0,La|0,0)|0;Gb=y;Kb=qc(Xa|0,0,ba|0,0)|0;Lb=y;Ib=qc(aa|0,0,kb|0,0)|0;Ib=lc(Kb|0,Lb|0,Ib|0,y|0)|0;Gb=lc(Ib|0,y|0,Jb|0,Gb|0)|0;Cb=lc(Gb|0,y|0,Hb|0,Cb|0)|0;Ab=lc(Cb|0,y|0,Db|0,Ab|0)|0;yb=lc(Ab|0,y|0,Bb|0,yb|0)|0;sa=lc(yb|0,y|0,zb|0,sa|0)|0;G=lc(sa|0,y|0,xb|0,G|0)|0;Y=lc(G|0,y|0,ra|0,Y|0)|0;X=lc(Y|0,y|0,X&2097151|0,0)|0;Y=y;ra=qc(Ha|0,0,N|0,0)|0;G=y;xb=qc(xa|0,0,pb|0,0)|0;sa=y;zb=qc(qa|0,0,A|0,0)|0;yb=y;Bb=qc(l|0,0,mb|0,0)|0;Ab=y;Db=qc(Sa|0,0,z|0,0)|0;Cb=y;Hb=qc(da|0,0,i|0,0)|0;Gb=y;Jb=qc(o|0,0,La|0,0)|0;Ib=y;Lb=qc(p|0,0,ba|0,0)|0;Kb=y;Pb=qc(Xa|0,0,kb|0,0)|0;Ob=y;Nb=qc(aa|0,0,Ka|0,0)|0;Mb=y;O=qc(J|0,0,N|0,0)|0;L=y;cb=qc(Ha|0,0,pb|0,0)|0;ib=y;ab=qc(xa|0,0,A|0,0)|0;$a=y;S=qc(qa|0,0,mb|0,0)|0;R=y;ob=qc(l|0,0,z|0,0)|0;nb=y;C=qc(Sa|0,0,i|0,0)|0;I=y;Oa=qc(da|0,0,La|0,0)|0;Na=y;gb=qc(o|0,0,ba|0,0)|0;fb=y;U=qc(p|0,0,kb|0,0)|0;T=y;wb=qc(Xa|0,0,Ka|0,0)|0;Wa=y;Va=qc(aa|0,0,yc|0,0)|0;Va=lc(wb|0,Wa|0,Va|0,y|0)|0;T=lc(Va|0,y|0,U|0,T|0)|0;fb=lc(T|0,y|0,gb|0,fb|0)|0;Na=lc(fb|0,y|0,Oa|0,Na|0)|0;I=lc(Na|0,y|0,C|0,I|0)|0;nb=lc(I|0,y|0,ob|0,nb|0)|0;R=lc(nb|0,y|0,S|0,R|0)|0;$a=lc(R|0,y|0,ab|0,$a|0)|0;ib=lc($a|0,y|0,cb|0,ib|0)|0;L=lc(ib|0,y|0,O|0,L|0)|0;M=lc(L|0,y|0,M&2097151|0,0)|0;L=y;N=qc(w|0,Aa|0,N|0,0)|0;O=y;ib=qc(J|0,0,pb|0,0)|0;cb=y;$a=qc(Ha|0,0,A|0,0)|0;ab=y;R=qc(xa|0,0,mb|0,0)|0;S=y;nb=qc(qa|0,0,z|0,0)|0;ob=y;I=qc(l|0,0,i|0,0)|0;C=y;Na=qc(Sa|0,0,La|0,0)|0;Oa=y;fb=qc(da|0,0,ba|0,0)|0;gb=y;T=qc(o|0,0,kb|0,0)|0;U=y;Va=qc(p|0,0,Ka|0,0)|0;Wa=y;wb=qc(Xa|0,0,yc|0,0)|0;vb=y;aa=qc(aa|0,0,n|0,Ca|0)|0;$=y;pb=qc(w|0,Aa|0,pb|0,0)|0;qb=y;db=qc(J|0,0,A|0,0)|0;v=y;ea=qc(Ha|0,0,mb|0,0)|0;eb=y;P=qc(xa|0,0,z|0,0)|0;_=y;rb=qc(qa|0,0,i|0,0)|0;jb=y;ka=qc(l|0,0,La|0,0)|0;sb=y;pa=qc(Sa|0,0,ba|0,0)|0;ja=y;Ma=qc(da|0,0,kb|0,0)|0;oa=y;Ya=qc(o|0,0,Ka|0,0)|0;Q=y;lb=qc(p|0,0,yc|0,0)|0;u=y;Xa=qc(Xa|0,0,n|0,Ca|0)|0;Xa=lc(lb|0,u|0,Xa|0,y|0)|0;Q=lc(Xa|0,y|0,Ya|0,Q|0)|0;oa=lc(Q|0,y|0,Ma|0,oa|0)|0;ja=lc(oa|0,y|0,pa|0,ja|0)|0;sb=lc(ja|0,y|0,ka|0,sb|0)|0;jb=lc(sb|0,y|0,rb|0,jb|0)|0;_=lc(jb|0,y|0,P|0,_|0)|0;eb=lc(_|0,y|0,ea|0,eb|0)|0;v=lc(eb|0,y|0,db|0,v|0)|0;qb=lc(v|0,y|0,pb|0,qb|0)|0;pb=y;A=qc(w|0,Aa|0,A|0,0)|0;v=y;db=qc(J|0,0,mb|0,0)|0;eb=y;ea=qc(Ha|0,0,z|0,0)|0;_=y;P=qc(xa|0,0,i|0,0)|0;jb=y;rb=qc(qa|0,0,La|0,0)|0;sb=y;ka=qc(l|0,0,ba|0,0)|0;ja=y;pa=qc(Sa|0,0,kb|0,0)|0;oa=y;Ma=qc(da|0,0,Ka|0,0)|0;Q=y;Ya=qc(o|0,0,yc|0,0)|0;Xa=y;p=qc(p|0,0,n|0,Ca|0)|0;u=y;mb=qc(w|0,Aa|0,mb|0,0)|0;lb=y;Za=qc(J|0,0,z|0,0)|0;q=y;D=qc(Ha|0,0,i|0,0)|0;_a=y;m=qc(xa|0,0,La|0,0)|0;s=y;Z=qc(qa|0,0,ba|0,0)|0;f=y;ia=qc(l|0,0,kb|0,0)|0;r=y;na=qc(Sa|0,0,Ka|0,0)|0;E=y;ub=qc(da|0,0,yc|0,0)|0;k=y;o=qc(o|0,0,n|0,Ca|0)|0;o=lc(ub|0,k|0,o|0,y|0)|0;E=lc(o|0,y|0,na|0,E|0)|0;r=lc(E|0,y|0,ia|0,r|0)|0;f=lc(r|0,y|0,Z|0,f|0)|0;s=lc(f|0,y|0,m|0,s|0)|0;_a=lc(s|0,y|0,D|0,_a|0)|0;q=lc(_a|0,y|0,Za|0,q|0)|0;lb=lc(q|0,y|0,mb|0,lb|0)|0;mb=y;z=qc(w|0,Aa|0,z|0,0)|0;q=y;Za=qc(J|0,0,i|0,0)|0;_a=y;D=qc(Ha|0,0,La|0,0)|0;s=y;m=qc(xa|0,0,ba|0,0)|0;f=y;Z=qc(qa|0,0,kb|0,0)|0;r=y;ia=qc(l|0,0,Ka|0,0)|0;E=y;na=qc(Sa|0,0,yc|0,0)|0;o=y;da=qc(da|0,0,n|0,Ca|0)|0;k=y;i=qc(w|0,Aa|0,i|0,0)|0;ub=y;d=qc(J|0,0,La|0,0)|0;K=y;t=qc(Ha|0,0,ba|0,0)|0;Ja=y;Ua=qc(xa|0,0,kb|0,0)|0;x=y;Ra=qc(qa|0,0,Ka|0,0)|0;Ta=y;e=qc(l|0,0,yc|0,0)|0;j=y;Sa=qc(Sa|0,0,n|0,Ca|0)|0;Sa=lc(e|0,j|0,Sa|0,y|0)|0;Ta=lc(Sa|0,y|0,Ra|0,Ta|0)|0;x=lc(Ta|0,y|0,Ua|0,x|0)|0;Ja=lc(x|0,y|0,t|0,Ja|0)|0;K=lc(Ja|0,y|0,d|0,K|0)|0;ub=lc(K|0,y|0,i|0,ub|0)|0;i=y;La=qc(w|0,Aa|0,La|0,0)|0;K=y;d=qc(J|0,0,ba|0,0)|0;Ja=y;t=qc(Ha|0,0,kb|0,0)|0;x=y;Ua=qc(xa|0,0,Ka|0,0)|0;Ta=y;Ra=qc(qa|0,0,yc|0,0)|0;Sa=y;l=qc(l|0,0,n|0,Ca|0)|0;j=y;ba=qc(w|0,Aa|0,ba|0,0)|0;e=y;Ba=qc(J|0,0,kb|0,0)|0;Ia=y;Qa=qc(Ha|0,0,Ka|0,0)|0;H=y;tb=qc(xa|0,0,yc|0,0)|0;ma=y;qa=qc(qa|0,0,n|0,Ca|0)|0;qa=lc(tb|0,ma|0,qa|0,y|0)|0;H=lc(qa|0,y|0,Qa|0,H|0)|0;Ia=lc(H|0,y|0,Ba|0,Ia|0)|0;e=lc(Ia|0,y|0,ba|0,e|0)|0;ba=y;kb=qc(w|0,Aa|0,kb|0,0)|0;Ia=y;Ba=qc(J|0,0,Ka|0,0)|0;H=y;Qa=qc(Ha|0,0,yc|0,0)|0;qa=y;xa=qc(xa|0,0,n|0,Ca|0)|0;ma=y;Ka=qc(w|0,Aa|0,Ka|0,0)|0;tb=y;Ac=qc(J|0,0,yc|0,0)|0;zc=y;Ha=qc(Ha|0,0,n|0,Ca|0)|0;Ha=lc(Ac|0,zc|0,Ha|0,y|0)|0;tb=lc(Ha|0,y|0,Ka|0,tb|0)|0;Ka=y;yc=qc(w|0,Aa|0,yc|0,0)|0;Ha=y;J=qc(J|0,0,n|0,Ca|0)|0;J=lc(yc|0,Ha|0,J|0,y|0)|0;Ha=y;Ca=qc(w|0,Aa|0,n|0,Ca|0)|0;n=y;Aa=lc(za|0,V|0,1048576,0)|0;Aa=nc(Aa|0,y|0,21)|0;w=y;la=lc(xc|0,wc|0,vc|0,la|0)|0;ya=lc(la|0,y|0,ya&2097151|0,0)|0;ya=lc(ya|0,y|0,Aa|0,w|0)|0;la=y;w=oc(Aa|0,w|0,21)|0;w=kc(za|0,V|0,w|0,y|0)|0;V=y;za=lc(Ea|0,Da|0,1048576,0)|0;za=nc(za|0,y|0,21)|0;Aa=y;rc=lc(uc|0,tc|0,sc|0,rc|0)|0;ua=lc(rc|0,y|0,pc|0,ua|0)|0;ha=lc(ua|0,y|0,ta|0,ha|0)|0;Pa=lc(ha|0,y|0,Pa&2097151|0,0)|0;Pa=lc(Pa|0,y|0,za|0,Aa|0)|0;ha=y;Aa=oc(za|0,Aa|0,21)|0;za=y;ta=lc(wa|0,va|0,1048576,0)|0;ta=jc(ta|0,y|0,21)|0;ua=y;gc=lc(mc|0,ic|0,hc|0,gc|0)|0;ec=lc(gc|0,y|0,fc|0,ec|0)|0;cc=lc(ec|0,y|0,dc|0,cc|0)|0;Fa=lc(cc|0,y|0,bc|0,Fa|0)|0;fa=lc(Fa|0,y|0,Ga|0,fa|0)|0;ga=lc(fa|0,y|0,ga&2097151|0,0)|0;ga=lc(ga|0,y|0,ta|0,ua|0)|0;fa=y;ua=oc(ta|0,ua|0,21)|0;ta=y;Ga=lc(hb|0,bb|0,1048576,0)|0;Ga=jc(Ga|0,y|0,21)|0;Fa=y;Zb=lc(ac|0,$b|0,_b|0,Zb|0)|0;Xb=lc(Zb|0,y|0,Yb|0,Xb|0)|0;Vb=lc(Xb|0,y|0,Wb|0,Vb|0)|0;Tb=lc(Vb|0,y|0,Ub|0,Tb|0)|0;Rb=lc(Tb|0,y|0,Sb|0,Rb|0)|0;W=lc(Rb|0,y|0,Qb|0,W|0)|0;B=lc(W|0,y|0,ca|0,B|0)|0;g=lc(B|0,y|0,g&2097151|0,0)|0;g=lc(g|0,y|0,Ga|0,Fa|0)|0;B=y;Fa=oc(Ga|0,Fa|0,21)|0;Ga=y;ca=lc(X|0,Y|0,1048576,0)|0;ca=jc(ca|0,y|0,21)|0;W=y;Mb=lc(Pb|0,Ob|0,Nb|0,Mb|0)|0;Kb=lc(Mb|0,y|0,Lb|0,Kb|0)|0;Ib=lc(Kb|0,y|0,Jb|0,Ib|0)|0;Gb=lc(Ib|0,y|0,Hb|0,Gb|0)|0;Cb=lc(Gb|0,y|0,Db|0,Cb|0)|0;Ab=lc(Cb|0,y|0,Bb|0,Ab|0)|0;yb=lc(Ab|0,y|0,zb|0,yb|0)|0;sa=lc(yb|0,y|0,xb|0,sa|0)|0;G=lc(sa|0,y|0,ra|0,G|0)|0;F=lc(G|0,y|0,F&2097151|0,0)|0;F=lc(F|0,y|0,ca|0,W|0)|0;G=y;W=oc(ca|0,W|0,21)|0;ca=y;ra=lc(M|0,L|0,1048576,0)|0;ra=jc(ra|0,y|0,21)|0;sa=y;$=lc(wb|0,vb|0,aa|0,$|0)|0;Wa=lc($|0,y|0,Va|0,Wa|0)|0;U=lc(Wa|0,y|0,T|0,U|0)|0;gb=lc(U|0,y|0,fb|0,gb|0)|0;Oa=lc(gb|0,y|0,Na|0,Oa|0)|0;C=lc(Oa|0,y|0,I|0,C|0)|0;ob=lc(C|0,y|0,nb|0,ob|0)|0;S=lc(ob|0,y|0,R|0,S|0)|0;ab=lc(S|0,y|0,$a|0,ab|0)|0;O=lc(ab|0,y|0,N|0,O|0)|0;cb=lc(O|0,y|0,ib|0,cb|0)|0;h=lc(cb|0,y|0,c|0,h|0)|0;h=lc(h|0,y|0,ra|0,sa|0)|0;c=y;sa=oc(ra|0,sa|0,21)|0;ra=y;cb=lc(qb|0,pb|0,1048576,0)|0;cb=jc(cb|0,y|0,21)|0;ib=y;u=lc(Ya|0,Xa|0,p|0,u|0)|0;Q=lc(u|0,y|0,Ma|0,Q|0)|0;oa=lc(Q|0,y|0,pa|0,oa|0)|0;ja=lc(oa|0,y|0,ka|0,ja|0)|0;sb=lc(ja|0,y|0,rb|0,sb|0)|0;jb=lc(sb|0,y|0,P|0,jb|0)|0;_=lc(jb|0,y|0,ea|0,_|0)|0;eb=lc(_|0,y|0,db|0,eb|0)|0;v=lc(eb|0,y|0,A|0,v|0)|0;v=lc(v|0,y|0,cb|0,ib|0)|0;A=y;ib=oc(cb|0,ib|0,21)|0;cb=y;eb=lc(lb|0,mb|0,1048576,0)|0;eb=jc(eb|0,y|0,21)|0;db=y;k=lc(na|0,o|0,da|0,k|0)|0;E=lc(k|0,y|0,ia|0,E|0)|0;r=lc(E|0,y|0,Z|0,r|0)|0;f=lc(r|0,y|0,m|0,f|0)|0;s=lc(f|0,y|0,D|0,s|0)|0;_a=lc(s|0,y|0,Za|0,_a|0)|0;q=lc(_a|0,y|0,z|0,q|0)|0;q=lc(q|0,y|0,eb|0,db|0)|0;z=y;db=oc(eb|0,db|0,21)|0;eb=y;_a=lc(ub|0,i|0,1048576,0)|0;_a=jc(_a|0,y|0,21)|0;Za=y;j=lc(Ra|0,Sa|0,l|0,j|0)|0;Ta=lc(j|0,y|0,Ua|0,Ta|0)|0;x=lc(Ta|0,y|0,t|0,x|0)|0;Ja=lc(x|0,y|0,d|0,Ja|0)|0;K=lc(Ja|0,y|0,La|0,K|0)|0;K=lc(K|0,y|0,_a|0,Za|0)|0;La=y;Za=oc(_a|0,Za|0,21)|0;_a=y;Ja=lc(e|0,ba|0,1048576,0)|0;Ja=jc(Ja|0,y|0,21)|0;d=y;ma=lc(Qa|0,qa|0,xa|0,ma|0)|0;H=lc(ma|0,y|0,Ba|0,H|0)|0;Ia=lc(H|0,y|0,kb|0,Ia|0)|0;Ia=lc(Ia|0,y|0,Ja|0,d|0)|0;kb=y;d=oc(Ja|0,d|0,21)|0;d=kc(e|0,ba|0,d|0,y|0)|0;ba=y;e=lc(tb|0,Ka|0,1048576,0)|0;e=nc(e|0,y|0,21)|0;Ja=y;Ha=lc(J|0,Ha|0,e|0,Ja|0)|0;J=y;Ja=oc(e|0,Ja|0,21)|0;Ja=kc(tb|0,Ka|0,Ja|0,y|0)|0;Ka=y;tb=lc(Ca|0,n|0,1048576,0)|0;tb=nc(tb|0,y|0,21)|0;e=y;H=oc(tb|0,e|0,21)|0;H=kc(Ca|0,n|0,H|0,y|0)|0;n=y;Ca=lc(ya|0,la|0,1048576,0)|0;Ca=nc(Ca|0,y|0,21)|0;Ba=y;ma=oc(Ca|0,Ba|0,21)|0;ma=kc(ya|0,la|0,ma|0,y|0)|0;la=y;ya=lc(Pa|0,ha|0,1048576,0)|0;ya=jc(ya|0,y|0,21)|0;xa=y;qa=oc(ya|0,xa|0,21)|0;qa=kc(Pa|0,ha|0,qa|0,y|0)|0;ha=y;Pa=lc(ga|0,fa|0,1048576,0)|0;Pa=jc(Pa|0,y|0,21)|0;Qa=y;x=oc(Pa|0,Qa|0,21)|0;t=y;Ta=lc(g|0,B|0,1048576,0)|0;Ta=jc(Ta|0,y|0,21)|0;Ua=y;j=oc(Ta|0,Ua|0,21)|0;l=y;Sa=lc(F|0,G|0,1048576,0)|0;Sa=jc(Sa|0,y|0,21)|0;Ra=y;s=oc(Sa|0,Ra|0,21)|0;D=y;f=lc(h|0,c|0,1048576,0)|0;f=jc(f|0,y|0,21)|0;m=y;r=oc(f|0,m|0,21)|0;Z=y;E=lc(v|0,A|0,1048576,0)|0;E=jc(E|0,y|0,21)|0;ia=y;k=oc(E|0,ia|0,21)|0;da=y;o=lc(q|0,z|0,1048576,0)|0;o=jc(o|0,y|0,21)|0;na=y;_=oc(o|0,na|0,21)|0;ea=y;jb=lc(K|0,La|0,1048576,0)|0;jb=jc(jb|0,y|0,21)|0;P=y;ba=lc(jb|0,P|0,d|0,ba|0)|0;d=y;P=oc(jb|0,P|0,21)|0;P=kc(K|0,La|0,P|0,y|0)|0;La=y;K=lc(Ia|0,kb|0,1048576,0)|0;K=jc(K|0,y|0,21)|0;jb=y;Ka=lc(K|0,jb|0,Ja|0,Ka|0)|0;Ja=y;jb=oc(K|0,jb|0,21)|0;jb=kc(Ia|0,kb|0,jb|0,y|0)|0;kb=y;Ia=lc(Ha|0,J|0,1048576,0)|0;Ia=nc(Ia|0,y|0,21)|0;K=y;n=lc(Ia|0,K|0,H|0,n|0)|0;H=y;K=oc(Ia|0,K|0,21)|0;K=kc(Ha|0,J|0,K|0,y|0)|0;J=y;Ha=qc(tb|0,e|0,666643,0)|0;Ia=y;sb=qc(tb|0,e|0,470296,0)|0;rb=y;ja=qc(tb|0,e|0,654183,0)|0;ka=y;oa=qc(tb|0,e|0,-997805,-1)|0;pa=y;Q=qc(tb|0,e|0,136657,0)|0;Ma=y;e=qc(tb|0,e|0,-683901,-1)|0;e=lc(ub|0,i|0,e|0,y|0)|0;_a=kc(e|0,y|0,Za|0,_a|0)|0;na=lc(_a|0,y|0,o|0,na|0)|0;o=y;_a=qc(n|0,H|0,666643,0)|0;Za=y;e=qc(n|0,H|0,470296,0)|0;i=y;ub=qc(n|0,H|0,654183,0)|0;tb=y;u=qc(n|0,H|0,-997805,-1)|0;p=y;Xa=qc(n|0,H|0,136657,0)|0;Ya=y;H=qc(n|0,H|0,-683901,-1)|0;n=y;O=qc(K|0,J|0,666643,0)|0;N=y;ab=qc(K|0,J|0,470296,0)|0;$a=y;S=qc(K|0,J|0,654183,0)|0;R=y;ob=qc(K|0,J|0,-997805,-1)|0;nb=y;C=qc(K|0,J|0,136657,0)|0;I=y;J=qc(K|0,J|0,-683901,-1)|0;K=y;pa=lc(lb|0,mb|0,oa|0,pa|0)|0;Ya=lc(pa|0,y|0,Xa|0,Ya|0)|0;K=lc(Ya|0,y|0,J|0,K|0)|0;eb=kc(K|0,y|0,db|0,eb|0)|0;ia=lc(eb|0,y|0,E|0,ia|0)|0;E=y;eb=qc(Ka|0,Ja|0,666643,0)|0;db=y;K=qc(Ka|0,Ja|0,470296,0)|0;J=y;Ya=qc(Ka|0,Ja|0,654183,0)|0;Xa=y;pa=qc(Ka|0,Ja|0,-997805,-1)|0;oa=y;mb=qc(Ka|0,Ja|0,136657,0)|0;lb=y;Ja=qc(Ka|0,Ja|0,-683901,-1)|0;Ka=y;Oa=qc(jb|0,kb|0,666643,0)|0;Na=y;gb=qc(jb|0,kb|0,470296,0)|0;fb=y;U=qc(jb|0,kb|0,654183,0)|0;T=y;Wa=qc(jb|0,kb|0,-997805,-1)|0;Va=y;$=qc(jb|0,kb|0,136657,0)|0;aa=y;kb=qc(jb|0,kb|0,-683901,-1)|0;jb=y;rb=lc(ub|0,tb|0,sb|0,rb|0)|0;pb=lc(rb|0,y|0,qb|0,pb|0)|0;nb=lc(pb|0,y|0,ob|0,nb|0)|0;lb=lc(nb|0,y|0,mb|0,lb|0)|0;jb=lc(lb|0,y|0,kb|0,jb|0)|0;cb=kc(jb|0,y|0,ib|0,cb|0)|0;m=lc(cb|0,y|0,f|0,m|0)|0;f=y;cb=qc(ba|0,d|0,666643,0)|0;cb=lc(hb|0,bb|0,cb|0,y|0)|0;Qa=lc(cb|0,y|0,Pa|0,Qa|0)|0;Ga=kc(Qa|0,y|0,Fa|0,Ga|0)|0;Fa=y;Qa=qc(ba|0,d|0,470296,0)|0;Pa=y;cb=qc(ba|0,d|0,654183,0)|0;bb=y;db=lc(gb|0,fb|0,eb|0,db|0)|0;bb=lc(db|0,y|0,cb|0,bb|0)|0;Ua=lc(bb|0,y|0,Ta|0,Ua|0)|0;Y=lc(Ua|0,y|0,X|0,Y|0)|0;ca=kc(Y|0,y|0,W|0,ca|0)|0;W=y;Y=qc(ba|0,d|0,-997805,-1)|0;X=y;Ua=qc(ba|0,d|0,136657,0)|0;Ta=y;Za=lc(ab|0,$a|0,_a|0,Za|0)|0;Xa=lc(Za|0,y|0,Ya|0,Xa|0)|0;Va=lc(Xa|0,y|0,Wa|0,Va|0)|0;Ta=lc(Va|0,y|0,Ua|0,Ta|0)|0;Ra=lc(Ta|0,y|0,Sa|0,Ra|0)|0;L=lc(Ra|0,y|0,M|0,L|0)|0;ra=kc(L|0,y|0,sa|0,ra|0)|0;sa=y;d=qc(ba|0,d|0,-683901,-1)|0;ba=y;L=lc(Ga|0,Fa|0,1048576,0)|0;L=jc(L|0,y|0,21)|0;M=y;Na=lc(Qa|0,Pa|0,Oa|0,Na|0)|0;B=lc(Na|0,y|0,g|0,B|0)|0;B=lc(B|0,y|0,L|0,M|0)|0;l=kc(B|0,y|0,j|0,l|0)|0;j=y;M=oc(L|0,M|0,21)|0;L=y;B=lc(ca|0,W|0,1048576,0)|0;B=jc(B|0,y|0,21)|0;g=y;N=lc(K|0,J|0,O|0,N|0)|0;T=lc(N|0,y|0,U|0,T|0)|0;X=lc(T|0,y|0,Y|0,X|0)|0;G=lc(X|0,y|0,F|0,G|0)|0;D=kc(G|0,y|0,s|0,D|0)|0;D=lc(D|0,y|0,B|0,g|0)|0;s=y;g=oc(B|0,g|0,21)|0;B=y;G=lc(ra|0,sa|0,1048576,0)|0;G=jc(G|0,y|0,21)|0;F=y;Ia=lc(e|0,i|0,Ha|0,Ia|0)|0;R=lc(Ia|0,y|0,S|0,R|0)|0;oa=lc(R|0,y|0,pa|0,oa|0)|0;aa=lc(oa|0,y|0,$|0,aa|0)|0;ba=lc(aa|0,y|0,d|0,ba|0)|0;c=lc(ba|0,y|0,h|0,c|0)|0;Z=kc(c|0,y|0,r|0,Z|0)|0;Z=lc(Z|0,y|0,G|0,F|0)|0;r=y;F=oc(G|0,F|0,21)|0;G=y;c=lc(m|0,f|0,1048576,0)|0;c=jc(c|0,y|0,21)|0;h=y;ka=lc(u|0,p|0,ja|0,ka|0)|0;I=lc(ka|0,y|0,C|0,I|0)|0;Ka=lc(I|0,y|0,Ja|0,Ka|0)|0;A=lc(Ka|0,y|0,v|0,A|0)|0;da=kc(A|0,y|0,k|0,da|0)|0;da=lc(da|0,y|0,c|0,h|0)|0;k=y;h=oc(c|0,h|0,21)|0;h=kc(m|0,f|0,h|0,y|0)|0;f=y;m=lc(ia|0,E|0,1048576,0)|0;m=jc(m|0,y|0,21)|0;c=y;Ma=lc(H|0,n|0,Q|0,Ma|0)|0;z=lc(Ma|0,y|0,q|0,z|0)|0;ea=kc(z|0,y|0,_|0,ea|0)|0;ea=lc(ea|0,y|0,m|0,c|0)|0;_=y;c=oc(m|0,c|0,21)|0;c=kc(ia|0,E|0,c|0,y|0)|0;E=y;ia=lc(na|0,o|0,1048576,0)|0;ia=jc(ia|0,y|0,21)|0;m=y;La=lc(ia|0,m|0,P|0,La|0)|0;P=y;m=oc(ia|0,m|0,21)|0;m=kc(na|0,o|0,m|0,y|0)|0;o=y;na=lc(l|0,j|0,1048576,0)|0;na=jc(na|0,y|0,21)|0;ia=y;z=oc(na|0,ia|0,21)|0;q=y;Ma=lc(D|0,s|0,1048576,0)|0;Ma=jc(Ma|0,y|0,21)|0;Q=y;n=oc(Ma|0,Q|0,21)|0;H=y;A=lc(Z|0,r|0,1048576,0)|0;A=jc(A|0,y|0,21)|0;v=y;f=lc(A|0,v|0,h|0,f|0)|0;h=y;v=oc(A|0,v|0,21)|0;v=kc(Z|0,r|0,v|0,y|0)|0;r=y;Z=lc(da|0,k|0,1048576,0)|0;Z=jc(Z|0,y|0,21)|0;A=y;E=lc(Z|0,A|0,c|0,E|0)|0;c=y;A=oc(Z|0,A|0,21)|0;A=kc(da|0,k|0,A|0,y|0)|0;k=y;da=lc(ea|0,_|0,1048576,0)|0;da=jc(da|0,y|0,21)|0;Z=y;o=lc(da|0,Z|0,m|0,o|0)|0;m=y;Z=oc(da|0,Z|0,21)|0;Z=kc(ea|0,_|0,Z|0,y|0)|0;_=y;ea=qc(La|0,P|0,666643,0)|0;da=y;Ka=qc(La|0,P|0,470296,0)|0;Ja=y;I=qc(La|0,P|0,654183,0)|0;C=y;ka=qc(La|0,P|0,-997805,-1)|0;ja=y;p=qc(La|0,P|0,136657,0)|0;u=y;P=qc(La|0,P|0,-683901,-1)|0;P=lc(Ma|0,Q|0,P|0,y|0)|0;sa=lc(P|0,y|0,ra|0,sa|0)|0;G=kc(sa|0,y|0,F|0,G|0)|0;F=y;sa=qc(o|0,m|0,666643,0)|0;ra=y;P=qc(o|0,m|0,470296,0)|0;Q=y;Ma=qc(o|0,m|0,654183,0)|0;La=y;ba=qc(o|0,m|0,-997805,-1)|0;d=y;aa=qc(o|0,m|0,136657,0)|0;$=y;m=qc(o|0,m|0,-683901,-1)|0;o=y;oa=qc(Z|0,_|0,666643,0)|0;oa=lc(qa|0,ha|0,oa|0,y|0)|0;ha=y;qa=qc(Z|0,_|0,470296,0)|0;pa=y;R=qc(Z|0,_|0,654183,0)|0;S=y;Ia=qc(Z|0,_|0,-997805,-1)|0;Ha=y;i=qc(Z|0,_|0,136657,0)|0;e=y;_=qc(Z|0,_|0,-683901,-1)|0;Z=y;ja=lc(aa|0,$|0,ka|0,ja|0)|0;Z=lc(ja|0,y|0,_|0,Z|0)|0;ia=lc(Z|0,y|0,na|0,ia|0)|0;W=lc(ia|0,y|0,ca|0,W|0)|0;B=kc(W|0,y|0,g|0,B|0)|0;g=y;W=qc(E|0,c|0,666643,0)|0;ca=y;ia=qc(E|0,c|0,470296,0)|0;ia=lc(oa|0,ha|0,ia|0,y|0)|0;ha=y;oa=qc(E|0,c|0,654183,0)|0;na=y;Z=qc(E|0,c|0,-997805,-1)|0;_=y;ja=qc(E|0,c|0,136657,0)|0;ka=y;c=qc(E|0,c|0,-683901,-1)|0;E=y;$=qc(A|0,k|0,666643,0)|0;aa=y;X=qc(A|0,k|0,470296,0)|0;Y=y;T=qc(A|0,k|0,654183,0)|0;U=y;N=qc(A|0,k|0,-997805,-1)|0;O=y;J=qc(A|0,k|0,136657,0)|0;K=y;k=qc(A|0,k|0,-683901,-1)|0;A=y;Ja=lc(Ma|0,La|0,Ka|0,Ja|0)|0;Ha=lc(Ja|0,y|0,Ia|0,Ha|0)|0;Fa=lc(Ha|0,y|0,Ga|0,Fa|0)|0;L=kc(Fa|0,y|0,M|0,L|0)|0;ka=lc(L|0,y|0,ja|0,ka|0)|0;A=lc(ka|0,y|0,k|0,A|0)|0;k=y;ka=qc(f|0,h|0,666643,0)|0;V=lc(ka|0,y|0,w|0,V|0)|0;w=y;ka=qc(f|0,h|0,470296,0)|0;ja=y;L=qc(f|0,h|0,654183,0)|0;M=y;Ba=lc(Ea|0,Da|0,Ca|0,Ba|0)|0;za=kc(Ba|0,y|0,Aa|0,za|0)|0;ca=lc(za|0,y|0,W|0,ca|0)|0;M=lc(ca|0,y|0,L|0,M|0)|0;Y=lc(M|0,y|0,X|0,Y|0)|0;X=y;M=qc(f|0,h|0,-997805,-1)|0;L=y;ca=qc(f|0,h|0,136657,0)|0;W=y;va=lc(ya|0,xa|0,wa|0,va|0)|0;ta=kc(va|0,y|0,ua|0,ta|0)|0;ra=lc(ta|0,y|0,sa|0,ra|0)|0;pa=lc(ra|0,y|0,qa|0,pa|0)|0;na=lc(pa|0,y|0,oa|0,na|0)|0;W=lc(na|0,y|0,ca|0,W|0)|0;O=lc(W|0,y|0,N|0,O|0)|0;N=y;h=qc(f|0,h|0,-683901,-1)|0;f=y;W=lc(V|0,w|0,1048576,0)|0;W=jc(W|0,y|0,21)|0;ca=y;ja=lc(ma|0,la|0,ka|0,ja|0)|0;aa=lc(ja|0,y|0,$|0,aa|0)|0;aa=lc(aa|0,y|0,W|0,ca|0)|0;$=y;ca=oc(W|0,ca|0,21)|0;ca=kc(V|0,w|0,ca|0,y|0)|0;w=y;V=lc(Y|0,X|0,1048576,0)|0;V=jc(V|0,y|0,21)|0;W=y;L=lc(ia|0,ha|0,M|0,L|0)|0;U=lc(L|0,y|0,T|0,U|0)|0;U=lc(U|0,y|0,V|0,W|0)|0;T=y;W=oc(V|0,W|0,21)|0;V=y;L=lc(O|0,N|0,1048576,0)|0;L=jc(L|0,y|0,21)|0;M=y;da=lc(ga|0,fa|0,ea|0,da|0)|0;t=kc(da|0,y|0,x|0,t|0)|0;Q=lc(t|0,y|0,P|0,Q|0)|0;S=lc(Q|0,y|0,R|0,S|0)|0;_=lc(S|0,y|0,Z|0,_|0)|0;f=lc(_|0,y|0,h|0,f|0)|0;K=lc(f|0,y|0,J|0,K|0)|0;K=lc(K|0,y|0,L|0,M|0)|0;J=y;M=oc(L|0,M|0,21)|0;L=y;f=lc(A|0,k|0,1048576,0)|0;f=jc(f|0,y|0,21)|0;h=y;C=lc(ba|0,d|0,I|0,C|0)|0;e=lc(C|0,y|0,i|0,e|0)|0;j=lc(e|0,y|0,l|0,j|0)|0;q=kc(j|0,y|0,z|0,q|0)|0;E=lc(q|0,y|0,c|0,E|0)|0;E=lc(E|0,y|0,f|0,h|0)|0;c=y;h=oc(f|0,h|0,21)|0;h=kc(A|0,k|0,h|0,y|0)|0;k=y;A=lc(B|0,g|0,1048576,0)|0;A=jc(A|0,y|0,21)|0;f=y;u=lc(m|0,o|0,p|0,u|0)|0;s=lc(u|0,y|0,D|0,s|0)|0;H=kc(s|0,y|0,n|0,H|0)|0;H=lc(H|0,y|0,A|0,f|0)|0;n=y;f=oc(A|0,f|0,21)|0;f=kc(B|0,g|0,f|0,y|0)|0;g=y;B=lc(G|0,F|0,1048576,0)|0;B=jc(B|0,y|0,21)|0;A=y;r=lc(v|0,r|0,B|0,A|0)|0;v=y;A=oc(B|0,A|0,21)|0;B=y;s=lc(aa|0,$|0,1048576,0)|0;s=jc(s|0,y|0,21)|0;D=y;u=oc(s|0,D|0,21)|0;p=y;o=lc(U|0,T|0,1048576,0)|0;o=jc(o|0,y|0,21)|0;m=y;q=oc(o|0,m|0,21)|0;z=y;j=lc(K|0,J|0,1048576,0)|0;j=jc(j|0,y|0,21)|0;l=y;k=lc(h|0,k|0,j|0,l|0)|0;h=y;l=oc(j|0,l|0,21)|0;j=y;e=lc(E|0,c|0,1048576,0)|0;e=jc(e|0,y|0,21)|0;i=y;g=lc(f|0,g|0,e|0,i|0)|0;f=y;i=oc(e|0,i|0,21)|0;i=kc(E|0,c|0,i|0,y|0)|0;c=y;E=lc(H|0,n|0,1048576,0)|0;E=jc(E|0,y|0,21)|0;e=y;C=oc(E|0,e|0,21)|0;C=kc(H|0,n|0,C|0,y|0)|0;n=y;H=lc(r|0,v|0,1048576,0)|0;H=jc(H|0,y|0,21)|0;I=y;d=oc(H|0,I|0,21)|0;d=kc(r|0,v|0,d|0,y|0)|0;v=y;r=qc(H|0,I|0,666643,0)|0;r=lc(ca|0,w|0,r|0,y|0)|0;w=y;ca=qc(H|0,I|0,470296,0)|0;ba=y;_=qc(H|0,I|0,654183,0)|0;Z=y;S=qc(H|0,I|0,-997805,-1)|0;R=y;Q=qc(H|0,I|0,136657,0)|0;P=y;I=qc(H|0,I|0,-683901,-1)|0;H=y;t=jc(r|0,w|0,21)|0;x=y;$=lc(ca|0,ba|0,aa|0,$|0)|0;p=kc($|0,y|0,u|0,p|0)|0;p=lc(p|0,y|0,t|0,x|0)|0;u=y;x=oc(t|0,x|0,21)|0;x=kc(r|0,w|0,x|0,y|0)|0;w=y;r=jc(p|0,u|0,21)|0;t=y;X=lc(_|0,Z|0,Y|0,X|0)|0;V=kc(X|0,y|0,W|0,V|0)|0;D=lc(V|0,y|0,s|0,D|0)|0;D=lc(D|0,y|0,r|0,t|0)|0;s=y;t=oc(r|0,t|0,21)|0;t=kc(p|0,u|0,t|0,y|0)|0;u=y;p=jc(D|0,s|0,21)|0;r=y;R=lc(U|0,T|0,S|0,R|0)|0;z=kc(R|0,y|0,q|0,z|0)|0;z=lc(z|0,y|0,p|0,r|0)|0;q=y;r=oc(p|0,r|0,21)|0;r=kc(D|0,s|0,r|0,y|0)|0;s=y;D=jc(z|0,q|0,21)|0;p=y;N=lc(Q|0,P|0,O|0,N|0)|0;L=kc(N|0,y|0,M|0,L|0)|0;m=lc(L|0,y|0,o|0,m|0)|0;m=lc(m|0,y|0,D|0,p|0)|0;o=y;p=oc(D|0,p|0,21)|0;p=kc(z|0,q|0,p|0,y|0)|0;q=y;z=jc(m|0,o|0,21)|0;D=y;H=lc(K|0,J|0,I|0,H|0)|0;j=kc(H|0,y|0,l|0,j|0)|0;j=lc(j|0,y|0,z|0,D|0)|0;l=y;D=oc(z|0,D|0,21)|0;D=kc(m|0,o|0,D|0,y|0)|0;o=y;m=jc(j|0,l|0,21)|0;z=y;h=lc(k|0,h|0,m|0,z|0)|0;k=y;z=oc(m|0,z|0,21)|0;z=kc(j|0,l|0,z|0,y|0)|0;l=y;j=jc(h|0,k|0,21)|0;m=y;c=lc(j|0,m|0,i|0,c|0)|0;i=y;m=oc(j|0,m|0,21)|0;m=kc(h|0,k|0,m|0,y|0)|0;k=y;h=jc(c|0,i|0,21)|0;j=y;f=lc(g|0,f|0,h|0,j|0)|0;g=y;j=oc(h|0,j|0,21)|0;j=kc(c|0,i|0,j|0,y|0)|0;i=y;c=jc(f|0,g|0,21)|0;h=y;n=lc(c|0,h|0,C|0,n|0)|0;C=y;h=oc(c|0,h|0,21)|0;h=kc(f|0,g|0,h|0,y|0)|0;g=y;f=jc(n|0,C|0,21)|0;c=y;e=lc(G|0,F|0,E|0,e|0)|0;B=kc(e|0,y|0,A|0,B|0)|0;B=lc(B|0,y|0,f|0,c|0)|0;A=y;c=oc(f|0,c|0,21)|0;c=kc(n|0,C|0,c|0,y|0)|0;C=y;n=jc(B|0,A|0,21)|0;f=y;v=lc(n|0,f|0,d|0,v|0)|0;d=y;f=oc(n|0,f|0,21)|0;f=kc(B|0,A|0,f|0,y|0)|0;A=y;B=jc(v|0,d|0,21)|0;n=y;e=oc(B|0,n|0,21)|0;e=kc(v|0,d|0,e|0,y|0)|0;d=y;v=qc(B|0,n|0,666643,0)|0;w=lc(v|0,y|0,x|0,w|0)|0;x=y;v=qc(B|0,n|0,470296,0)|0;v=lc(t|0,u|0,v|0,y|0)|0;u=y;t=qc(B|0,n|0,654183,0)|0;t=lc(r|0,s|0,t|0,y|0)|0;s=y;r=qc(B|0,n|0,-997805,-1)|0;r=lc(p|0,q|0,r|0,y|0)|0;q=y;p=qc(B|0,n|0,136657,0)|0;p=lc(D|0,o|0,p|0,y|0)|0;o=y;n=qc(B|0,n|0,-683901,-1)|0;n=lc(z|0,l|0,n|0,y|0)|0;l=y;z=jc(w|0,x|0,21)|0;B=y;u=lc(v|0,u|0,z|0,B|0)|0;v=y;B=oc(z|0,B|0,21)|0;B=kc(w|0,x|0,B|0,y|0)|0;x=y;w=jc(u|0,v|0,21)|0;z=y;s=lc(t|0,s|0,w|0,z|0)|0;t=y;z=oc(w|0,z|0,21)|0;z=kc(u|0,v|0,z|0,y|0)|0;v=y;u=jc(s|0,t|0,21)|0;w=y;q=lc(r|0,q|0,u|0,w|0)|0;r=y;w=oc(u|0,w|0,21)|0;w=kc(s|0,t|0,w|0,y|0)|0;t=y;s=jc(q|0,r|0,21)|0;u=y;o=lc(p|0,o|0,s|0,u|0)|0;p=y;u=oc(s|0,u|0,21)|0;u=kc(q|0,r|0,u|0,y|0)|0;r=y;q=jc(o|0,p|0,21)|0;s=y;l=lc(n|0,l|0,q|0,s|0)|0;n=y;s=oc(q|0,s|0,21)|0;s=kc(o|0,p|0,s|0,y|0)|0;p=y;o=jc(l|0,n|0,21)|0;q=y;k=lc(o|0,q|0,m|0,k|0)|0;m=y;q=oc(o|0,q|0,21)|0;q=kc(l|0,n|0,q|0,y|0)|0;n=y;l=jc(k|0,m|0,21)|0;o=y;i=lc(l|0,o|0,j|0,i|0)|0;j=y;o=oc(l|0,o|0,21)|0;o=kc(k|0,m|0,o|0,y|0)|0;m=y;k=jc(i|0,j|0,21)|0;l=y;g=lc(k|0,l|0,h|0,g|0)|0;h=y;l=oc(k|0,l|0,21)|0;l=kc(i|0,j|0,l|0,y|0)|0;j=y;i=jc(g|0,h|0,21)|0;k=y;C=lc(i|0,k|0,c|0,C|0)|0;c=y;k=oc(i|0,k|0,21)|0;k=kc(g|0,h|0,k|0,y|0)|0;h=y;g=jc(C|0,c|0,21)|0;i=y;A=lc(g|0,i|0,f|0,A|0)|0;f=y;i=oc(g|0,i|0,21)|0;i=kc(C|0,c|0,i|0,y|0)|0;c=y;C=jc(A|0,f|0,21)|0;g=y;d=lc(C|0,g|0,e|0,d|0)|0;e=y;g=oc(C|0,g|0,21)|0;g=kc(A|0,f|0,g|0,y|0)|0;f=y;a[b>>0]=B;A=nc(B|0,x|0,8)|0;a[b+1>>0]=A;x=nc(B|0,x|0,16)|0;B=y;A=oc(z|0,v|0,5)|0;a[b+2>>0]=A|x;x=nc(z|0,v|0,3)|0;a[b+3>>0]=x;x=nc(z|0,v|0,11)|0;a[b+4>>0]=x;v=nc(z|0,v|0,19)|0;z=y;x=oc(w|0,t|0,2)|0;a[b+5>>0]=x|v;v=nc(w|0,t|0,6)|0;a[b+6>>0]=v;t=nc(w|0,t|0,14)|0;w=y;v=oc(u|0,r|0,7)|0;a[b+7>>0]=v|t;t=nc(u|0,r|0,1)|0;a[b+8>>0]=t;t=nc(u|0,r|0,9)|0;a[b+9>>0]=t;r=nc(u|0,r|0,17)|0;u=y;t=oc(s|0,p|0,4)|0;a[b+10>>0]=t|r;r=nc(s|0,p|0,4)|0;a[b+11>>0]=r;r=nc(s|0,p|0,12)|0;a[b+12>>0]=r;p=nc(s|0,p|0,20)|0;s=y;r=oc(q|0,n|0,1)|0;a[b+13>>0]=r|p;p=nc(q|0,n|0,7)|0;a[b+14>>0]=p;n=nc(q|0,n|0,15)|0;q=y;p=oc(o|0,m|0,6)|0;a[b+15>>0]=p|n;n=nc(o|0,m|0,2)|0;a[b+16>>0]=n;n=nc(o|0,m|0,10)|0;a[b+17>>0]=n;m=nc(o|0,m|0,18)|0;o=y;n=oc(l|0,j|0,3)|0;a[b+18>>0]=n|m;m=nc(l|0,j|0,5)|0;a[b+19>>0]=m;j=nc(l|0,j|0,13)|0;a[b+20>>0]=j;a[b+21>>0]=k;j=nc(k|0,h|0,8)|0;a[b+22>>0]=j;h=nc(k|0,h|0,16)|0;k=y;j=oc(i|0,c|0,5)|0;a[b+23>>0]=j|h;h=nc(i|0,c|0,3)|0;a[b+24>>0]=h;h=nc(i|0,c|0,11)|0;a[b+25>>0]=h;c=nc(i|0,c|0,19)|0;i=y;h=oc(g|0,f|0,2)|0;a[b+26>>0]=h|c;c=nc(g|0,f|0,6)|0;a[b+27>>0]=c;f=nc(g|0,f|0,14)|0;g=y;c=oc(d|0,e|0,7)|0;a[b+28>>0]=f|c;c=nc(d|0,e|0,1)|0;a[b+29>>0]=c;c=nc(d|0,e|0,9)|0;a[b+30>>0]=c;e=nc(d|0,e|0,17)|0;a[b+31>>0]=e;return}function Eb(a,b,c){a=a|0;b=b|0;c=c|0;var d=0;b=oc(b&255|0,0,8)|0;d=y;c=oc(c&255|0,0,16)|0;y=d|y;return b|a&255|c|0}function Fb(a){a=a|0;var b=0,c=0,e=0,f=0;c=d[a>>0]|0;e=oc(d[a+1>>0]|0|0,0,8)|0;f=y;b=oc(d[a+2>>0]|0|0,0,16)|0;f=f|y;a=oc(d[a+3>>0]|0|0,0,24)|0;y=f|y;return e|c|b|a|0}function Gb(b){b=b|0;var c=0,d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,l=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,z=0,A=0,B=0,C=0,D=0,E=0,F=0,G=0,H=0,I=0,J=0,K=0,L=0,M=0,N=0,O=0,P=0,Q=0,R=0,S=0,T=0,U=0,V=0,W=0,X=0,Y=0,Z=0,_=0,$=0,aa=0,ba=0,ca=0,da=0,ea=0,fa=0,ga=0,ha=0,ia=0,ja=0,ka=0,la=0,ma=0,na=0,oa=0,pa=0,qa=0,ra=0,sa=0,ta=0,ua=0,va=0,wa=0,xa=0,ya=0,za=0,Aa=0,Ba=0,Ca=0,Da=0,Ea=0,Fa=0,Ga=0,Ha=0,Ia=0,Ja=0,Ka=0;S=b+1|0;P=b+2|0;ia=Hb(a[b>>0]|0,a[S>>0]|0,a[P>>0]|0)|0;e=Ib(P)|0;e=nc(e|0,y|0,5)|0;N=b+5|0;L=b+6|0;I=b+7|0;ja=Hb(a[N>>0]|0,a[L>>0]|0,a[I>>0]|0)|0;ja=nc(ja|0,y|0,2)|0;ma=Ib(I)|0;ma=nc(ma|0,y|0,7)|0;F=b+10|0;M=Ib(F)|0;M=nc(M|0,y|0,4)|0;D=b+13|0;B=b+14|0;x=b+15|0;oa=Hb(a[D>>0]|0,a[B>>0]|0,a[x>>0]|0)|0;oa=nc(oa|0,y|0,1)|0;ha=Ib(x)|0;ha=nc(ha|0,y|0,6)|0;v=b+18|0;u=b+19|0;r=b+20|0;ya=Hb(a[v>>0]|0,a[u>>0]|0,a[r>>0]|0)|0;ya=nc(ya|0,y|0,3)|0;q=b+21|0;o=b+22|0;l=b+23|0;Fa=Hb(a[q>>0]|0,a[o>>0]|0,a[l>>0]|0)|0;va=Ib(l)|0;va=nc(va|0,y|0,5)|0;j=b+26|0;g=b+27|0;f=b+28|0;Ea=Hb(a[j>>0]|0,a[g>>0]|0,a[f>>0]|0)|0;Ea=nc(Ea|0,y|0,2)|0;K=Ib(f)|0;K=nc(K|0,y|0,7)|0;c=b+31|0;Ja=Ib(c)|0;Ja=nc(Ja|0,y|0,4)|0;U=b+36|0;J=Hb(a[b+34>>0]|0,a[b+35>>0]|0,a[U>>0]|0)|0;J=nc(J|0,y|0,1)|0;U=Ib(U)|0;U=nc(U|0,y|0,6)|0;z=Hb(a[b+39>>0]|0,a[b+40>>0]|0,a[b+41>>0]|0)|0;z=nc(z|0,y|0,3)|0;fa=b+44|0;qa=Hb(a[b+42>>0]|0,a[b+43>>0]|0,a[fa>>0]|0)|0;fa=Ib(fa)|0;fa=nc(fa|0,y|0,5)|0;Ka=b+49|0;sa=Hb(a[b+47>>0]|0,a[b+48>>0]|0,a[Ka>>0]|0)|0;sa=nc(sa|0,y|0,2)|0;sa=sa&2097151;Ka=Ib(Ka)|0;Ka=nc(Ka|0,y|0,7)|0;Ka=Ka&2097151;O=Ib(b+52|0)|0;O=nc(O|0,y|0,4)|0;O=O&2097151;i=b+57|0;G=Hb(a[b+55>>0]|0,a[b+56>>0]|0,a[i>>0]|0)|0;G=nc(G|0,y|0,1)|0;G=G&2097151;i=Ib(i)|0;i=nc(i|0,y|0,6)|0;i=i&2097151;_=Ib(b+60|0)|0;_=nc(_|0,y|0,3)|0;d=y;n=qc(_|0,d|0,666643,0)|0;k=y;Aa=qc(_|0,d|0,470296,0)|0;p=y;ga=qc(_|0,d|0,654183,0)|0;t=y;Y=qc(_|0,d|0,-997805,-1)|0;ba=y;s=qc(_|0,d|0,136657,0)|0;z=lc(s|0,y|0,z&2097151|0,0)|0;s=y;d=qc(_|0,d|0,-683901,-1)|0;qa=lc(d|0,y|0,qa&2097151|0,0)|0;d=y;_=qc(i|0,0,666643,0)|0;V=y;H=qc(i|0,0,470296,0)|0;W=y;h=qc(i|0,0,654183,0)|0;A=y;T=qc(i|0,0,-997805,-1)|0;$=y;pa=qc(i|0,0,136657,0)|0;Z=y;i=qc(i|0,0,-683901,-1)|0;i=lc(z|0,s|0,i|0,y|0)|0;s=y;z=qc(G|0,0,666643,0)|0;w=y;aa=qc(G|0,0,470296,0)|0;R=y;Q=qc(G|0,0,654183,0)|0;la=y;Ga=qc(G|0,0,-997805,-1)|0;za=y;E=qc(G|0,0,136657,0)|0;ra=y;G=qc(G|0,0,-683901,-1)|0;U=lc(G|0,y|0,U&2097151|0,0)|0;ba=lc(U|0,y|0,Y|0,ba|0)|0;Z=lc(ba|0,y|0,pa|0,Z|0)|0;pa=y;ba=qc(O|0,0,666643,0)|0;Y=y;U=qc(O|0,0,470296,0)|0;G=y;Ba=qc(O|0,0,654183,0)|0;m=y;ea=qc(O|0,0,-997805,-1)|0;C=y;Ia=qc(O|0,0,136657,0)|0;Ha=y;O=qc(O|0,0,-683901,-1)|0;na=y;X=qc(Ka|0,0,666643,0)|0;ka=y;wa=qc(Ka|0,0,470296,0)|0;xa=y;ua=qc(Ka|0,0,654183,0)|0;ta=y;Da=qc(Ka|0,0,-997805,-1)|0;Ca=y;ca=qc(Ka|0,0,136657,0)|0;da=y;Ka=qc(Ka|0,0,-683901,-1)|0;Ja=lc(Ka|0,y|0,Ja&2097151|0,0)|0;Ha=lc(Ja|0,y|0,Ia|0,Ha|0)|0;za=lc(Ha|0,y|0,Ga|0,za|0)|0;p=lc(za|0,y|0,Aa|0,p|0)|0;A=lc(p|0,y|0,h|0,A|0)|0;h=y;p=qc(sa|0,0,666643,0)|0;ha=lc(p|0,y|0,ha&2097151|0,0)|0;p=y;Aa=qc(sa|0,0,470296,0)|0;za=y;Ga=qc(sa|0,0,654183,0)|0;Fa=lc(Ga|0,y|0,Fa&2097151|0,0)|0;xa=lc(Fa|0,y|0,wa|0,xa|0)|0;Y=lc(xa|0,y|0,ba|0,Y|0)|0;ba=y;xa=qc(sa|0,0,-997805,-1)|0;wa=y;Fa=qc(sa|0,0,136657,0)|0;Ea=lc(Fa|0,y|0,Ea&2097151|0,0)|0;Ca=lc(Ea|0,y|0,Da|0,Ca|0)|0;m=lc(Ca|0,y|0,Ba|0,m|0)|0;R=lc(m|0,y|0,aa|0,R|0)|0;V=lc(R|0,y|0,_|0,V|0)|0;_=y;sa=qc(sa|0,0,-683901,-1)|0;R=y;aa=lc(ha|0,p|0,1048576,0)|0;aa=nc(aa|0,y|0,21)|0;m=y;ya=lc(Aa|0,za|0,ya&2097151|0,0)|0;ka=lc(ya|0,y|0,X|0,ka|0)|0;ka=lc(ka|0,y|0,aa|0,m|0)|0;X=y;m=oc(aa|0,m|0,21)|0;m=kc(ha|0,p|0,m|0,y|0)|0;p=y;ha=lc(Y|0,ba|0,1048576,0)|0;ha=nc(ha|0,y|0,21)|0;aa=y;va=lc(xa|0,wa|0,va&2097151|0,0)|0;ta=lc(va|0,y|0,ua|0,ta|0)|0;G=lc(ta|0,y|0,U|0,G|0)|0;w=lc(G|0,y|0,z|0,w|0)|0;w=lc(w|0,y|0,ha|0,aa|0)|0;z=y;aa=oc(ha|0,aa|0,21)|0;ha=y;G=lc(V|0,_|0,1048576,0)|0;G=jc(G|0,y|0,21)|0;U=y;K=lc(sa|0,R|0,K&2097151|0,0)|0;da=lc(K|0,y|0,ca|0,da|0)|0;C=lc(da|0,y|0,ea|0,C|0)|0;la=lc(C|0,y|0,Q|0,la|0)|0;k=lc(la|0,y|0,n|0,k|0)|0;W=lc(k|0,y|0,H|0,W|0)|0;W=lc(W|0,y|0,G|0,U|0)|0;H=y;U=oc(G|0,U|0,21)|0;G=y;k=lc(A|0,h|0,1048576,0)|0;k=jc(k|0,y|0,21)|0;n=y;J=lc(O|0,na|0,J&2097151|0,0)|0;ra=lc(J|0,y|0,E|0,ra|0)|0;t=lc(ra|0,y|0,ga|0,t|0)|0;$=lc(t|0,y|0,T|0,$|0)|0;$=lc($|0,y|0,k|0,n|0)|0;T=y;n=oc(k|0,n|0,21)|0;n=kc(A|0,h|0,n|0,y|0)|0;h=y;A=lc(Z|0,pa|0,1048576,0)|0;A=jc(A|0,y|0,21)|0;k=y;s=lc(i|0,s|0,A|0,k|0)|0;i=y;k=oc(A|0,k|0,21)|0;k=kc(Z|0,pa|0,k|0,y|0)|0;pa=y;Z=lc(qa|0,d|0,1048576,0)|0;Z=jc(Z|0,y|0,21)|0;A=y;fa=lc(Z|0,A|0,fa&2097151|0,0)|0;t=y;A=oc(Z|0,A|0,21)|0;A=kc(qa|0,d|0,A|0,y|0)|0;d=y;qa=lc(ka|0,X|0,1048576,0)|0;qa=nc(qa|0,y|0,21)|0;Z=y;ga=oc(qa|0,Z|0,21)|0;ga=kc(ka|0,X|0,ga|0,y|0)|0;X=y;ka=lc(w|0,z|0,1048576,0)|0;ka=jc(ka|0,y|0,21)|0;ra=y;E=oc(ka|0,ra|0,21)|0;J=y;na=lc(W|0,H|0,1048576,0)|0;na=jc(na|0,y|0,21)|0;O=y;h=lc(na|0,O|0,n|0,h|0)|0;n=y;O=oc(na|0,O|0,21)|0;O=kc(W|0,H|0,O|0,y|0)|0;H=y;W=lc($|0,T|0,1048576,0)|0;W=jc(W|0,y|0,21)|0;na=y;pa=lc(W|0,na|0,k|0,pa|0)|0;k=y;na=oc(W|0,na|0,21)|0;na=kc($|0,T|0,na|0,y|0)|0;T=y;$=lc(s|0,i|0,1048576,0)|0;$=jc($|0,y|0,21)|0;W=y;d=lc($|0,W|0,A|0,d|0)|0;A=y;W=oc($|0,W|0,21)|0;W=kc(s|0,i|0,W|0,y|0)|0;i=y;s=qc(fa|0,t|0,666643,0)|0;oa=lc(s|0,y|0,oa&2097151|0,0)|0;s=y;$=qc(fa|0,t|0,470296,0)|0;$=lc(m|0,p|0,$|0,y|0)|0;p=y;m=qc(fa|0,t|0,654183,0)|0;m=lc(ga|0,X|0,m|0,y|0)|0;X=y;ga=qc(fa|0,t|0,-997805,-1)|0;la=y;Q=qc(fa|0,t|0,136657,0)|0;C=y;t=qc(fa|0,t|0,-683901,-1)|0;_=lc(t|0,y|0,V|0,_|0)|0;ra=lc(_|0,y|0,ka|0,ra|0)|0;G=kc(ra|0,y|0,U|0,G|0)|0;U=y;ra=qc(d|0,A|0,666643,0)|0;M=lc(ra|0,y|0,M&2097151|0,0)|0;ra=y;ka=qc(d|0,A|0,470296,0)|0;ka=lc(oa|0,s|0,ka|0,y|0)|0;s=y;oa=qc(d|0,A|0,654183,0)|0;oa=lc($|0,p|0,oa|0,y|0)|0;p=y;$=qc(d|0,A|0,-997805,-1)|0;$=lc(m|0,X|0,$|0,y|0)|0;X=y;m=qc(d|0,A|0,136657,0)|0;_=y;A=qc(d|0,A|0,-683901,-1)|0;d=y;V=qc(W|0,i|0,666643,0)|0;ma=lc(V|0,y|0,ma&2097151|0,0)|0;V=y;t=qc(W|0,i|0,470296,0)|0;t=lc(M|0,ra|0,t|0,y|0)|0;ra=y;M=qc(W|0,i|0,654183,0)|0;M=lc(ka|0,s|0,M|0,y|0)|0;s=y;ka=qc(W|0,i|0,-997805,-1)|0;ka=lc(oa|0,p|0,ka|0,y|0)|0;p=y;oa=qc(W|0,i|0,136657,0)|0;oa=lc($|0,X|0,oa|0,y|0)|0;X=y;i=qc(W|0,i|0,-683901,-1)|0;W=y;ba=lc(qa|0,Z|0,Y|0,ba|0)|0;ha=kc(ba|0,y|0,aa|0,ha|0)|0;la=lc(ha|0,y|0,ga|0,la|0)|0;_=lc(la|0,y|0,m|0,_|0)|0;W=lc(_|0,y|0,i|0,W|0)|0;i=y;_=qc(pa|0,k|0,666643,0)|0;ja=lc(_|0,y|0,ja&2097151|0,0)|0;_=y;m=qc(pa|0,k|0,470296,0)|0;m=lc(ma|0,V|0,m|0,y|0)|0;V=y;ma=qc(pa|0,k|0,654183,0)|0;ma=lc(t|0,ra|0,ma|0,y|0)|0;ra=y;t=qc(pa|0,k|0,-997805,-1)|0;t=lc(M|0,s|0,t|0,y|0)|0;s=y;M=qc(pa|0,k|0,136657,0)|0;M=lc(ka|0,p|0,M|0,y|0)|0;p=y;k=qc(pa|0,k|0,-683901,-1)|0;k=lc(oa|0,X|0,k|0,y|0)|0;X=y;oa=qc(na|0,T|0,666643,0)|0;pa=y;ka=qc(na|0,T|0,470296,0)|0;la=y;ga=qc(na|0,T|0,654183,0)|0;ha=y;aa=qc(na|0,T|0,-997805,-1)|0;ba=y;Y=qc(na|0,T|0,136657,0)|0;Z=y;T=qc(na|0,T|0,-683901,-1)|0;T=lc(M|0,p|0,T|0,y|0)|0;p=y;M=qc(h|0,n|0,666643,0)|0;ia=lc(M|0,y|0,ia&2097151|0,0)|0;M=y;na=qc(h|0,n|0,470296,0)|0;qa=y;$=qc(h|0,n|0,654183,0)|0;$=lc(ja|0,_|0,$|0,y|0)|0;la=lc($|0,y|0,ka|0,la|0)|0;ka=y;$=qc(h|0,n|0,-997805,-1)|0;_=y;ja=qc(h|0,n|0,136657,0)|0;ja=lc(ma|0,ra|0,ja|0,y|0)|0;ba=lc(ja|0,y|0,aa|0,ba|0)|0;aa=y;n=qc(h|0,n|0,-683901,-1)|0;h=y;ja=lc(ia|0,M|0,1048576,0)|0;ja=jc(ja|0,y|0,21)|0;ra=y;e=lc(na|0,qa|0,e&2097151|0,0)|0;pa=lc(e|0,y|0,oa|0,pa|0)|0;pa=lc(pa|0,y|0,ja|0,ra|0)|0;oa=y;ra=oc(ja|0,ra|0,21)|0;ra=kc(ia|0,M|0,ra|0,y|0)|0;M=y;ia=lc(la|0,ka|0,1048576,0)|0;ia=jc(ia|0,y|0,21)|0;ja=y;_=lc(m|0,V|0,$|0,_|0)|0;ha=lc(_|0,y|0,ga|0,ha|0)|0;ha=lc(ha|0,y|0,ia|0,ja|0)|0;ga=y;ja=oc(ia|0,ja|0,21)|0;ia=y;_=lc(ba|0,aa|0,1048576,0)|0;_=jc(_|0,y|0,21)|0;$=y;h=lc(t|0,s|0,n|0,h|0)|0;Z=lc(h|0,y|0,Y|0,Z|0)|0;Z=lc(Z|0,y|0,_|0,$|0)|0;Y=y;$=oc(_|0,$|0,21)|0;_=y;h=lc(T|0,p|0,1048576,0)|0;h=jc(h|0,y|0,21)|0;n=y;X=lc(k|0,X|0,h|0,n|0)|0;k=y;n=oc(h|0,n|0,21)|0;n=kc(T|0,p|0,n|0,y|0)|0;p=y;T=lc(W|0,i|0,1048576,0)|0;T=jc(T|0,y|0,21)|0;h=y;z=lc(Q|0,C|0,w|0,z|0)|0;J=kc(z|0,y|0,E|0,J|0)|0;d=lc(J|0,y|0,A|0,d|0)|0;d=lc(d|0,y|0,T|0,h|0)|0;A=y;h=oc(T|0,h|0,21)|0;h=kc(W|0,i|0,h|0,y|0)|0;i=y;W=lc(G|0,U|0,1048576,0)|0;W=jc(W|0,y|0,21)|0;T=y;H=lc(W|0,T|0,O|0,H|0)|0;O=y;T=oc(W|0,T|0,21)|0;T=kc(G|0,U|0,T|0,y|0)|0;U=y;G=lc(pa|0,oa|0,1048576,0)|0;G=jc(G|0,y|0,21)|0;W=y;J=oc(G|0,W|0,21)|0;E=y;z=lc(ha|0,ga|0,1048576,0)|0;z=jc(z|0,y|0,21)|0;w=y;C=oc(z|0,w|0,21)|0;Q=y;s=lc(Z|0,Y|0,1048576,0)|0;s=jc(s|0,y|0,21)|0;t=y;p=lc(n|0,p|0,s|0,t|0)|0;n=y;t=oc(s|0,t|0,21)|0;s=y;V=lc(X|0,k|0,1048576,0)|0;V=jc(V|0,y|0,21)|0;m=y;i=lc(h|0,i|0,V|0,m|0)|0;h=y;m=oc(V|0,m|0,21)|0;m=kc(X|0,k|0,m|0,y|0)|0;k=y;X=lc(d|0,A|0,1048576,0)|0;X=jc(X|0,y|0,21)|0;V=y;U=lc(T|0,U|0,X|0,V|0)|0;T=y;V=oc(X|0,V|0,21)|0;V=kc(d|0,A|0,V|0,y|0)|0;A=y;d=lc(H|0,O|0,1048576,0)|0;d=jc(d|0,y|0,21)|0;X=y;e=oc(d|0,X|0,21)|0;e=kc(H|0,O|0,e|0,y|0)|0;O=y;H=qc(d|0,X|0,666643,0)|0;H=lc(ra|0,M|0,H|0,y|0)|0;M=y;ra=qc(d|0,X|0,470296,0)|0;qa=y;na=qc(d|0,X|0,654183,0)|0;ma=y;fa=qc(d|0,X|0,-997805,-1)|0;ea=y;da=qc(d|0,X|0,136657,0)|0;ca=y;X=qc(d|0,X|0,-683901,-1)|0;d=y;K=jc(H|0,M|0,21)|0;R=y;oa=lc(ra|0,qa|0,pa|0,oa|0)|0;E=kc(oa|0,y|0,J|0,E|0)|0;E=lc(E|0,y|0,K|0,R|0)|0;J=y;R=oc(K|0,R|0,21)|0;R=kc(H|0,M|0,R|0,y|0)|0;M=y;H=jc(E|0,J|0,21)|0;K=y;ka=lc(na|0,ma|0,la|0,ka|0)|0;ia=kc(ka|0,y|0,ja|0,ia|0)|0;W=lc(ia|0,y|0,G|0,W|0)|0;W=lc(W|0,y|0,H|0,K|0)|0;G=y;K=oc(H|0,K|0,21)|0;K=kc(E|0,J|0,K|0,y|0)|0;J=y;E=jc(W|0,G|0,21)|0;H=y;ea=lc(ha|0,ga|0,fa|0,ea|0)|0;Q=kc(ea|0,y|0,C|0,Q|0)|0;Q=lc(Q|0,y|0,E|0,H|0)|0;C=y;H=oc(E|0,H|0,21)|0;H=kc(W|0,G|0,H|0,y|0)|0;G=y;W=jc(Q|0,C|0,21)|0;E=y;aa=lc(da|0,ca|0,ba|0,aa|0)|0;_=kc(aa|0,y|0,$|0,_|0)|0;w=lc(_|0,y|0,z|0,w|0)|0;w=lc(w|0,y|0,W|0,E|0)|0;z=y;E=oc(W|0,E|0,21)|0;E=kc(Q|0,C|0,E|0,y|0)|0;C=y;Q=jc(w|0,z|0,21)|0;W=y;d=lc(Z|0,Y|0,X|0,d|0)|0;s=kc(d|0,y|0,t|0,s|0)|0;s=lc(s|0,y|0,Q|0,W|0)|0;t=y;W=oc(Q|0,W|0,21)|0;W=kc(w|0,z|0,W|0,y|0)|0;z=y;w=jc(s|0,t|0,21)|0;Q=y;n=lc(p|0,n|0,w|0,Q|0)|0;p=y;Q=oc(w|0,Q|0,21)|0;Q=kc(s|0,t|0,Q|0,y|0)|0;t=y;s=jc(n|0,p|0,21)|0;w=y;k=lc(s|0,w|0,m|0,k|0)|0;m=y;w=oc(s|0,w|0,21)|0;w=kc(n|0,p|0,w|0,y|0)|0;p=y;n=jc(k|0,m|0,21)|0;s=y;h=lc(i|0,h|0,n|0,s|0)|0;i=y;s=oc(n|0,s|0,21)|0;s=kc(k|0,m|0,s|0,y|0)|0;m=y;k=jc(h|0,i|0,21)|0;n=y;A=lc(k|0,n|0,V|0,A|0)|0;V=y;n=oc(k|0,n|0,21)|0;n=kc(h|0,i|0,n|0,y|0)|0;i=y;h=jc(A|0,V|0,21)|0;k=y;T=lc(U|0,T|0,h|0,k|0)|0;U=y;k=oc(h|0,k|0,21)|0;k=kc(A|0,V|0,k|0,y|0)|0;V=y;A=jc(T|0,U|0,21)|0;h=y;O=lc(A|0,h|0,e|0,O|0)|0;e=y;h=oc(A|0,h|0,21)|0;h=kc(T|0,U|0,h|0,y|0)|0;U=y;T=jc(O|0,e|0,21)|0;A=y;d=oc(T|0,A|0,21)|0;d=kc(O|0,e|0,d|0,y|0)|0;e=y;O=qc(T|0,A|0,666643,0)|0;M=lc(O|0,y|0,R|0,M|0)|0;R=y;O=qc(T|0,A|0,470296,0)|0;O=lc(K|0,J|0,O|0,y|0)|0;J=y;K=qc(T|0,A|0,654183,0)|0;K=lc(H|0,G|0,K|0,y|0)|0;G=y;H=qc(T|0,A|0,-997805,-1)|0;H=lc(E|0,C|0,H|0,y|0)|0;C=y;E=qc(T|0,A|0,136657,0)|0;E=lc(W|0,z|0,E|0,y|0)|0;z=y;A=qc(T|0,A|0,-683901,-1)|0;A=lc(Q|0,t|0,A|0,y|0)|0;t=y;Q=jc(M|0,R|0,21)|0;T=y;J=lc(O|0,J|0,Q|0,T|0)|0;O=y;T=oc(Q|0,T|0,21)|0;T=kc(M|0,R|0,T|0,y|0)|0;R=y;M=jc(J|0,O|0,21)|0;Q=y;G=lc(K|0,G|0,M|0,Q|0)|0;K=y;Q=oc(M|0,Q|0,21)|0;Q=kc(J|0,O|0,Q|0,y|0)|0;O=y;J=jc(G|0,K|0,21)|0;M=y;C=lc(H|0,C|0,J|0,M|0)|0;H=y;M=oc(J|0,M|0,21)|0;M=kc(G|0,K|0,M|0,y|0)|0;K=y;G=jc(C|0,H|0,21)|0;J=y;z=lc(E|0,z|0,G|0,J|0)|0;E=y;J=oc(G|0,J|0,21)|0;J=kc(C|0,H|0,J|0,y|0)|0;H=y;C=jc(z|0,E|0,21)|0;G=y;t=lc(A|0,t|0,C|0,G|0)|0;A=y;G=oc(C|0,G|0,21)|0;G=kc(z|0,E|0,G|0,y|0)|0;E=y;z=jc(t|0,A|0,21)|0;C=y;p=lc(z|0,C|0,w|0,p|0)|0;w=y;C=oc(z|0,C|0,21)|0;C=kc(t|0,A|0,C|0,y|0)|0;A=y;t=jc(p|0,w|0,21)|0;z=y;m=lc(t|0,z|0,s|0,m|0)|0;s=y;z=oc(t|0,z|0,21)|0;z=kc(p|0,w|0,z|0,y|0)|0;w=y;p=jc(m|0,s|0,21)|0;t=y;i=lc(p|0,t|0,n|0,i|0)|0;n=y;t=oc(p|0,t|0,21)|0;t=kc(m|0,s|0,t|0,y|0)|0;s=y;m=jc(i|0,n|0,21)|0;p=y;V=lc(m|0,p|0,k|0,V|0)|0;k=y;p=oc(m|0,p|0,21)|0;p=kc(i|0,n|0,p|0,y|0)|0;n=y;i=jc(V|0,k|0,21)|0;m=y;U=lc(i|0,m|0,h|0,U|0)|0;h=y;m=oc(i|0,m|0,21)|0;m=kc(V|0,k|0,m|0,y|0)|0;k=y;V=jc(U|0,h|0,21)|0;i=y;e=lc(V|0,i|0,d|0,e|0)|0;d=y;i=oc(V|0,i|0,21)|0;i=kc(U|0,h|0,i|0,y|0)|0;h=y;a[b>>0]=T;U=nc(T|0,R|0,8)|0;a[S>>0]=U;R=nc(T|0,R|0,16)|0;T=y;S=oc(Q|0,O|0,5)|0;a[P>>0]=S|R;P=nc(Q|0,O|0,3)|0;a[b+3>>0]=P;P=nc(Q|0,O|0,11)|0;a[b+4>>0]=P;O=nc(Q|0,O|0,19)|0;Q=y;P=oc(M|0,K|0,2)|0;a[N>>0]=P|O;N=nc(M|0,K|0,6)|0;a[L>>0]=N;K=nc(M|0,K|0,14)|0;M=y;L=oc(J|0,H|0,7)|0;a[I>>0]=L|K;I=nc(J|0,H|0,1)|0;a[b+8>>0]=I;I=nc(J|0,H|0,9)|0;a[b+9>>0]=I;H=nc(J|0,H|0,17)|0;J=y;I=oc(G|0,E|0,4)|0;a[F>>0]=I|H;F=nc(G|0,E|0,4)|0;a[b+11>>0]=F;F=nc(G|0,E|0,12)|0;a[b+12>>0]=F;E=nc(G|0,E|0,20)|0;G=y;F=oc(C|0,A|0,1)|0;a[D>>0]=F|E;D=nc(C|0,A|0,7)|0;a[B>>0]=D;A=nc(C|0,A|0,15)|0;C=y;B=oc(z|0,w|0,6)|0;a[x>>0]=B|A;x=nc(z|0,w|0,2)|0;a[b+16>>0]=x;x=nc(z|0,w|0,10)|0;a[b+17>>0]=x;w=nc(z|0,w|0,18)|0;z=y;x=oc(t|0,s|0,3)|0;a[v>>0]=x|w;v=nc(t|0,s|0,5)|0;a[u>>0]=v;s=nc(t|0,s|0,13)|0;a[r>>0]=s;a[q>>0]=p;q=nc(p|0,n|0,8)|0;a[o>>0]=q;n=nc(p|0,n|0,16)|0;p=y;o=oc(m|0,k|0,5)|0;a[l>>0]=o|n;l=nc(m|0,k|0,3)|0;a[b+24>>0]=l;l=nc(m|0,k|0,11)|0;a[b+25>>0]=l;k=nc(m|0,k|0,19)|0;m=y;l=oc(i|0,h|0,2)|0;a[j>>0]=l|k;j=nc(i|0,h|0,6)|0;a[g>>0]=j;h=nc(i|0,h|0,14)|0;i=y;g=oc(e|0,d|0,7)|0;a[f>>0]=h|g;f=nc(e|0,d|0,1)|0;a[b+29>>0]=f;f=nc(e|0,d|0,9)|0;a[b+30>>0]=f;b=nc(e|0,d|0,17)|0;a[c>>0]=b;return}function Hb(a,b,c){a=a|0;b=b|0;c=c|0;var d=0;b=oc(b&255|0,0,8)|0;d=y;c=oc(c&255|0,0,16)|0;y=d|y;return b|a&255|c|0}function Ib(a){a=a|0;var b=0,c=0,e=0,f=0;c=d[a>>0]|0;e=oc(d[a+1>>0]|0|0,0,8)|0;f=y;b=oc(d[a+2>>0]|0|0,0,16)|0;f=f|y;a=oc(d[a+3>>0]|0|0,0,24)|0;y=f|y;return e|c|b|a|0}function Jb(a){a=a|0;var b=0,d=0,e=0;b=a+128|0;d=8;e=b+64|0;do{c[b>>2]=c[d>>2];b=b+4|0;d=d+4|0}while((b|0)<(e|0));e=a+192|0;c[e>>2]=0;c[e+4>>2]=0;return}function Kb(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0;h=a+192|0;if(!d)return;g=a+128|0;e=c[h>>2]&127;while(1){f=128-e|0;f=f>>>0>d>>>0?d:f;sc(a+e|0,b|0,f|0)|0;e=f+e|0;d=d-f|0;if((e|0)==128){Lb(a,g);e=0}j=h;j=lc(c[j>>2]|0,c[j+4>>2]|0,f|0,0)|0;i=h;c[i>>2]=j;c[i+4>>2]=y;if(!d)break;else b=b+f|0}return}
-function Lb(a,b){a=a|0;b=b|0;var d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0,z=0,A=0,B=0,C=0,D=0,E=0,F=0,G=0,H=0,I=0,J=0,K=0,L=0,M=0,N=0,O=0,P=0,Q=0,R=0,S=0,T=0,U=0,V=0,W=0,X=0,Y=0,Z=0,_=0,$=0,aa=0,ba=0,ca=0,da=0,ea=0,fa=0,ga=0,ha=0,ia=0,ja=0,ka=0,la=0,ma=0,na=0,oa=0,pa=0,qa=0,ra=0;T=l;l=l+640|0;S=T;d=Mb(a)|0;e=y;R=S;c[R>>2]=d;c[R+4>>2]=e;R=Mb(a+8|0)|0;Q=S+8|0;c[Q>>2]=R;c[Q+4>>2]=y;Q=Mb(a+16|0)|0;R=S+16|0;c[R>>2]=Q;c[R+4>>2]=y;R=Mb(a+24|0)|0;Q=S+24|0;c[Q>>2]=R;c[Q+4>>2]=y;Q=Mb(a+32|0)|0;R=S+32|0;c[R>>2]=Q;c[R+4>>2]=y;R=Mb(a+40|0)|0;Q=S+40|0;c[Q>>2]=R;c[Q+4>>2]=y;Q=Mb(a+48|0)|0;R=S+48|0;c[R>>2]=Q;c[R+4>>2]=y;R=Mb(a+56|0)|0;Q=S+56|0;c[Q>>2]=R;c[Q+4>>2]=y;Q=Mb(a+64|0)|0;R=S+64|0;c[R>>2]=Q;c[R+4>>2]=y;R=Mb(a+72|0)|0;Q=S+72|0;c[Q>>2]=R;c[Q+4>>2]=y;Q=Mb(a+80|0)|0;R=S+80|0;c[R>>2]=Q;c[R+4>>2]=y;R=Mb(a+88|0)|0;Q=S+88|0;c[Q>>2]=R;c[Q+4>>2]=y;Q=Mb(a+96|0)|0;R=S+96|0;c[R>>2]=Q;c[R+4>>2]=y;R=Mb(a+104|0)|0;Q=S+104|0;c[Q>>2]=R;c[Q+4>>2]=y;Q=Mb(a+112|0)|0;R=S+112|0;c[R>>2]=Q;c[R+4>>2]=y;R=Mb(a+120|0)|0;a=S+120|0;c[a>>2]=R;c[a+4>>2]=y;a=16;do{I=S+(a+-2<<3)|0;E=c[I>>2]|0;I=c[I+4>>2]|0;J=oc(E|0,I|0,45)|0;L=y;K=nc(E|0,I|0,19)|0;L=L|y;G=oc(E|0,I|0,3)|0;F=y;H=nc(E|0,I|0,61)|0;F=F|y;I=nc(E|0,I|0,6)|0;L=F^y^L;F=S+(a+-7<<3)|0;E=c[F>>2]|0;F=c[F+4>>2]|0;P=S+(a+-15<<3)|0;C=d;d=c[P>>2]|0;D=e;e=c[P+4>>2]|0;P=oc(d|0,e|0,63)|0;Q=y;R=nc(d|0,e|0,1)|0;Q=Q|y;M=oc(d|0,e|0,56)|0;B=y;N=nc(d|0,e|0,8)|0;B=B|y;O=nc(d|0,e|0,7)|0;Q=B^y^Q;F=lc(C|0,D|0,E|0,F|0)|0;L=lc(F|0,y|0,(G|H)^I^(J|K)|0,L|0)|0;Q=lc(L|0,y|0,(M|N)^O^(P|R)|0,Q|0)|0;R=S+(a<<3)|0;c[R>>2]=Q;c[R+4>>2]=y;a=a+1|0}while((a|0)!=80);e=b;d=c[e>>2]|0;e=c[e+4>>2]|0;f=b+8|0;h=f;g=c[h>>2]|0;h=c[h+4>>2]|0;i=b+16|0;k=i;j=c[k>>2]|0;k=c[k+4>>2]|0;m=b+24|0;o=m;n=c[o>>2]|0;o=c[o+4>>2]|0;p=b+32|0;r=p;q=c[r>>2]|0;r=c[r+4>>2]|0;s=b+40|0;u=s;t=c[u>>2]|0;u=c[u+4>>2]|0;v=b+48|0;x=v;w=c[x>>2]|0;x=c[x+4>>2]|0;z=b+56|0;B=z;A=c[B>>2]|0;B=c[B+4>>2]|0;a=0;C=q;D=r;E=w;F=t;G=x;H=u;I=A;J=B;K=d;L=e;M=g;N=h;O=j;P=k;Q=n;R=o;do{ia=oc(C|0,D|0,50)|0;ja=y;qa=nc(C|0,D|0,14)|0;ja=ja|y;_=oc(C|0,D|0,46)|0;V=y;na=nc(C|0,D|0,18)|0;V=ja^(V|y);ja=oc(C|0,D|0,23)|0;da=y;oa=nc(C|0,D|0,41)|0;da=V^(da|y);V=72+(a<<3)|0;ha=c[V>>2]|0;V=c[V+4>>2]|0;ma=S+(a<<3)|0;W=c[ma>>2]|0;ma=c[ma+4>>2]|0;U=lc((F^E)&C^E|0,(H^G)&D^G|0,I|0,J|0)|0;da=lc(U|0,y|0,(ia|qa)^(_|na)^(ja|oa)|0,da|0)|0;V=lc(da|0,y|0,ha|0,V|0)|0;ma=lc(V|0,y|0,W|0,ma|0)|0;W=y;V=oc(K|0,L|0,36)|0;ha=y;da=nc(K|0,L|0,28)|0;ha=ha|y;oa=oc(K|0,L|0,30)|0;ja=y;na=nc(K|0,L|0,34)|0;ja=ha^(ja|y);ha=oc(K|0,L|0,25)|0;_=y;qa=nc(K|0,L|0,39)|0;_=lc((V|da)^(oa|na)^(ha|qa)|0,ja^(_|y)|0,(K|M)&O|K&M|0,(L|N)&P|L&N|0)|0;ja=y;qa=lc(ma|0,W|0,Q|0,R|0)|0;ha=y;W=lc(_|0,ja|0,ma|0,W|0)|0;ma=y;ja=oc(qa|0,ha|0,50)|0;_=y;na=nc(qa|0,ha|0,14)|0;_=_|y;oa=oc(qa|0,ha|0,46)|0;da=y;V=nc(qa|0,ha|0,18)|0;da=_^(da|y);_=oc(qa|0,ha|0,23)|0;ia=y;U=nc(qa|0,ha|0,41)|0;ia=da^(ia|y);da=a|1;ga=72+(da<<3)|0;da=S+(da<<3)|0;aa=c[da>>2]|0;da=c[da+4>>2]|0;ga=lc(c[ga>>2]|0,c[ga+4>>2]|0,E|0,G|0)|0;da=lc(ga|0,y|0,aa|0,da|0)|0;da=lc(da|0,y|0,qa&(C^F)^F|0,ha&(D^H)^H|0)|0;ia=lc(da|0,y|0,(ja|na)^(oa|V)^(_|U)|0,ia|0)|0;U=y;_=oc(W|0,ma|0,36)|0;V=y;oa=nc(W|0,ma|0,28)|0;V=V|y;na=oc(W|0,ma|0,30)|0;ja=y;da=nc(W|0,ma|0,34)|0;ja=V^(ja|y);V=oc(W|0,ma|0,25)|0;aa=y;ga=nc(W|0,ma|0,39)|0;aa=lc((_|oa)^(na|da)^(V|ga)|0,ja^(aa|y)|0,(W|K)&M|W&K|0,(ma|L)&N|ma&L|0)|0;ja=y;ga=lc(ia|0,U|0,O|0,P|0)|0;V=y;U=lc(aa|0,ja|0,ia|0,U|0)|0;ia=y;ja=oc(ga|0,V|0,50)|0;aa=y;da=nc(ga|0,V|0,14)|0;aa=aa|y;na=oc(ga|0,V|0,46)|0;oa=y;_=nc(ga|0,V|0,18)|0;oa=aa^(oa|y);aa=oc(ga|0,V|0,23)|0;ea=y;$=nc(ga|0,V|0,41)|0;ea=oa^(ea|y);oa=a|2;ca=72+(oa<<3)|0;oa=S+(oa<<3)|0;ba=c[oa>>2]|0;oa=c[oa+4>>2]|0;ca=lc(c[ca>>2]|0,c[ca+4>>2]|0,F|0,H|0)|0;oa=lc(ca|0,y|0,ba|0,oa|0)|0;oa=lc(oa|0,y|0,ga&(qa^C)^C|0,V&(ha^D)^D|0)|0;ea=lc(oa|0,y|0,(ja|da)^(na|_)^(aa|$)|0,ea|0)|0;$=y;aa=oc(U|0,ia|0,36)|0;_=y;na=nc(U|0,ia|0,28)|0;_=_|y;da=oc(U|0,ia|0,30)|0;ja=y;oa=nc(U|0,ia|0,34)|0;ja=_^(ja|y);_=oc(U|0,ia|0,25)|0;ba=y;ca=nc(U|0,ia|0,39)|0;ba=lc((aa|na)^(da|oa)^(_|ca)|0,ja^(ba|y)|0,(U|W)&K|U&W|0,(ia|ma)&L|ia&ma|0)|0;ja=y;ca=lc(ea|0,$|0,M|0,N|0)|0;_=y;$=lc(ba|0,ja|0,ea|0,$|0)|0;ea=y;ja=oc(ca|0,_|0,50)|0;ba=y;oa=nc(ca|0,_|0,14)|0;ba=ba|y;da=oc(ca|0,_|0,46)|0;na=y;aa=nc(ca|0,_|0,18)|0;na=ba^(na|y);ba=oc(ca|0,_|0,23)|0;Y=y;Z=nc(ca|0,_|0,41)|0;Y=na^(Y|y);na=a|3;X=72+(na<<3)|0;na=S+(na<<3)|0;pa=c[na>>2]|0;na=c[na+4>>2]|0;X=lc(c[X>>2]|0,c[X+4>>2]|0,C|0,D|0)|0;na=lc(X|0,y|0,pa|0,na|0)|0;na=lc(na|0,y|0,ca&(ga^qa)^qa|0,_&(V^ha)^ha|0)|0;Y=lc(na|0,y|0,(ja|oa)^(da|aa)^(ba|Z)|0,Y|0)|0;Z=y;ba=oc($|0,ea|0,36)|0;aa=y;da=nc($|0,ea|0,28)|0;aa=aa|y;oa=oc($|0,ea|0,30)|0;ja=y;na=nc($|0,ea|0,34)|0;ja=aa^(ja|y);aa=oc($|0,ea|0,25)|0;pa=y;X=nc($|0,ea|0,39)|0;pa=lc((ba|da)^(oa|na)^(aa|X)|0,ja^(pa|y)|0,($|U)&W|$&U|0,(ea|ia)&ma|ea&ia|0)|0;ja=y;X=lc(Y|0,Z|0,K|0,L|0)|0;aa=y;Z=lc(pa|0,ja|0,Y|0,Z|0)|0;Y=y;ja=oc(X|0,aa|0,50)|0;pa=y;na=nc(X|0,aa|0,14)|0;pa=pa|y;oa=oc(X|0,aa|0,46)|0;da=y;ba=nc(X|0,aa|0,18)|0;da=pa^(da|y);pa=oc(X|0,aa|0,23)|0;la=y;fa=nc(X|0,aa|0,41)|0;la=da^(la|y);da=a|4;ra=72+(da<<3)|0;da=S+(da<<3)|0;ka=c[da>>2]|0;da=c[da+4>>2]|0;ha=lc(c[ra>>2]|0,c[ra+4>>2]|0,qa|0,ha|0)|0;da=lc(ha|0,y|0,ka|0,da|0)|0;da=lc(da|0,y|0,X&(ca^ga)^ga|0,aa&(_^V)^V|0)|0;la=lc(da|0,y|0,(ja|na)^(oa|ba)^(pa|fa)|0,la|0)|0;fa=y;pa=oc(Z|0,Y|0,36)|0;ba=y;oa=nc(Z|0,Y|0,28)|0;ba=ba|y;na=oc(Z|0,Y|0,30)|0;ja=y;da=nc(Z|0,Y|0,34)|0;ja=ba^(ja|y);ba=oc(Z|0,Y|0,25)|0;ka=y;ha=nc(Z|0,Y|0,39)|0;ka=lc((pa|oa)^(na|da)^(ba|ha)|0,ja^(ka|y)|0,(Z|$)&U|Z&$|0,(Y|ea)&ia|Y&ea|0)|0;ja=y;I=lc(la|0,fa|0,W|0,ma|0)|0;J=y;Q=lc(ka|0,ja|0,la|0,fa|0)|0;R=y;fa=oc(I|0,J|0,50)|0;la=y;ja=nc(I|0,J|0,14)|0;la=la|y;ka=oc(I|0,J|0,46)|0;ma=y;W=nc(I|0,J|0,18)|0;ma=la^(ma|y);la=oc(I|0,J|0,23)|0;ha=y;ba=nc(I|0,J|0,41)|0;ha=ma^(ha|y);ma=a|5;da=72+(ma<<3)|0;ma=S+(ma<<3)|0;da=lc(c[ma>>2]|0,c[ma+4>>2]|0,c[da>>2]|0,c[da+4>>2]|0)|0;V=lc(da|0,y|0,ga|0,V|0)|0;V=lc(V|0,y|0,I&(X^ca)^ca|0,J&(aa^_)^_|0)|0;ha=lc(V|0,y|0,(fa|ja)^(ka|W)^(la|ba)|0,ha|0)|0;ba=y;la=oc(Q|0,R|0,36)|0;W=y;ka=nc(Q|0,R|0,28)|0;W=W|y;ja=oc(Q|0,R|0,30)|0;fa=y;V=nc(Q|0,R|0,34)|0;fa=W^(fa|y);W=oc(Q|0,R|0,25)|0;ga=y;da=nc(Q|0,R|0,39)|0;ga=lc((la|ka)^(ja|V)^(W|da)|0,fa^(ga|y)|0,(Q|Z)&$|Q&Z|0,(R|Y)&ea|R&Y|0)|0;fa=y;E=lc(ha|0,ba|0,U|0,ia|0)|0;G=y;O=lc(ga|0,fa|0,ha|0,ba|0)|0;P=y;ba=oc(E|0,G|0,50)|0;ha=y;fa=nc(E|0,G|0,14)|0;ha=ha|y;ga=oc(E|0,G|0,46)|0;ia=y;U=nc(E|0,G|0,18)|0;ia=ha^(ia|y);ha=oc(E|0,G|0,23)|0;da=y;W=nc(E|0,G|0,41)|0;da=ia^(da|y);ia=a|6;V=72+(ia<<3)|0;ia=S+(ia<<3)|0;V=lc(c[ia>>2]|0,c[ia+4>>2]|0,c[V>>2]|0,c[V+4>>2]|0)|0;_=lc(V|0,y|0,ca|0,_|0)|0;_=lc(_|0,y|0,E&(I^X)^X|0,G&(J^aa)^aa|0)|0;da=lc(_|0,y|0,(ba|fa)^(ga|U)^(ha|W)|0,da|0)|0;W=y;ha=oc(O|0,P|0,36)|0;U=y;ga=nc(O|0,P|0,28)|0;U=U|y;fa=oc(O|0,P|0,30)|0;ba=y;_=nc(O|0,P|0,34)|0;ba=U^(ba|y);U=oc(O|0,P|0,25)|0;ca=y;V=nc(O|0,P|0,39)|0;ca=lc((ha|ga)^(fa|_)^(U|V)|0,ba^(ca|y)|0,(O|Q)&Z|O&Q|0,(P|R)&Y|P&R|0)|0;ba=y;F=lc(da|0,W|0,$|0,ea|0)|0;H=y;M=lc(ca|0,ba|0,da|0,W|0)|0;N=y;W=oc(F|0,H|0,50)|0;da=y;ba=nc(F|0,H|0,14)|0;da=da|y;ca=oc(F|0,H|0,46)|0;ea=y;$=nc(F|0,H|0,18)|0;ea=da^(ea|y);da=oc(F|0,H|0,23)|0;V=y;U=nc(F|0,H|0,41)|0;V=ea^(V|y);ea=a|7;_=72+(ea<<3)|0;ea=S+(ea<<3)|0;_=lc(c[ea>>2]|0,c[ea+4>>2]|0,c[_>>2]|0,c[_+4>>2]|0)|0;aa=lc(_|0,y|0,X|0,aa|0)|0;aa=lc(aa|0,y|0,F&(E^I)^I|0,H&(G^J)^J|0)|0;V=lc(aa|0,y|0,(W|ba)^(ca|$)^(da|U)|0,V|0)|0;U=y;da=oc(M|0,N|0,36)|0;$=y;ca=nc(M|0,N|0,28)|0;$=$|y;ba=oc(M|0,N|0,30)|0;W=y;aa=nc(M|0,N|0,34)|0;W=$^(W|y);$=oc(M|0,N|0,25)|0;X=y;_=nc(M|0,N|0,39)|0;X=lc((da|ca)^(ba|aa)^($|_)|0,W^(X|y)|0,(M|O)&Q|M&O|0,(N|P)&R|N&P|0)|0;W=y;C=lc(V|0,U|0,Z|0,Y|0)|0;D=y;K=lc(X|0,W|0,V|0,U|0)|0;L=y;a=a+8|0}while((a|0)<80);ra=lc(K|0,L|0,d|0,e|0)|0;qa=b;c[qa>>2]=ra;c[qa+4>>2]=y;qa=lc(M|0,N|0,g|0,h|0)|0;ra=f;c[ra>>2]=qa;c[ra+4>>2]=y;ra=lc(O|0,P|0,j|0,k|0)|0;qa=i;c[qa>>2]=ra;c[qa+4>>2]=y;qa=lc(Q|0,R|0,n|0,o|0)|0;ra=m;c[ra>>2]=qa;c[ra+4>>2]=y;ra=lc(C|0,D|0,q|0,r|0)|0;qa=p;c[qa>>2]=ra;c[qa+4>>2]=y;qa=lc(F|0,H|0,t|0,u|0)|0;ra=s;c[ra>>2]=qa;c[ra+4>>2]=y;ra=lc(E|0,G|0,w|0,x|0)|0;qa=v;c[qa>>2]=ra;c[qa+4>>2]=y;qa=lc(I|0,J|0,A|0,B|0)|0;ra=z;c[ra>>2]=qa;c[ra+4>>2]=y;l=T;return}function Mb(a){a=a|0;var b=0,c=0,e=0,f=0,g=0,h=0,i=0;g=oc(d[a>>0]|0|0,0,56)|0;i=y;h=oc(d[a+1>>0]|0|0,0,48)|0;i=y|i;f=oc(d[a+2>>0]|0|0,0,40)|0;i=i|y|(d[a+3>>0]|0);e=oc(d[a+4>>0]|0|0,0,24)|0;i=i|y;c=oc(d[a+5>>0]|0|0,0,16)|0;i=i|y;b=oc(d[a+6>>0]|0|0,0,8)|0;y=i|y;return h|g|f|e|c|b|(d[a+7>>0]|0)|0}function Nb(a,b,c){a=a|0;b=b|0;c=c|0;Ob(a,0,0,b,c);return}function Ob(b,d,e,f,g){b=b|0;d=d|0;e=e|0;f=f|0;g=g|0;var h=0,i=0,j=0,k=0;j=b+192|0;h=c[j>>2]&127;k=128>>>e;i=h+1|0;a[b+h>>0]=0-k&d|k;d=b+i|0;if(i>>>0>112){mc(d|0,0,h^127|0)|0;i=b+128|0;Lb(b,i);d=b;h=d+112|0;do{c[d>>2]=0;d=d+4|0}while((d|0)<(h|0));d=i;h=i}else{mc(d|0,0,111-h|0)|0;h=b+128|0;d=h}k=j;k=nc(c[k>>2]|0,c[k+4>>2]|0,61)|0;Pb(b+112|0,k,y);k=j;k=oc(c[k>>2]|0,c[k+4>>2]|0,3)|0;k=lc(k|0,y|0,e|0,0)|0;Pb(b+120|0,k,y);Lb(b,d);if(!g)return;else d=0;do{k=h+(d<<3)|0;Qb(f+(d<<3)|0,c[k>>2]|0,c[k+4>>2]|0);d=d+1|0}while((d|0)!=(g|0));return}function Pb(b,c,d){b=b|0;c=c|0;d=d|0;var e=0;e=nc(c|0,d|0,56)|0;a[b>>0]=e;e=nc(c|0,d|0,48)|0;a[b+1>>0]=e;e=nc(c|0,d|0,40)|0;a[b+2>>0]=e;a[b+3>>0]=d;e=nc(c|0,d|0,24)|0;a[b+4>>0]=e;e=nc(c|0,d|0,16)|0;a[b+5>>0]=e;d=nc(c|0,d|0,8)|0;a[b+6>>0]=d;a[b+7>>0]=c;return}function Qb(b,c,d){b=b|0;c=c|0;d=d|0;var e=0;e=nc(c|0,d|0,56)|0;a[b>>0]=e;e=nc(c|0,d|0,48)|0;a[b+1>>0]=e;e=nc(c|0,d|0,40)|0;a[b+2>>0]=e;a[b+3>>0]=d;e=nc(c|0,d|0,24)|0;a[b+4>>0]=e;e=nc(c|0,d|0,16)|0;a[b+5>>0]=e;d=nc(c|0,d|0,8)|0;a[b+6>>0]=d;a[b+7>>0]=c;return}function Rb(a,b){a=a|0;b=b|0;Nb(a,b,8);Jb(a);return}function Sb(a){a=a|0;var b=0,d=0,e=0,f=0,g=0,h=0,i=0,j=0,k=0,m=0,n=0,o=0,p=0,q=0,r=0,s=0,t=0,u=0,v=0,w=0,x=0;x=l;l=l+16|0;o=x;do if(a>>>0<245){k=a>>>0<11?16:a+11&-8;a=k>>>3;n=c[8222]|0;d=n>>>a;if(d&3|0){b=(d&1^1)+a|0;a=32928+(b<<1<<2)|0;d=a+8|0;e=c[d>>2]|0;f=e+8|0;g=c[f>>2]|0;if((a|0)==(g|0))c[8222]=n&~(1<<b);else{c[g+12>>2]=a;c[d>>2]=g}w=b<<3;c[e+4>>2]=w|3;w=e+w+4|0;c[w>>2]=c[w>>2]|1;w=f;l=x;return w|0}m=c[8224]|0;if(k>>>0>m>>>0){if(d|0){b=2<<a;b=d<<a&(b|0-b);b=(b&0-b)+-1|0;h=b>>>12&16;b=b>>>h;d=b>>>5&8;b=b>>>d;f=b>>>2&4;b=b>>>f;a=b>>>1&2;b=b>>>a;e=b>>>1&1;e=(d|h|f|a|e)+(b>>>e)|0;b=32928+(e<<1<<2)|0;a=b+8|0;f=c[a>>2]|0;h=f+8|0;d=c[h>>2]|0;if((b|0)==(d|0)){a=n&~(1<<e);c[8222]=a}else{c[d+12>>2]=b;c[a>>2]=d;a=n}g=(e<<3)-k|0;c[f+4>>2]=k|3;e=f+k|0;c[e+4>>2]=g|1;c[e+g>>2]=g;if(m|0){f=c[8227]|0;b=m>>>3;d=32928+(b<<1<<2)|0;b=1<<b;if(!(a&b)){c[8222]=a|b;b=d;a=d+8|0}else{a=d+8|0;b=c[a>>2]|0}c[a>>2]=f;c[b+12>>2]=f;c[f+8>>2]=b;c[f+12>>2]=d}c[8224]=g;c[8227]=e;w=h;l=x;return w|0}i=c[8223]|0;if(i){d=(i&0-i)+-1|0;h=d>>>12&16;d=d>>>h;g=d>>>5&8;d=d>>>g;j=d>>>2&4;d=d>>>j;e=d>>>1&2;d=d>>>e;a=d>>>1&1;a=c[33192+((g|h|j|e|a)+(d>>>a)<<2)>>2]|0;d=(c[a+4>>2]&-8)-k|0;e=c[a+16+(((c[a+16>>2]|0)==0&1)<<2)>>2]|0;if(!e){j=a;g=d}else{do{h=(c[e+4>>2]&-8)-k|0;j=h>>>0<d>>>0;d=j?h:d;a=j?e:a;e=c[e+16+(((c[e+16>>2]|0)==0&1)<<2)>>2]|0}while((e|0)!=0);j=a;g=d}h=j+k|0;if(j>>>0<h>>>0){f=c[j+24>>2]|0;b=c[j+12>>2]|0;do if((b|0)==(j|0)){a=j+20|0;b=c[a>>2]|0;if(!b){a=j+16|0;b=c[a>>2]|0;if(!b){d=0;break}}while(1){d=b+20|0;e=c[d>>2]|0;if(e|0){b=e;a=d;continue}d=b+16|0;e=c[d>>2]|0;if(!e)break;else{b=e;a=d}}c[a>>2]=0;d=b}else{d=c[j+8>>2]|0;c[d+12>>2]=b;c[b+8>>2]=d;d=b}while(0);do if(f|0){b=c[j+28>>2]|0;a=33192+(b<<2)|0;if((j|0)==(c[a>>2]|0)){c[a>>2]=d;if(!d){c[8223]=i&~(1<<b);break}}else{c[f+16+(((c[f+16>>2]|0)!=(j|0)&1)<<2)>>2]=d;if(!d)break}c[d+24>>2]=f;b=c[j+16>>2]|0;if(b|0){c[d+16>>2]=b;c[b+24>>2]=d}b=c[j+20>>2]|0;if(b|0){c[d+20>>2]=b;c[b+24>>2]=d}}while(0);if(g>>>0<16){w=g+k|0;c[j+4>>2]=w|3;w=j+w+4|0;c[w>>2]=c[w>>2]|1}else{c[j+4>>2]=k|3;c[h+4>>2]=g|1;c[h+g>>2]=g;if(m|0){e=c[8227]|0;b=m>>>3;d=32928+(b<<1<<2)|0;b=1<<b;if(!(n&b)){c[8222]=n|b;b=d;a=d+8|0}else{a=d+8|0;b=c[a>>2]|0}c[a>>2]=e;c[b+12>>2]=e;c[e+8>>2]=b;c[e+12>>2]=d}c[8224]=g;c[8227]=h}w=j+8|0;l=x;return w|0}else n=k}else n=k}else n=k}else if(a>>>0<=4294967231){a=a+11|0;k=a&-8;j=c[8223]|0;if(j){e=0-k|0;a=a>>>8;if(a)if(k>>>0>16777215)i=31;else{n=(a+1048320|0)>>>16&8;v=a<<n;m=(v+520192|0)>>>16&4;v=v<<m;i=(v+245760|0)>>>16&2;i=14-(m|n|i)+(v<<i>>>15)|0;i=k>>>(i+7|0)&1|i<<1}else i=0;d=c[33192+(i<<2)>>2]|0;a:do if(!d){d=0;a=0;v=57}else{a=0;h=k<<((i|0)==31?0:25-(i>>>1)|0);g=0;while(1){f=(c[d+4>>2]&-8)-k|0;if(f>>>0<e>>>0)if(!f){a=d;e=0;f=d;v=61;break a}else{a=d;e=f}f=c[d+20>>2]|0;d=c[d+16+(h>>>31<<2)>>2]|0;g=(f|0)==0|(f|0)==(d|0)?g:f;f=(d|0)==0;if(f){d=g;v=57;break}else h=h<<((f^1)&1)}}while(0);if((v|0)==57){if((d|0)==0&(a|0)==0){a=2<<i;a=j&(a|0-a);if(!a){n=k;break}n=(a&0-a)+-1|0;h=n>>>12&16;n=n>>>h;g=n>>>5&8;n=n>>>g;i=n>>>2&4;n=n>>>i;m=n>>>1&2;n=n>>>m;d=n>>>1&1;a=0;d=c[33192+((g|h|i|m|d)+(n>>>d)<<2)>>2]|0}if(!d){i=a;h=e}else{f=d;v=61}}if((v|0)==61)while(1){v=0;d=(c[f+4>>2]&-8)-k|0;n=d>>>0<e>>>0;d=n?d:e;a=n?f:a;f=c[f+16+(((c[f+16>>2]|0)==0&1)<<2)>>2]|0;if(!f){i=a;h=d;break}else{e=d;v=61}}if((i|0)!=0?h>>>0<((c[8224]|0)-k|0)>>>0:0){g=i+k|0;if(i>>>0>=g>>>0){w=0;l=x;return w|0}f=c[i+24>>2]|0;b=c[i+12>>2]|0;do if((b|0)==(i|0)){a=i+20|0;b=c[a>>2]|0;if(!b){a=i+16|0;b=c[a>>2]|0;if(!b){b=0;break}}while(1){d=b+20|0;e=c[d>>2]|0;if(e|0){b=e;a=d;continue}d=b+16|0;e=c[d>>2]|0;if(!e)break;else{b=e;a=d}}c[a>>2]=0}else{w=c[i+8>>2]|0;c[w+12>>2]=b;c[b+8>>2]=w}while(0);do if(f){a=c[i+28>>2]|0;d=33192+(a<<2)|0;if((i|0)==(c[d>>2]|0)){c[d>>2]=b;if(!b){e=j&~(1<<a);c[8223]=e;break}}else{c[f+16+(((c[f+16>>2]|0)!=(i|0)&1)<<2)>>2]=b;if(!b){e=j;break}}c[b+24>>2]=f;a=c[i+16>>2]|0;if(a|0){c[b+16>>2]=a;c[a+24>>2]=b}a=c[i+20>>2]|0;if(a){c[b+20>>2]=a;c[a+24>>2]=b;e=j}else e=j}else e=j;while(0);do if(h>>>0>=16){c[i+4>>2]=k|3;c[g+4>>2]=h|1;c[g+h>>2]=h;b=h>>>3;if(h>>>0<256){d=32928+(b<<1<<2)|0;a=c[8222]|0;b=1<<b;if(!(a&b)){c[8222]=a|b;b=d;a=d+8|0}else{a=d+8|0;b=c[a>>2]|0}c[a>>2]=g;c[b+12>>2]=g;c[g+8>>2]=b;c[g+12>>2]=d;break}b=h>>>8;if(b)if(h>>>0>16777215)b=31;else{v=(b+1048320|0)>>>16&8;w=b<<v;u=(w+520192|0)>>>16&4;w=w<<u;b=(w+245760|0)>>>16&2;b=14-(u|v|b)+(w<<b>>>15)|0;b=h>>>(b+7|0)&1|b<<1}else b=0;d=33192+(b<<2)|0;c[g+28>>2]=b;a=g+16|0;c[a+4>>2]=0;c[a>>2]=0;a=1<<b;if(!(e&a)){c[8223]=e|a;c[d>>2]=g;c[g+24>>2]=d;c[g+12>>2]=g;c[g+8>>2]=g;break}a=h<<((b|0)==31?0:25-(b>>>1)|0);d=c[d>>2]|0;while(1){if((c[d+4>>2]&-8|0)==(h|0)){v=97;break}e=d+16+(a>>>31<<2)|0;b=c[e>>2]|0;if(!b){v=96;break}else{a=a<<1;d=b}}if((v|0)==96){c[e>>2]=g;c[g+24>>2]=d;c[g+12>>2]=g;c[g+8>>2]=g;break}else if((v|0)==97){v=d+8|0;w=c[v>>2]|0;c[w+12>>2]=g;c[v>>2]=g;c[g+8>>2]=w;c[g+12>>2]=d;c[g+24>>2]=0;break}}else{w=h+k|0;c[i+4>>2]=w|3;w=i+w+4|0;c[w>>2]=c[w>>2]|1}while(0);w=i+8|0;l=x;return w|0}else n=k}else n=k}else n=-1;while(0);d=c[8224]|0;if(d>>>0>=n>>>0){b=d-n|0;a=c[8227]|0;if(b>>>0>15){w=a+n|0;c[8227]=w;c[8224]=b;c[w+4>>2]=b|1;c[w+b>>2]=b;c[a+4>>2]=n|3}else{c[8224]=0;c[8227]=0;c[a+4>>2]=d|3;w=a+d+4|0;c[w>>2]=c[w>>2]|1}w=a+8|0;l=x;return w|0}h=c[8225]|0;if(h>>>0>n>>>0){u=h-n|0;c[8225]=u;w=c[8228]|0;v=w+n|0;c[8228]=v;c[v+4>>2]=u|1;c[w+4>>2]=n|3;w=w+8|0;l=x;return w|0}if(!(c[8340]|0)){c[8342]=4096;c[8341]=4096;c[8343]=-1;c[8344]=-1;c[8345]=0;c[8333]=0;a=o&-16^1431655768;c[o>>2]=a;c[8340]=a;a=4096}else a=c[8342]|0;i=n+48|0;j=n+47|0;g=a+j|0;f=0-a|0;k=g&f;if(k>>>0<=n>>>0){w=0;l=x;return w|0}a=c[8332]|0;if(a|0?(m=c[8330]|0,o=m+k|0,o>>>0<=m>>>0|o>>>0>a>>>0):0){w=0;l=x;return w|0}b:do if(!(c[8333]&4)){d=c[8228]|0;c:do if(d){e=33336;while(1){a=c[e>>2]|0;if(a>>>0<=d>>>0?(r=e+4|0,(a+(c[r>>2]|0)|0)>>>0>d>>>0):0)break;a=c[e+8>>2]|0;if(!a){v=118;break c}else e=a}b=g-h&f;if(b>>>0<2147483647){a=rc(b|0)|0;if((a|0)==((c[e>>2]|0)+(c[r>>2]|0)|0)){if((a|0)!=(-1|0)){h=b;g=a;v=135;break b}}else{e=a;v=126}}else b=0}else v=118;while(0);do if((v|0)==118){d=rc(0)|0;if((d|0)!=(-1|0)?(b=d,p=c[8341]|0,q=p+-1|0,b=((q&b|0)==0?0:(q+b&0-p)-b|0)+k|0,p=c[8330]|0,q=b+p|0,b>>>0>n>>>0&b>>>0<2147483647):0){r=c[8332]|0;if(r|0?q>>>0<=p>>>0|q>>>0>r>>>0:0){b=0;break}a=rc(b|0)|0;if((a|0)==(d|0)){h=b;g=d;v=135;break b}else{e=a;v=126}}else b=0}while(0);do if((v|0)==126){d=0-b|0;if(!(i>>>0>b>>>0&(b>>>0<2147483647&(e|0)!=(-1|0))))if((e|0)==(-1|0)){b=0;break}else{h=b;g=e;v=135;break b}a=c[8342]|0;a=j-b+a&0-a;if(a>>>0>=2147483647){h=b;g=e;v=135;break b}if((rc(a|0)|0)==(-1|0)){rc(d|0)|0;b=0;break}else{h=a+b|0;g=e;v=135;break b}}while(0);c[8333]=c[8333]|4;v=133}else{b=0;v=133}while(0);if(((v|0)==133?k>>>0<2147483647:0)?(u=rc(k|0)|0,r=rc(0)|0,s=r-u|0,t=s>>>0>(n+40|0)>>>0,!((u|0)==(-1|0)|t^1|u>>>0<r>>>0&((u|0)!=(-1|0)&(r|0)!=(-1|0))^1)):0){h=t?s:b;g=u;v=135}if((v|0)==135){b=(c[8330]|0)+h|0;c[8330]=b;if(b>>>0>(c[8331]|0)>>>0)c[8331]=b;j=c[8228]|0;do if(j){b=33336;while(1){a=c[b>>2]|0;d=b+4|0;e=c[d>>2]|0;if((g|0)==(a+e|0)){v=145;break}f=c[b+8>>2]|0;if(!f)break;else b=f}if(((v|0)==145?(c[b+12>>2]&8|0)==0:0)?j>>>0<g>>>0&j>>>0>=a>>>0:0){c[d>>2]=e+h;w=j+8|0;w=(w&7|0)==0?0:0-w&7;v=j+w|0;w=(c[8225]|0)+(h-w)|0;c[8228]=v;c[8225]=w;c[v+4>>2]=w|1;c[v+w+4>>2]=40;c[8229]=c[8344];break}if(g>>>0<(c[8226]|0)>>>0)c[8226]=g;d=g+h|0;b=33336;while(1){if((c[b>>2]|0)==(d|0)){v=153;break}a=c[b+8>>2]|0;if(!a)break;else b=a}if((v|0)==153?(c[b+12>>2]&8|0)==0:0){c[b>>2]=g;m=b+4|0;c[m>>2]=(c[m>>2]|0)+h;m=g+8|0;m=g+((m&7|0)==0?0:0-m&7)|0;b=d+8|0;b=d+((b&7|0)==0?0:0-b&7)|0;k=m+n|0;i=b-m-n|0;c[m+4>>2]=n|3;do if((b|0)!=(j|0)){if((b|0)==(c[8227]|0)){w=(c[8224]|0)+i|0;c[8224]=w;c[8227]=k;c[k+4>>2]=w|1;c[k+w>>2]=w;break}a=c[b+4>>2]|0;if((a&3|0)==1){h=a&-8;e=a>>>3;d:do if(a>>>0<256){a=c[b+8>>2]|0;d=c[b+12>>2]|0;if((d|0)==(a|0)){c[8222]=c[8222]&~(1<<e);break}else{c[a+12>>2]=d;c[d+8>>2]=a;break}}else{g=c[b+24>>2]|0;a=c[b+12>>2]|0;do if((a|0)==(b|0)){e=b+16|0;d=e+4|0;a=c[d>>2]|0;if(!a){a=c[e>>2]|0;if(!a){a=0;break}else d=e}while(1){e=a+20|0;f=c[e>>2]|0;if(f|0){a=f;d=e;continue}e=a+16|0;f=c[e>>2]|0;if(!f)break;else{a=f;d=e}}c[d>>2]=0}else{w=c[b+8>>2]|0;c[w+12>>2]=a;c[a+8>>2]=w}while(0);if(!g)break;d=c[b+28>>2]|0;e=33192+(d<<2)|0;do if((b|0)!=(c[e>>2]|0)){c[g+16+(((c[g+16>>2]|0)!=(b|0)&1)<<2)>>2]=a;if(!a)break d}else{c[e>>2]=a;if(a|0)break;c[8223]=c[8223]&~(1<<d);break d}while(0);c[a+24>>2]=g;d=b+16|0;e=c[d>>2]|0;if(e|0){c[a+16>>2]=e;c[e+24>>2]=a}d=c[d+4>>2]|0;if(!d)break;c[a+20>>2]=d;c[d+24>>2]=a}while(0);b=b+h|0;f=h+i|0}else f=i;b=b+4|0;c[b>>2]=c[b>>2]&-2;c[k+4>>2]=f|1;c[k+f>>2]=f;b=f>>>3;if(f>>>0<256){d=32928+(b<<1<<2)|0;a=c[8222]|0;b=1<<b;if(!(a&b)){c[8222]=a|b;b=d;a=d+8|0}else{a=d+8|0;b=c[a>>2]|0}c[a>>2]=k;c[b+12>>2]=k;c[k+8>>2]=b;c[k+12>>2]=d;break}b=f>>>8;do if(!b)b=0;else{if(f>>>0>16777215){b=31;break}v=(b+1048320|0)>>>16&8;w=b<<v;u=(w+520192|0)>>>16&4;w=w<<u;b=(w+245760|0)>>>16&2;b=14-(u|v|b)+(w<<b>>>15)|0;b=f>>>(b+7|0)&1|b<<1}while(0);e=33192+(b<<2)|0;c[k+28>>2]=b;a=k+16|0;c[a+4>>2]=0;c[a>>2]=0;a=c[8223]|0;d=1<<b;if(!(a&d)){c[8223]=a|d;c[e>>2]=k;c[k+24>>2]=e;c[k+12>>2]=k;c[k+8>>2]=k;break}a=f<<((b|0)==31?0:25-(b>>>1)|0);d=c[e>>2]|0;while(1){if((c[d+4>>2]&-8|0)==(f|0)){v=194;break}e=d+16+(a>>>31<<2)|0;b=c[e>>2]|0;if(!b){v=193;break}else{a=a<<1;d=b}}if((v|0)==193){c[e>>2]=k;c[k+24>>2]=d;c[k+12>>2]=k;c[k+8>>2]=k;break}else if((v|0)==194){v=d+8|0;w=c[v>>2]|0;c[w+12>>2]=k;c[v>>2]=k;c[k+8>>2]=w;c[k+12>>2]=d;c[k+24>>2]=0;break}}else{w=(c[8225]|0)+i|0;c[8225]=w;c[8228]=k;c[k+4>>2]=w|1}while(0);w=m+8|0;l=x;return w|0}b=33336;while(1){a=c[b>>2]|0;if(a>>>0<=j>>>0?(w=a+(c[b+4>>2]|0)|0,w>>>0>j>>>0):0)break;b=c[b+8>>2]|0}f=w+-47|0;a=f+8|0;a=f+((a&7|0)==0?0:0-a&7)|0;f=j+16|0;a=a>>>0<f>>>0?j:a;b=a+8|0;d=g+8|0;d=(d&7|0)==0?0:0-d&7;v=g+d|0;d=h+-40-d|0;c[8228]=v;c[8225]=d;c[v+4>>2]=d|1;c[v+d+4>>2]=40;c[8229]=c[8344];d=a+4|0;c[d>>2]=27;c[b>>2]=c[8334];c[b+4>>2]=c[8335];c[b+8>>2]=c[8336];c[b+12>>2]=c[8337];c[8334]=g;c[8335]=h;c[8337]=0;c[8336]=b;b=a+24|0;do{v=b;b=b+4|0;c[b>>2]=7}while((v+8|0)>>>0<w>>>0);if((a|0)!=(j|0)){g=a-j|0;c[d>>2]=c[d>>2]&-2;c[j+4>>2]=g|1;c[a>>2]=g;b=g>>>3;if(g>>>0<256){d=32928+(b<<1<<2)|0;a=c[8222]|0;b=1<<b;if(!(a&b)){c[8222]=a|b;b=d;a=d+8|0}else{a=d+8|0;b=c[a>>2]|0}c[a>>2]=j;c[b+12>>2]=j;c[j+8>>2]=b;c[j+12>>2]=d;break}b=g>>>8;if(b)if(g>>>0>16777215)d=31;else{v=(b+1048320|0)>>>16&8;w=b<<v;u=(w+520192|0)>>>16&4;w=w<<u;d=(w+245760|0)>>>16&2;d=14-(u|v|d)+(w<<d>>>15)|0;d=g>>>(d+7|0)&1|d<<1}else d=0;e=33192+(d<<2)|0;c[j+28>>2]=d;c[j+20>>2]=0;c[f>>2]=0;b=c[8223]|0;a=1<<d;if(!(b&a)){c[8223]=b|a;c[e>>2]=j;c[j+24>>2]=e;c[j+12>>2]=j;c[j+8>>2]=j;break}a=g<<((d|0)==31?0:25-(d>>>1)|0);d=c[e>>2]|0;while(1){if((c[d+4>>2]&-8|0)==(g|0)){v=216;break}e=d+16+(a>>>31<<2)|0;b=c[e>>2]|0;if(!b){v=215;break}else{a=a<<1;d=b}}if((v|0)==215){c[e>>2]=j;c[j+24>>2]=d;c[j+12>>2]=j;c[j+8>>2]=j;break}else if((v|0)==216){v=d+8|0;w=c[v>>2]|0;c[w+12>>2]=j;c[v>>2]=j;c[j+8>>2]=w;c[j+12>>2]=d;c[j+24>>2]=0;break}}}else{w=c[8226]|0;if((w|0)==0|g>>>0<w>>>0)c[8226]=g;c[8334]=g;c[8335]=h;c[8337]=0;c[8231]=c[8340];c[8230]=-1;b=0;do{w=32928+(b<<1<<2)|0;c[w+12>>2]=w;c[w+8>>2]=w;b=b+1|0}while((b|0)!=32);w=g+8|0;w=(w&7|0)==0?0:0-w&7;v=g+w|0;w=h+-40-w|0;c[8228]=v;c[8225]=w;c[v+4>>2]=w|1;c[v+w+4>>2]=40;c[8229]=c[8344]}while(0);b=c[8225]|0;if(b>>>0>n>>>0){u=b-n|0;c[8225]=u;w=c[8228]|0;v=w+n|0;c[8228]=v;c[v+4>>2]=u|1;c[w+4>>2]=n|3;w=w+8|0;l=x;return w|0}}c[(Zb()|0)>>2]=12;w=0;l=x;return w|0}function Tb(a){a=a|0;var b=0,d=0,e=0,f=0,g=0,h=0,i=0,j=0;if(!a)return;d=a+-8|0;f=c[8226]|0;a=c[a+-4>>2]|0;b=a&-8;j=d+b|0;do if(!(a&1)){e=c[d>>2]|0;if(!(a&3))return;h=d+(0-e)|0;g=e+b|0;if(h>>>0<f>>>0)return;if((h|0)==(c[8227]|0)){a=j+4|0;b=c[a>>2]|0;if((b&3|0)!=3){i=h;b=g;break}c[8224]=g;c[a>>2]=b&-2;c[h+4>>2]=g|1;c[h+g>>2]=g;return}d=e>>>3;if(e>>>0<256){a=c[h+8>>2]|0;b=c[h+12>>2]|0;if((b|0)==(a|0)){c[8222]=c[8222]&~(1<<d);i=h;b=g;break}else{c[a+12>>2]=b;c[b+8>>2]=a;i=h;b=g;break}}f=c[h+24>>2]|0;a=c[h+12>>2]|0;do if((a|0)==(h|0)){d=h+16|0;b=d+4|0;a=c[b>>2]|0;if(!a){a=c[d>>2]|0;if(!a){a=0;break}else b=d}while(1){d=a+20|0;e=c[d>>2]|0;if(e|0){a=e;b=d;continue}d=a+16|0;e=c[d>>2]|0;if(!e)break;else{a=e;b=d}}c[b>>2]=0}else{i=c[h+8>>2]|0;c[i+12>>2]=a;c[a+8>>2]=i}while(0);if(f){b=c[h+28>>2]|0;d=33192+(b<<2)|0;if((h|0)==(c[d>>2]|0)){c[d>>2]=a;if(!a){c[8223]=c[8223]&~(1<<b);i=h;b=g;break}}else{c[f+16+(((c[f+16>>2]|0)!=(h|0)&1)<<2)>>2]=a;if(!a){i=h;b=g;break}}c[a+24>>2]=f;b=h+16|0;d=c[b>>2]|0;if(d|0){c[a+16>>2]=d;c[d+24>>2]=a}b=c[b+4>>2]|0;if(b){c[a+20>>2]=b;c[b+24>>2]=a;i=h;b=g}else{i=h;b=g}}else{i=h;b=g}}else{i=d;h=d}while(0);if(h>>>0>=j>>>0)return;a=j+4|0;e=c[a>>2]|0;if(!(e&1))return;if(!(e&2)){a=c[8227]|0;if((j|0)==(c[8228]|0)){j=(c[8225]|0)+b|0;c[8225]=j;c[8228]=i;c[i+4>>2]=j|1;if((i|0)!=(a|0))return;c[8227]=0;c[8224]=0;return}if((j|0)==(a|0)){j=(c[8224]|0)+b|0;c[8224]=j;c[8227]=h;c[i+4>>2]=j|1;c[h+j>>2]=j;return}f=(e&-8)+b|0;d=e>>>3;do if(e>>>0<256){b=c[j+8>>2]|0;a=c[j+12>>2]|0;if((a|0)==(b|0)){c[8222]=c[8222]&~(1<<d);break}else{c[b+12>>2]=a;c[a+8>>2]=b;break}}else{g=c[j+24>>2]|0;a=c[j+12>>2]|0;do if((a|0)==(j|0)){d=j+16|0;b=d+4|0;a=c[b>>2]|0;if(!a){a=c[d>>2]|0;if(!a){d=0;break}else b=d}while(1){d=a+20|0;e=c[d>>2]|0;if(e|0){a=e;b=d;continue}d=a+16|0;e=c[d>>2]|0;if(!e)break;else{a=e;b=d}}c[b>>2]=0;d=a}else{d=c[j+8>>2]|0;c[d+12>>2]=a;c[a+8>>2]=d;d=a}while(0);if(g|0){a=c[j+28>>2]|0;b=33192+(a<<2)|0;if((j|0)==(c[b>>2]|0)){c[b>>2]=d;if(!d){c[8223]=c[8223]&~(1<<a);break}}else{c[g+16+(((c[g+16>>2]|0)!=(j|0)&1)<<2)>>2]=d;if(!d)break}c[d+24>>2]=g;a=j+16|0;b=c[a>>2]|0;if(b|0){c[d+16>>2]=b;c[b+24>>2]=d}a=c[a+4>>2]|0;if(a|0){c[d+20>>2]=a;c[a+24>>2]=d}}}while(0);c[i+4>>2]=f|1;c[h+f>>2]=f;if((i|0)==(c[8227]|0)){c[8224]=f;return}}else{c[a>>2]=e&-2;c[i+4>>2]=b|1;c[h+b>>2]=b;f=b}a=f>>>3;if(f>>>0<256){d=32928+(a<<1<<2)|0;b=c[8222]|0;a=1<<a;if(!(b&a)){c[8222]=b|a;a=d;b=d+8|0}else{b=d+8|0;a=c[b>>2]|0}c[b>>2]=i;c[a+12>>2]=i;c[i+8>>2]=a;c[i+12>>2]=d;return}a=f>>>8;if(a)if(f>>>0>16777215)a=31;else{h=(a+1048320|0)>>>16&8;j=a<<h;g=(j+520192|0)>>>16&4;j=j<<g;a=(j+245760|0)>>>16&2;a=14-(g|h|a)+(j<<a>>>15)|0;a=f>>>(a+7|0)&1|a<<1}else a=0;e=33192+(a<<2)|0;c[i+28>>2]=a;c[i+20>>2]=0;c[i+16>>2]=0;b=c[8223]|0;d=1<<a;do if(b&d){b=f<<((a|0)==31?0:25-(a>>>1)|0);d=c[e>>2]|0;while(1){if((c[d+4>>2]&-8|0)==(f|0)){a=73;break}e=d+16+(b>>>31<<2)|0;a=c[e>>2]|0;if(!a){a=72;break}else{b=b<<1;d=a}}if((a|0)==72){c[e>>2]=i;c[i+24>>2]=d;c[i+12>>2]=i;c[i+8>>2]=i;break}else if((a|0)==73){h=d+8|0;j=c[h>>2]|0;c[j+12>>2]=i;c[h>>2]=i;c[i+8>>2]=j;c[i+12>>2]=d;c[i+24>>2]=0;break}}else{c[8223]=b|d;c[e>>2]=i;c[i+24>>2]=e;c[i+12>>2]=i;c[i+8>>2]=i}while(0);j=(c[8230]|0)+-1|0;c[8230]=j;if(!j)a=33344;else return;while(1){a=c[a>>2]|0;if(!a)break;else a=a+8|0}c[8230]=-1;return}function Ub(){return 33384}function Vb(a){a=a|0;var b=0,d=0;b=l;l=l+16|0;d=b;c[d>>2]=bc(c[a+60>>2]|0)|0;a=Yb(Z(6,d|0)|0)|0;l=b;return a|0}function Wb(b,d,e){b=b|0;d=d|0;e=e|0;var f=0,g=0;g=l;l=l+32|0;f=g;c[b+36>>2]=3;if((c[b>>2]&64|0)==0?(c[f>>2]=c[b+60>>2],c[f+4>>2]=21523,c[f+8>>2]=g+16,ca(54,f|0)|0):0)a[b+75>>0]=-1;f=ac(b,d,e)|0;l=g;return f|0}function Xb(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0,g=0;f=l;l=l+32|0;g=f;e=f+20|0;c[g>>2]=c[a+60>>2];c[g+4>>2]=0;c[g+8>>2]=b;c[g+12>>2]=e;c[g+16>>2]=d;if((Yb(aa(140,g|0)|0)|0)<0){c[e>>2]=-1;a=-1}else a=c[e>>2]|0;l=f;return a|0}function Yb(a){a=a|0;if(a>>>0>4294963200){c[(Zb()|0)>>2]=0-a;a=-1}return a|0}function Zb(){return (_b()|0)+64|0}function _b(){return $b()|0}function $b(){return 32636}function ac(a,b,d){a=a|0;b=b|0;d=d|0;var e=0,f=0,g=0,h=0,i=0,j=0,k=0,m=0,n=0,o=0,p=0;n=l;l=l+48|0;k=n+16|0;g=n;f=n+32|0;i=a+28|0;e=c[i>>2]|0;c[f>>2]=e;j=a+20|0;e=(c[j>>2]|0)-e|0;c[f+4>>2]=e;c[f+8>>2]=b;c[f+12>>2]=d;e=e+d|0;h=a+60|0;c[g>>2]=c[h>>2];c[g+4>>2]=f;c[g+8>>2]=2;g=Yb(fa(146,g|0)|0)|0;a:do if((e|0)!=(g|0)){b=2;while(1){if((g|0)<0)break;e=e-g|0;p=c[f+4>>2]|0;o=g>>>0>p>>>0;f=o?f+8|0:f;b=(o<<31>>31)+b|0;p=g-(o?p:0)|0;c[f>>2]=(c[f>>2]|0)+p;o=f+4|0;c[o>>2]=(c[o>>2]|0)-p;c[k>>2]=c[h>>2];c[k+4>>2]=f;c[k+8>>2]=b;g=Yb(fa(146,k|0)|0)|0;if((e|0)==(g|0)){m=3;break a}}c[a+16>>2]=0;c[i>>2]=0;c[j>>2]=0;c[a>>2]=c[a>>2]|32;if((b|0)==2)d=0;else d=d-(c[f+4>>2]|0)|0}else m=3;while(0);if((m|0)==3){p=c[a+44>>2]|0;c[a+16>>2]=p+(c[a+48>>2]|0);c[i>>2]=p;c[j>>2]=p}l=n;return d|0}function bc(a){a=a|0;return a|0}function cc(a){a=a|0;return 0}function dc(a){a=a|0;return}function ec(){Y(33448);return 33456}function fc(){da(33448);return}function gc(a){a=a|0;var b=0,d=0;do if(a){if((c[a+76>>2]|0)<=-1){b=hc(a)|0;break}d=(cc(a)|0)==0;b=hc(a)|0;if(!d)dc(a)}else{if(!(c[8220]|0))b=0;else b=gc(c[8220]|0)|0;a=c[(ec()|0)>>2]|0;if(a)do{if((c[a+76>>2]|0)>-1)d=cc(a)|0;else d=0;if((c[a+20>>2]|0)>>>0>(c[a+28>>2]|0)>>>0)b=hc(a)|0|b;if(d|0)dc(a);a=c[a+56>>2]|0}while((a|0)!=0);fc()}while(0);return b|0}function hc(a){a=a|0;var b=0,d=0,e=0,f=0,g=0,h=0;b=a+20|0;h=a+28|0;if((c[b>>2]|0)>>>0>(c[h>>2]|0)>>>0?(ia[c[a+36>>2]&3](a,0,0)|0,(c[b>>2]|0)==0):0)a=-1;else{d=a+4|0;e=c[d>>2]|0;f=a+8|0;g=c[f>>2]|0;if(e>>>0<g>>>0)ia[c[a+40>>2]&3](a,e-g|0,1)|0;c[a+16>>2]=0;c[h>>2]=0;c[b>>2]=0;c[f>>2]=0;c[d>>2]=0;a=0}return a|0}function ic(){}function jc(a,b,c){a=a|0;b=b|0;c=c|0;if((c|0)<32){y=b>>c;return a>>>c|(b&(1<<c)-1)<<32-c}y=(b|0)<0?-1:0;return b>>c-32|0}function kc(a,b,c,d){a=a|0;b=b|0;c=c|0;d=d|0;d=b-d-(c>>>0>a>>>0|0)>>>0;return (y=d,a-c>>>0|0)|0}function lc(a,b,c,d){a=a|0;b=b|0;c=c|0;d=d|0;c=a+c>>>0;return (y=b+d+(c>>>0<a>>>0|0)>>>0,c|0)|0}function mc(b,d,e){b=b|0;d=d|0;e=e|0;var f=0,g=0,h=0,i=0;h=b+e|0;d=d&255;if((e|0)>=67){while(b&3){a[b>>0]=d;b=b+1|0}f=h&-4|0;g=f-64|0;i=d|d<<8|d<<16|d<<24;while((b|0)<=(g|0)){c[b>>2]=i;c[b+4>>2]=i;c[b+8>>2]=i;c[b+12>>2]=i;c[b+16>>2]=i;c[b+20>>2]=i;c[b+24>>2]=i;c[b+28>>2]=i;c[b+32>>2]=i;c[b+36>>2]=i;c[b+40>>2]=i;c[b+44>>2]=i;c[b+48>>2]=i;c[b+52>>2]=i;c[b+56>>2]=i;c[b+60>>2]=i;b=b+64|0}while((b|0)<(f|0)){c[b>>2]=i;b=b+4|0}}while((b|0)<(h|0)){a[b>>0]=d;b=b+1|0}return h-e|0}function nc(a,b,c){a=a|0;b=b|0;c=c|0;if((c|0)<32){y=b>>>c;return a>>>c|(b&(1<<c)-1)<<32-c}y=0;return b>>>c-32|0}function oc(a,b,c){a=a|0;b=b|0;c=c|0;if((c|0)<32){y=b<<c|(a&(1<<c)-1<<32-c)>>>32-c;return a<<c}y=a<<c-32;return 0}function pc(a,b){a=a|0;b=b|0;var c=0,d=0,e=0,f=0;f=a&65535;e=b&65535;c=N(e,f)|0;d=a>>>16;a=(c>>>16)+(N(e,d)|0)|0;e=b>>>16;b=N(e,f)|0;return (y=(a>>>16)+(N(e,d)|0)+(((a&65535)+b|0)>>>16)|0,a+b<<16|c&65535|0)|0}function qc(a,b,c,d){a=a|0;b=b|0;c=c|0;d=d|0;var e=0,f=0;e=a;f=c;c=pc(e,f)|0;a=y;return (y=(N(b,f)|0)+(N(d,e)|0)+a|a&0,c|0|0)|0}function rc(a){a=a|0;var b=0,d=0;d=a+15&-16|0;b=c[i>>2]|0;a=b+d|0;if((d|0)>0&(a|0)<(b|0)|(a|0)<0){V()|0;_(12);return -1}c[i>>2]=a;if((a|0)>(U()|0)?(T()|0)==0:0){c[i>>2]=b;_(12);return -1}return b|0}function sc(b,d,e){b=b|0;d=d|0;e=e|0;var f=0,g=0,h=0;if((e|0)>=8192)return ba(b|0,d|0,e|0)|0;h=b|0;g=b+e|0;if((b&3)==(d&3)){while(b&3){if(!e)return h|0;a[b>>0]=a[d>>0]|0;b=b+1|0;d=d+1|0;e=e-1|0}e=g&-4|0;f=e-64|0;while((b|0)<=(f|0)){c[b>>2]=c[d>>2];c[b+4>>2]=c[d+4>>2];c[b+8>>2]=c[d+8>>2];c[b+12>>2]=c[d+12>>2];c[b+16>>2]=c[d+16>>2];c[b+20>>2]=c[d+20>>2];c[b+24>>2]=c[d+24>>2];c[b+28>>2]=c[d+28>>2];c[b+32>>2]=c[d+32>>2];c[b+36>>2]=c[d+36>>2];c[b+40>>2]=c[d+40>>2];c[b+44>>2]=c[d+44>>2];c[b+48>>2]=c[d+48>>2];c[b+52>>2]=c[d+52>>2];c[b+56>>2]=c[d+56>>2];c[b+60>>2]=c[d+60>>2];b=b+64|0;d=d+64|0}while((b|0)<(e|0)){c[b>>2]=c[d>>2];b=b+4|0;d=d+4|0}}else{e=g-4|0;while((b|0)<(e|0)){a[b>>0]=a[d>>0]|0;a[b+1>>0]=a[d+1>>0]|0;a[b+2>>0]=a[d+2>>0]|0;a[b+3>>0]=a[d+3>>0]|0;b=b+4|0;d=d+4|0}}while((b|0)<(g|0)){a[b>>0]=a[d>>0]|0;b=b+1|0;d=d+1|0}return h|0}function tc(b,c,d){b=b|0;c=c|0;d=d|0;var e=0;if((c|0)<(b|0)&(b|0)<(c+d|0)){e=b;c=c+d|0;b=b+d|0;while((d|0)>0){b=b-1|0;c=c-1|0;d=d-1|0;a[b>>0]=a[c>>0]|0}b=e}else sc(b,c,d)|0;return b|0}function uc(a,b){a=a|0;b=b|0;return ha[a&1](b|0)|0}function vc(a,b,c,d){a=a|0;b=b|0;c=c|0;d=d|0;return ia[a&3](b|0,c|0,d|0)|0}function wc(a){a=a|0;R(0);return 0}function xc(a,b,c){a=a|0;b=b|0;c=c|0;R(1);return 0}
+
+function tb(b, c, d, e) {
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ e = e | 0;
+ var f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, z = 0, A = 0, B = 0, C = 0, D = 0, E = 0, F = 0, G = 0, H = 0, I = 0, J = 0, K = 0, L = 0, M = 0, N = 0, O = 0, P = 0, Q = 0, R = 0, S = 0, T = 0, U = 0, V = 0, W = 0, X = 0, Y = 0, Z = 0, _ = 0, $ = 0, aa = 0, ba = 0, ca = 0, da = 0, ea = 0, fa = 0, ga = 0, ha = 0, ia = 0, ja = 0, ka = 0, la = 0, ma = 0, na = 0, oa = 0, pa = 0, qa = 0, ra = 0, sa = 0, ta = 0, ua = 0, va = 0, wa = 0, xa = 0, ya = 0, za = 0, Aa = 0, Ba = 0, Ca = 0, Da = 0, Ea = 0, Fa = 0, Ga = 0, Ha = 0, Ia = 0, Ja = 0, Ka = 0, La = 0, Ma = 0, Na = 0, Oa = 0, Pa = 0, Qa = 0, Ra = 0, Sa = 0, Ta = 0, Ua = 0, Va = 0, Wa = 0, Xa = 0, Ya = 0, Za = 0, _a = 0, $a = 0, ab = 0, bb = 0, cb = 0, db = 0, eb = 0, fb = 0, gb = 0, hb = 0, ib = 0, jb = 0, kb = 0, lb = 0, mb = 0, nb = 0, ob = 0, pb = 0, qb = 0, rb = 0, sb = 0, tb = 0, wb = 0, xb = 0, yb = 0, zb = 0, Ab = 0, Bb = 0, Cb = 0, Db = 0, Eb = 0, Fb = 0, Gb = 0, Hb = 0, Ib = 0, Jb = 0, Kb = 0, Lb = 0, Mb = 0, Tb = 0, Ub = 0, Vb = 0, Wb = 0, Xb = 0, Yb = 0, Zb = 0, _b = 0, $b = 0, ac = 0, bc = 0, cc = 0, dc = 0, ec = 0, fc = 0, gc = 0, hc = 0, ic = 0, jc = 0, kc = 0, lc = 0, mc = 0, nc = 0, oc = 0, pc = 0, qc = 0, rc = 0, sc = 0, tc = 0, uc = 0, vc = 0, wc = 0, xc = 0, yc = 0, zc = 0, Ac = 0;
+ nb = c + 2 | 0;
+ $a = ub(a[c >> 0] | 0, a[c + 1 >> 0] | 0, a[nb >> 0] | 0) | 0;
+ $a = $a & 2097151;
+ nb = vb(nb) | 0;
+ nb = Pb(nb | 0, y | 0, 5) | 0;
+ nb = nb & 2097151;
+ mb = c + 7 | 0;
+ eb = ub(a[c + 5 >> 0] | 0, a[c + 6 >> 0] | 0, a[mb >> 0] | 0) | 0;
+ eb = Pb(eb | 0, y | 0, 2) | 0;
+ eb = eb & 2097151;
+ mb = vb(mb) | 0;
+ mb = Pb(mb | 0, y | 0, 7) | 0;
+ mb = mb & 2097151;
+ _a = vb(c + 10 | 0) | 0;
+ _a = Pb(_a | 0, y | 0, 4) | 0;
+ _a = _a & 2097151;
+ na = c + 15 | 0;
+ R = ub(a[c + 13 >> 0] | 0, a[c + 14 >> 0] | 0, a[na >> 0] | 0) | 0;
+ R = Pb(R | 0, y | 0, 1) | 0;
+ R = R & 2097151;
+ na = vb(na) | 0;
+ na = Pb(na | 0, y | 0, 6) | 0;
+ na = na & 2097151;
+ k = ub(a[c + 18 >> 0] | 0, a[c + 19 >> 0] | 0, a[c + 20 >> 0] | 0) | 0;
+ k = Pb(k | 0, y | 0, 3) | 0;
+ k = k & 2097151;
+ I = c + 23 | 0;
+ Q = ub(a[c + 21 >> 0] | 0, a[c + 22 >> 0] | 0, a[I >> 0] | 0) | 0;
+ Q = Q & 2097151;
+ I = vb(I) | 0;
+ I = Pb(I | 0, y | 0, 5) | 0;
+ I = I & 2097151;
+ pa = c + 28 | 0;
+ la = ub(a[c + 26 >> 0] | 0, a[c + 27 >> 0] | 0, a[pa >> 0] | 0) | 0;
+ la = Pb(la | 0, y | 0, 2) | 0;
+ la = la & 2097151;
+ pa = vb(pa) | 0;
+ pa = Pb(pa | 0, y | 0, 7) | 0;
+ qa = y;
+ M = d + 2 | 0;
+ yb = ub(a[d >> 0] | 0, a[d + 1 >> 0] | 0, a[M >> 0] | 0) | 0;
+ yb = yb & 2097151;
+ M = vb(M) | 0;
+ M = Pb(M | 0, y | 0, 5) | 0;
+ M = M & 2097151;
+ r = d + 7 | 0;
+ Ya = ub(a[d + 5 >> 0] | 0, a[d + 6 >> 0] | 0, a[r >> 0] | 0) | 0;
+ Ya = Pb(Ya | 0, y | 0, 2) | 0;
+ Ya = Ya & 2097151;
+ r = vb(r) | 0;
+ r = Pb(r | 0, y | 0, 7) | 0;
+ r = r & 2097151;
+ j = vb(d + 10 | 0) | 0;
+ j = Pb(j | 0, y | 0, 4) | 0;
+ j = j & 2097151;
+ w = d + 15 | 0;
+ G = ub(a[d + 13 >> 0] | 0, a[d + 14 >> 0] | 0, a[w >> 0] | 0) | 0;
+ G = Pb(G | 0, y | 0, 1) | 0;
+ G = G & 2097151;
+ w = vb(w) | 0;
+ w = Pb(w | 0, y | 0, 6) | 0;
+ w = w & 2097151;
+ Ra = ub(a[d + 18 >> 0] | 0, a[d + 19 >> 0] | 0, a[d + 20 >> 0] | 0) | 0;
+ Ra = Pb(Ra | 0, y | 0, 3) | 0;
+ Ra = Ra & 2097151;
+ v = d + 23 | 0;
+ za = ub(a[d + 21 >> 0] | 0, a[d + 22 >> 0] | 0, a[v >> 0] | 0) | 0;
+ za = za & 2097151;
+ v = vb(v) | 0;
+ v = Pb(v | 0, y | 0, 5) | 0;
+ v = v & 2097151;
+ U = d + 28 | 0;
+ tb = ub(a[d + 26 >> 0] | 0, a[d + 27 >> 0] | 0, a[U >> 0] | 0) | 0;
+ tb = Pb(tb | 0, y | 0, 2) | 0;
+ tb = tb & 2097151;
+ U = vb(U) | 0;
+ U = Pb(U | 0, y | 0, 7) | 0;
+ T = y;
+ ea = e + 2 | 0;
+ Ca = ub(a[e >> 0] | 0, a[e + 1 >> 0] | 0, a[ea >> 0] | 0) | 0;
+ ea = vb(ea) | 0;
+ ea = Pb(ea | 0, y | 0, 5) | 0;
+ wa = e + 7 | 0;
+ Ga = ub(a[e + 5 >> 0] | 0, a[e + 6 >> 0] | 0, a[wa >> 0] | 0) | 0;
+ Ga = Pb(Ga | 0, y | 0, 2) | 0;
+ wa = vb(wa) | 0;
+ wa = Pb(wa | 0, y | 0, 7) | 0;
+ ya = vb(e + 10 | 0) | 0;
+ ya = Pb(ya | 0, y | 0, 4) | 0;
+ hb = e + 15 | 0;
+ Ha = ub(a[e + 13 >> 0] | 0, a[e + 14 >> 0] | 0, a[hb >> 0] | 0) | 0;
+ Ha = Pb(Ha | 0, y | 0, 1) | 0;
+ hb = vb(hb) | 0;
+ hb = Pb(hb | 0, y | 0, 6) | 0;
+ ja = ub(a[e + 18 >> 0] | 0, a[e + 19 >> 0] | 0, a[e + 20 >> 0] | 0) | 0;
+ ja = Pb(ja | 0, y | 0, 3) | 0;
+ ua = e + 23 | 0;
+ X = ub(a[e + 21 >> 0] | 0, a[e + 22 >> 0] | 0, a[ua >> 0] | 0) | 0;
+ ua = vb(ua) | 0;
+ ua = Pb(ua | 0, y | 0, 5) | 0;
+ cb = e + 28 | 0;
+ aa = ub(a[e + 26 >> 0] | 0, a[e + 27 >> 0] | 0, a[cb >> 0] | 0) | 0;
+ aa = Pb(aa | 0, y | 0, 2) | 0;
+ cb = vb(cb) | 0;
+ cb = Pb(cb | 0, y | 0, 7) | 0;
+ ib = y;
+ Ba = Nb(yb | 0, 0, $a | 0, 0) | 0;
+ Ba = Rb(Ca & 2097151 | 0, 0, Ba | 0, y | 0) | 0;
+ Ca = y;
+ zc = Nb(M | 0, 0, $a | 0, 0) | 0;
+ yc = y;
+ xc = Nb(yb | 0, 0, nb | 0, 0) | 0;
+ da = y;
+ ha = Nb(Ya | 0, 0, $a | 0, 0) | 0;
+ Fa = y;
+ ia = Nb(M | 0, 0, nb | 0, 0) | 0;
+ sc = y;
+ va = Nb(yb | 0, 0, eb | 0, 0) | 0;
+ va = Rb(ia | 0, sc | 0, va | 0, y | 0) | 0;
+ Fa = Rb(va | 0, y | 0, ha | 0, Fa | 0) | 0;
+ Ga = Rb(Fa | 0, y | 0, Ga & 2097151 | 0, 0) | 0;
+ Fa = y;
+ ha = Nb(r | 0, 0, $a | 0, 0) | 0;
+ va = y;
+ sc = Nb(Ya | 0, 0, nb | 0, 0) | 0;
+ ia = y;
+ wc = Nb(M | 0, 0, eb | 0, 0) | 0;
+ vc = y;
+ uc = Nb(yb | 0, 0, mb | 0, 0) | 0;
+ tc = y;
+ S = Nb(j | 0, 0, $a | 0, 0) | 0;
+ xa = y;
+ jc = Nb(r | 0, 0, nb | 0, 0) | 0;
+ Ia = y;
+ lc = Nb(Ya | 0, 0, eb | 0, 0) | 0;
+ B = y;
+ mc = Nb(M | 0, 0, mb | 0, 0) | 0;
+ nc = y;
+ kc = Nb(yb | 0, 0, _a | 0, 0) | 0;
+ kc = Rb(mc | 0, nc | 0, kc | 0, y | 0) | 0;
+ B = Rb(kc | 0, y | 0, lc | 0, B | 0) | 0;
+ Ia = Rb(B | 0, y | 0, jc | 0, Ia | 0) | 0;
+ xa = Rb(Ia | 0, y | 0, S | 0, xa | 0) | 0;
+ ya = Rb(xa | 0, y | 0, ya & 2097151 | 0, 0) | 0;
+ xa = y;
+ S = Nb(G | 0, 0, $a | 0, 0) | 0;
+ Ia = y;
+ jc = Nb(j | 0, 0, nb | 0, 0) | 0;
+ B = y;
+ lc = Nb(r | 0, 0, eb | 0, 0) | 0;
+ kc = y;
+ nc = Nb(Ya | 0, 0, mb | 0, 0) | 0;
+ mc = y;
+ rc = Nb(M | 0, 0, _a | 0, 0) | 0;
+ qc = y;
+ pc = Nb(yb | 0, 0, R | 0, 0) | 0;
+ oc = y;
+ f = Nb(w | 0, 0, $a | 0, 0) | 0;
+ bb = y;
+ Yb = Nb(G | 0, 0, nb | 0, 0) | 0;
+ ka = y;
+ _b = Nb(j | 0, 0, eb | 0, 0) | 0;
+ A = y;
+ ac = Nb(r | 0, 0, mb | 0, 0) | 0;
+ Zb = y;
+ cc = Nb(Ya | 0, 0, _a | 0, 0) | 0;
+ $b = y;
+ dc = Nb(M | 0, 0, R | 0, 0) | 0;
+ ec = y;
+ bc = Nb(yb | 0, 0, na | 0, 0) | 0;
+ bc = Rb(dc | 0, ec | 0, bc | 0, y | 0) | 0;
+ $b = Rb(bc | 0, y | 0, cc | 0, $b | 0) | 0;
+ Zb = Rb($b | 0, y | 0, ac | 0, Zb | 0) | 0;
+ A = Rb(Zb | 0, y | 0, _b | 0, A | 0) | 0;
+ ka = Rb(A | 0, y | 0, Yb | 0, ka | 0) | 0;
+ bb = Rb(ka | 0, y | 0, f | 0, bb | 0) | 0;
+ hb = Rb(bb | 0, y | 0, hb & 2097151 | 0, 0) | 0;
+ bb = y;
+ f = Nb(Ra | 0, 0, $a | 0, 0) | 0;
+ ka = y;
+ Yb = Nb(w | 0, 0, nb | 0, 0) | 0;
+ A = y;
+ _b = Nb(G | 0, 0, eb | 0, 0) | 0;
+ Zb = y;
+ ac = Nb(j | 0, 0, mb | 0, 0) | 0;
+ $b = y;
+ cc = Nb(r | 0, 0, _a | 0, 0) | 0;
+ bc = y;
+ ec = Nb(Ya | 0, 0, R | 0, 0) | 0;
+ dc = y;
+ ic = Nb(M | 0, 0, na | 0, 0) | 0;
+ hc = y;
+ gc = Nb(yb | 0, 0, k | 0, 0) | 0;
+ fc = y;
+ p = Nb(za | 0, 0, $a | 0, 0) | 0;
+ Y = y;
+ Bb = Nb(Ra | 0, 0, nb | 0, 0) | 0;
+ ta = y;
+ Db = Nb(w | 0, 0, eb | 0, 0) | 0;
+ $ = y;
+ Fb = Nb(G | 0, 0, mb | 0, 0) | 0;
+ Cb = y;
+ Hb = Nb(j | 0, 0, _a | 0, 0) | 0;
+ Eb = y;
+ Jb = Nb(r | 0, 0, R | 0, 0) | 0;
+ Gb = y;
+ Lb = Nb(Ya | 0, 0, na | 0, 0) | 0;
+ Ib = y;
+ Mb = Nb(M | 0, 0, k | 0, 0) | 0;
+ Tb = y;
+ Kb = Nb(yb | 0, 0, Q | 0, 0) | 0;
+ Kb = Rb(Mb | 0, Tb | 0, Kb | 0, y | 0) | 0;
+ Ib = Rb(Kb | 0, y | 0, Lb | 0, Ib | 0) | 0;
+ Gb = Rb(Ib | 0, y | 0, Jb | 0, Gb | 0) | 0;
+ Eb = Rb(Gb | 0, y | 0, Hb | 0, Eb | 0) | 0;
+ Cb = Rb(Eb | 0, y | 0, Fb | 0, Cb | 0) | 0;
+ $ = Rb(Cb | 0, y | 0, Db | 0, $ | 0) | 0;
+ ta = Rb($ | 0, y | 0, Bb | 0, ta | 0) | 0;
+ Y = Rb(ta | 0, y | 0, p | 0, Y | 0) | 0;
+ X = Rb(Y | 0, y | 0, X & 2097151 | 0, 0) | 0;
+ Y = y;
+ p = Nb(v | 0, 0, $a | 0, 0) | 0;
+ ta = y;
+ Bb = Nb(za | 0, 0, nb | 0, 0) | 0;
+ $ = y;
+ Db = Nb(Ra | 0, 0, eb | 0, 0) | 0;
+ Cb = y;
+ Fb = Nb(w | 0, 0, mb | 0, 0) | 0;
+ Eb = y;
+ Hb = Nb(G | 0, 0, _a | 0, 0) | 0;
+ Gb = y;
+ Jb = Nb(j | 0, 0, R | 0, 0) | 0;
+ Ib = y;
+ Lb = Nb(r | 0, 0, na | 0, 0) | 0;
+ Kb = y;
+ Tb = Nb(Ya | 0, 0, k | 0, 0) | 0;
+ Mb = y;
+ Xb = Nb(M | 0, 0, Q | 0, 0) | 0;
+ Wb = y;
+ Vb = Nb(yb | 0, 0, I | 0, 0) | 0;
+ Ub = y;
+ ab = Nb(tb | 0, 0, $a | 0, 0) | 0;
+ ba = y;
+ Ma = Nb(v | 0, 0, nb | 0, 0) | 0;
+ La = y;
+ Ja = Nb(za | 0, 0, eb | 0, 0) | 0;
+ Ka = y;
+ qb = Nb(Ra | 0, 0, mb | 0, 0) | 0;
+ pb = y;
+ t = Nb(w | 0, 0, _a | 0, 0) | 0;
+ i = y;
+ Qa = Nb(G | 0, 0, R | 0, 0) | 0;
+ Pa = y;
+ gb = Nb(j | 0, 0, na | 0, 0) | 0;
+ fb = y;
+ c = Nb(r | 0, 0, k | 0, 0) | 0;
+ e = y;
+ Wa = Nb(Ya | 0, 0, Q | 0, 0) | 0;
+ Va = y;
+ Ab = Nb(M | 0, 0, I | 0, 0) | 0;
+ ra = y;
+ ma = Nb(yb | 0, 0, la | 0, 0) | 0;
+ ma = Rb(Ab | 0, ra | 0, ma | 0, y | 0) | 0;
+ Va = Rb(ma | 0, y | 0, Wa | 0, Va | 0) | 0;
+ e = Rb(Va | 0, y | 0, c | 0, e | 0) | 0;
+ fb = Rb(e | 0, y | 0, gb | 0, fb | 0) | 0;
+ Pa = Rb(fb | 0, y | 0, Qa | 0, Pa | 0) | 0;
+ i = Rb(Pa | 0, y | 0, t | 0, i | 0) | 0;
+ pb = Rb(i | 0, y | 0, qb | 0, pb | 0) | 0;
+ Ka = Rb(pb | 0, y | 0, Ja | 0, Ka | 0) | 0;
+ La = Rb(Ka | 0, y | 0, Ma | 0, La | 0) | 0;
+ ba = Rb(La | 0, y | 0, ab | 0, ba | 0) | 0;
+ aa = Rb(ba | 0, y | 0, aa & 2097151 | 0, 0) | 0;
+ ba = y;
+ $a = Nb(U | 0, T | 0, $a | 0, 0) | 0;
+ ab = y;
+ La = Nb(tb | 0, 0, nb | 0, 0) | 0;
+ Ma = y;
+ Ka = Nb(v | 0, 0, eb | 0, 0) | 0;
+ Ja = y;
+ pb = Nb(za | 0, 0, mb | 0, 0) | 0;
+ qb = y;
+ i = Nb(Ra | 0, 0, _a | 0, 0) | 0;
+ t = y;
+ Pa = Nb(w | 0, 0, R | 0, 0) | 0;
+ Qa = y;
+ fb = Nb(G | 0, 0, na | 0, 0) | 0;
+ gb = y;
+ e = Nb(j | 0, 0, k | 0, 0) | 0;
+ c = y;
+ Va = Nb(r | 0, 0, Q | 0, 0) | 0;
+ Wa = y;
+ ma = Nb(Ya | 0, 0, I | 0, 0) | 0;
+ ra = y;
+ Ab = Nb(M | 0, 0, la | 0, 0) | 0;
+ zb = y;
+ yb = Nb(yb | 0, 0, pa | 0, qa | 0) | 0;
+ xb = y;
+ nb = Nb(U | 0, T | 0, nb | 0, 0) | 0;
+ ob = y;
+ _ = Nb(tb | 0, 0, eb | 0, 0) | 0;
+ db = y;
+ ca = Nb(v | 0, 0, mb | 0, 0) | 0;
+ E = y;
+ rb = Nb(za | 0, 0, _a | 0, 0) | 0;
+ Na = y;
+ x = Nb(Ra | 0, 0, R | 0, 0) | 0;
+ sb = y;
+ K = Nb(w | 0, 0, na | 0, 0) | 0;
+ N = y;
+ Oa = Nb(G | 0, 0, k | 0, 0) | 0;
+ J = y;
+ V = Nb(j | 0, 0, Q | 0, 0) | 0;
+ C = y;
+ L = Nb(r | 0, 0, I | 0, 0) | 0;
+ W = y;
+ lb = Nb(Ya | 0, 0, la | 0, 0) | 0;
+ Xa = y;
+ M = Nb(M | 0, 0, pa | 0, qa | 0) | 0;
+ M = Rb(lb | 0, Xa | 0, M | 0, y | 0) | 0;
+ W = Rb(M | 0, y | 0, L | 0, W | 0) | 0;
+ C = Rb(W | 0, y | 0, V | 0, C | 0) | 0;
+ J = Rb(C | 0, y | 0, Oa | 0, J | 0) | 0;
+ N = Rb(J | 0, y | 0, K | 0, N | 0) | 0;
+ sb = Rb(N | 0, y | 0, x | 0, sb | 0) | 0;
+ Na = Rb(sb | 0, y | 0, rb | 0, Na | 0) | 0;
+ E = Rb(Na | 0, y | 0, ca | 0, E | 0) | 0;
+ db = Rb(E | 0, y | 0, _ | 0, db | 0) | 0;
+ ob = Rb(db | 0, y | 0, nb | 0, ob | 0) | 0;
+ nb = y;
+ eb = Nb(U | 0, T | 0, eb | 0, 0) | 0;
+ db = y;
+ _ = Nb(tb | 0, 0, mb | 0, 0) | 0;
+ E = y;
+ ca = Nb(v | 0, 0, _a | 0, 0) | 0;
+ Na = y;
+ rb = Nb(za | 0, 0, R | 0, 0) | 0;
+ sb = y;
+ x = Nb(Ra | 0, 0, na | 0, 0) | 0;
+ N = y;
+ K = Nb(w | 0, 0, k | 0, 0) | 0;
+ J = y;
+ Oa = Nb(G | 0, 0, Q | 0, 0) | 0;
+ C = y;
+ V = Nb(j | 0, 0, I | 0, 0) | 0;
+ W = y;
+ L = Nb(r | 0, 0, la | 0, 0) | 0;
+ M = y;
+ Ya = Nb(Ya | 0, 0, pa | 0, qa | 0) | 0;
+ Xa = y;
+ mb = Nb(U | 0, T | 0, mb | 0, 0) | 0;
+ lb = y;
+ jb = Nb(tb | 0, 0, _a | 0, 0) | 0;
+ Za = y;
+ P = Nb(v | 0, 0, R | 0, 0) | 0;
+ kb = y;
+ F = Nb(za | 0, 0, na | 0, 0) | 0;
+ O = y;
+ ga = Nb(Ra | 0, 0, k | 0, 0) | 0;
+ d = y;
+ u = Nb(w | 0, 0, Q | 0, 0) | 0;
+ fa = y;
+ m = Nb(G | 0, 0, I | 0, 0) | 0;
+ h = y;
+ wb = Nb(j | 0, 0, la | 0, 0) | 0;
+ g = y;
+ r = Nb(r | 0, 0, pa | 0, qa | 0) | 0;
+ r = Rb(wb | 0, g | 0, r | 0, y | 0) | 0;
+ h = Rb(r | 0, y | 0, m | 0, h | 0) | 0;
+ fa = Rb(h | 0, y | 0, u | 0, fa | 0) | 0;
+ d = Rb(fa | 0, y | 0, ga | 0, d | 0) | 0;
+ O = Rb(d | 0, y | 0, F | 0, O | 0) | 0;
+ kb = Rb(O | 0, y | 0, P | 0, kb | 0) | 0;
+ Za = Rb(kb | 0, y | 0, jb | 0, Za | 0) | 0;
+ lb = Rb(Za | 0, y | 0, mb | 0, lb | 0) | 0;
+ mb = y;
+ _a = Nb(U | 0, T | 0, _a | 0, 0) | 0;
+ Za = y;
+ jb = Nb(tb | 0, 0, R | 0, 0) | 0;
+ kb = y;
+ P = Nb(v | 0, 0, na | 0, 0) | 0;
+ O = y;
+ F = Nb(za | 0, 0, k | 0, 0) | 0;
+ d = y;
+ ga = Nb(Ra | 0, 0, Q | 0, 0) | 0;
+ fa = y;
+ u = Nb(w | 0, 0, I | 0, 0) | 0;
+ h = y;
+ m = Nb(G | 0, 0, la | 0, 0) | 0;
+ r = y;
+ j = Nb(j | 0, 0, pa | 0, qa | 0) | 0;
+ g = y;
+ R = Nb(U | 0, T | 0, R | 0, 0) | 0;
+ wb = y;
+ s = Nb(tb | 0, 0, na | 0, 0) | 0;
+ oa = y;
+ l = Nb(v | 0, 0, k | 0, 0) | 0;
+ n = y;
+ Ua = Nb(za | 0, 0, Q | 0, 0) | 0;
+ q = y;
+ H = Nb(Ra | 0, 0, I | 0, 0) | 0;
+ Ta = y;
+ o = Nb(w | 0, 0, la | 0, 0) | 0;
+ z = y;
+ G = Nb(G | 0, 0, pa | 0, qa | 0) | 0;
+ G = Rb(o | 0, z | 0, G | 0, y | 0) | 0;
+ Ta = Rb(G | 0, y | 0, H | 0, Ta | 0) | 0;
+ q = Rb(Ta | 0, y | 0, Ua | 0, q | 0) | 0;
+ n = Rb(q | 0, y | 0, l | 0, n | 0) | 0;
+ oa = Rb(n | 0, y | 0, s | 0, oa | 0) | 0;
+ wb = Rb(oa | 0, y | 0, R | 0, wb | 0) | 0;
+ R = y;
+ na = Nb(U | 0, T | 0, na | 0, 0) | 0;
+ oa = y;
+ s = Nb(tb | 0, 0, k | 0, 0) | 0;
+ n = y;
+ l = Nb(v | 0, 0, Q | 0, 0) | 0;
+ q = y;
+ Ua = Nb(za | 0, 0, I | 0, 0) | 0;
+ Ta = y;
+ H = Nb(Ra | 0, 0, la | 0, 0) | 0;
+ G = y;
+ w = Nb(w | 0, 0, pa | 0, qa | 0) | 0;
+ z = y;
+ k = Nb(U | 0, T | 0, k | 0, 0) | 0;
+ o = y;
+ Da = Nb(tb | 0, 0, Q | 0, 0) | 0;
+ D = y;
+ Sa = Nb(v | 0, 0, I | 0, 0) | 0;
+ Ea = y;
+ Z = Nb(za | 0, 0, la | 0, 0) | 0;
+ Aa = y;
+ Ra = Nb(Ra | 0, 0, pa | 0, qa | 0) | 0;
+ Ra = Rb(Z | 0, Aa | 0, Ra | 0, y | 0) | 0;
+ Ea = Rb(Ra | 0, y | 0, Sa | 0, Ea | 0) | 0;
+ D = Rb(Ea | 0, y | 0, Da | 0, D | 0) | 0;
+ o = Rb(D | 0, y | 0, k | 0, o | 0) | 0;
+ k = y;
+ Q = Nb(U | 0, T | 0, Q | 0, 0) | 0;
+ D = y;
+ Da = Nb(tb | 0, 0, I | 0, 0) | 0;
+ Ea = y;
+ Sa = Nb(v | 0, 0, la | 0, 0) | 0;
+ Ra = y;
+ za = Nb(za | 0, 0, pa | 0, qa | 0) | 0;
+ Aa = y;
+ I = Nb(U | 0, T | 0, I | 0, 0) | 0;
+ Z = y;
+ Ac = Nb(tb | 0, 0, la | 0, 0) | 0;
+ sa = y;
+ v = Nb(v | 0, 0, pa | 0, qa | 0) | 0;
+ v = Rb(Ac | 0, sa | 0, v | 0, y | 0) | 0;
+ Z = Rb(v | 0, y | 0, I | 0, Z | 0) | 0;
+ I = y;
+ la = Nb(U | 0, T | 0, la | 0, 0) | 0;
+ v = y;
+ tb = Nb(tb | 0, 0, pa | 0, qa | 0) | 0;
+ tb = Rb(la | 0, v | 0, tb | 0, y | 0) | 0;
+ v = y;
+ qa = Nb(U | 0, T | 0, pa | 0, qa | 0) | 0;
+ pa = y;
+ T = Rb(Ba | 0, Ca | 0, 1048576, 0) | 0;
+ U = y;
+ la = Pb(T | 0, U | 0, 21) | 0;
+ sa = y;
+ da = Rb(zc | 0, yc | 0, xc | 0, da | 0) | 0;
+ ea = Rb(da | 0, y | 0, ea & 2097151 | 0, 0) | 0;
+ sa = Rb(ea | 0, y | 0, la | 0, sa | 0) | 0;
+ la = y;
+ U = Sb(Ba | 0, Ca | 0, T & -2097152 | 0, U & 4095 | 0) | 0;
+ T = y;
+ Ca = Rb(Ga | 0, Fa | 0, 1048576, 0) | 0;
+ Ba = y;
+ ea = Pb(Ca | 0, Ba | 0, 21) | 0;
+ da = y;
+ tc = Rb(wc | 0, vc | 0, uc | 0, tc | 0) | 0;
+ ia = Rb(tc | 0, y | 0, sc | 0, ia | 0) | 0;
+ va = Rb(ia | 0, y | 0, ha | 0, va | 0) | 0;
+ wa = Rb(va | 0, y | 0, wa & 2097151 | 0, 0) | 0;
+ da = Rb(wa | 0, y | 0, ea | 0, da | 0) | 0;
+ ea = y;
+ wa = Rb(ya | 0, xa | 0, 1048576, 0) | 0;
+ va = y;
+ ha = Ob(wa | 0, va | 0, 21) | 0;
+ ia = y;
+ oc = Rb(rc | 0, qc | 0, pc | 0, oc | 0) | 0;
+ mc = Rb(oc | 0, y | 0, nc | 0, mc | 0) | 0;
+ kc = Rb(mc | 0, y | 0, lc | 0, kc | 0) | 0;
+ B = Rb(kc | 0, y | 0, jc | 0, B | 0) | 0;
+ Ia = Rb(B | 0, y | 0, S | 0, Ia | 0) | 0;
+ Ha = Rb(Ia | 0, y | 0, Ha & 2097151 | 0, 0) | 0;
+ ia = Rb(Ha | 0, y | 0, ha | 0, ia | 0) | 0;
+ ha = y;
+ Ha = Rb(hb | 0, bb | 0, 1048576, 0) | 0;
+ Ia = y;
+ S = Ob(Ha | 0, Ia | 0, 21) | 0;
+ B = y;
+ fc = Rb(ic | 0, hc | 0, gc | 0, fc | 0) | 0;
+ dc = Rb(fc | 0, y | 0, ec | 0, dc | 0) | 0;
+ bc = Rb(dc | 0, y | 0, cc | 0, bc | 0) | 0;
+ $b = Rb(bc | 0, y | 0, ac | 0, $b | 0) | 0;
+ Zb = Rb($b | 0, y | 0, _b | 0, Zb | 0) | 0;
+ A = Rb(Zb | 0, y | 0, Yb | 0, A | 0) | 0;
+ ka = Rb(A | 0, y | 0, f | 0, ka | 0) | 0;
+ ja = Rb(ka | 0, y | 0, ja & 2097151 | 0, 0) | 0;
+ B = Rb(ja | 0, y | 0, S | 0, B | 0) | 0;
+ S = y;
+ ja = Rb(X | 0, Y | 0, 1048576, 0) | 0;
+ ka = y;
+ f = Ob(ja | 0, ka | 0, 21) | 0;
+ A = y;
+ Ub = Rb(Xb | 0, Wb | 0, Vb | 0, Ub | 0) | 0;
+ Mb = Rb(Ub | 0, y | 0, Tb | 0, Mb | 0) | 0;
+ Kb = Rb(Mb | 0, y | 0, Lb | 0, Kb | 0) | 0;
+ Ib = Rb(Kb | 0, y | 0, Jb | 0, Ib | 0) | 0;
+ Gb = Rb(Ib | 0, y | 0, Hb | 0, Gb | 0) | 0;
+ Eb = Rb(Gb | 0, y | 0, Fb | 0, Eb | 0) | 0;
+ Cb = Rb(Eb | 0, y | 0, Db | 0, Cb | 0) | 0;
+ $ = Rb(Cb | 0, y | 0, Bb | 0, $ | 0) | 0;
+ ta = Rb($ | 0, y | 0, p | 0, ta | 0) | 0;
+ ua = Rb(ta | 0, y | 0, ua & 2097151 | 0, 0) | 0;
+ A = Rb(ua | 0, y | 0, f | 0, A | 0) | 0;
+ f = y;
+ ua = Rb(aa | 0, ba | 0, 1048576, 0) | 0;
+ ta = y;
+ p = Ob(ua | 0, ta | 0, 21) | 0;
+ $ = y;
+ xb = Rb(Ab | 0, zb | 0, yb | 0, xb | 0) | 0;
+ ra = Rb(xb | 0, y | 0, ma | 0, ra | 0) | 0;
+ Wa = Rb(ra | 0, y | 0, Va | 0, Wa | 0) | 0;
+ c = Rb(Wa | 0, y | 0, e | 0, c | 0) | 0;
+ gb = Rb(c | 0, y | 0, fb | 0, gb | 0) | 0;
+ Qa = Rb(gb | 0, y | 0, Pa | 0, Qa | 0) | 0;
+ t = Rb(Qa | 0, y | 0, i | 0, t | 0) | 0;
+ qb = Rb(t | 0, y | 0, pb | 0, qb | 0) | 0;
+ Ja = Rb(qb | 0, y | 0, Ka | 0, Ja | 0) | 0;
+ ab = Rb(Ja | 0, y | 0, $a | 0, ab | 0) | 0;
+ Ma = Rb(ab | 0, y | 0, La | 0, Ma | 0) | 0;
+ ib = Rb(Ma | 0, y | 0, cb | 0, ib | 0) | 0;
+ $ = Rb(ib | 0, y | 0, p | 0, $ | 0) | 0;
+ p = y;
+ ib = Rb(ob | 0, nb | 0, 1048576, 0) | 0;
+ cb = y;
+ Ma = Ob(ib | 0, cb | 0, 21) | 0;
+ La = y;
+ Xa = Rb(L | 0, M | 0, Ya | 0, Xa | 0) | 0;
+ W = Rb(Xa | 0, y | 0, V | 0, W | 0) | 0;
+ C = Rb(W | 0, y | 0, Oa | 0, C | 0) | 0;
+ J = Rb(C | 0, y | 0, K | 0, J | 0) | 0;
+ N = Rb(J | 0, y | 0, x | 0, N | 0) | 0;
+ sb = Rb(N | 0, y | 0, rb | 0, sb | 0) | 0;
+ Na = Rb(sb | 0, y | 0, ca | 0, Na | 0) | 0;
+ E = Rb(Na | 0, y | 0, _ | 0, E | 0) | 0;
+ db = Rb(E | 0, y | 0, eb | 0, db | 0) | 0;
+ La = Rb(db | 0, y | 0, Ma | 0, La | 0) | 0;
+ Ma = y;
+ db = Rb(lb | 0, mb | 0, 1048576, 0) | 0;
+ eb = y;
+ E = Ob(db | 0, eb | 0, 21) | 0;
+ _ = y;
+ g = Rb(m | 0, r | 0, j | 0, g | 0) | 0;
+ h = Rb(g | 0, y | 0, u | 0, h | 0) | 0;
+ fa = Rb(h | 0, y | 0, ga | 0, fa | 0) | 0;
+ d = Rb(fa | 0, y | 0, F | 0, d | 0) | 0;
+ O = Rb(d | 0, y | 0, P | 0, O | 0) | 0;
+ kb = Rb(O | 0, y | 0, jb | 0, kb | 0) | 0;
+ Za = Rb(kb | 0, y | 0, _a | 0, Za | 0) | 0;
+ _ = Rb(Za | 0, y | 0, E | 0, _ | 0) | 0;
+ E = y;
+ Za = Rb(wb | 0, R | 0, 1048576, 0) | 0;
+ _a = y;
+ kb = Ob(Za | 0, _a | 0, 21) | 0;
+ jb = y;
+ z = Rb(H | 0, G | 0, w | 0, z | 0) | 0;
+ Ta = Rb(z | 0, y | 0, Ua | 0, Ta | 0) | 0;
+ q = Rb(Ta | 0, y | 0, l | 0, q | 0) | 0;
+ n = Rb(q | 0, y | 0, s | 0, n | 0) | 0;
+ oa = Rb(n | 0, y | 0, na | 0, oa | 0) | 0;
+ jb = Rb(oa | 0, y | 0, kb | 0, jb | 0) | 0;
+ kb = y;
+ oa = Rb(o | 0, k | 0, 1048576, 0) | 0;
+ na = y;
+ n = Ob(oa | 0, na | 0, 21) | 0;
+ s = y;
+ Aa = Rb(Sa | 0, Ra | 0, za | 0, Aa | 0) | 0;
+ Ea = Rb(Aa | 0, y | 0, Da | 0, Ea | 0) | 0;
+ D = Rb(Ea | 0, y | 0, Q | 0, D | 0) | 0;
+ s = Rb(D | 0, y | 0, n | 0, s | 0) | 0;
+ n = y;
+ na = Sb(o | 0, k | 0, oa & -2097152 | 0, na | 0) | 0;
+ oa = y;
+ k = Rb(Z | 0, I | 0, 1048576, 0) | 0;
+ o = y;
+ D = Pb(k | 0, o | 0, 21) | 0;
+ D = Rb(tb | 0, v | 0, D | 0, y | 0) | 0;
+ v = y;
+ o = Sb(Z | 0, I | 0, k & -2097152 | 0, o & 2147483647 | 0) | 0;
+ k = y;
+ I = Rb(qa | 0, pa | 0, 1048576, 0) | 0;
+ Z = y;
+ tb = Pb(I | 0, Z | 0, 21) | 0;
+ Q = y;
+ Z = Sb(qa | 0, pa | 0, I & -2097152 | 0, Z & 2147483647 | 0) | 0;
+ I = y;
+ pa = Rb(sa | 0, la | 0, 1048576, 0) | 0;
+ qa = y;
+ Ea = Pb(pa | 0, qa | 0, 21) | 0;
+ Da = y;
+ qa = Sb(sa | 0, la | 0, pa & -2097152 | 0, qa | 0) | 0;
+ pa = y;
+ la = Rb(da | 0, ea | 0, 1048576, 0) | 0;
+ sa = y;
+ Aa = Ob(la | 0, sa | 0, 21) | 0;
+ za = y;
+ sa = Sb(da | 0, ea | 0, la & -2097152 | 0, sa | 0) | 0;
+ la = y;
+ ea = Rb(ia | 0, ha | 0, 1048576, 0) | 0;
+ da = y;
+ Ra = Ob(ea | 0, da | 0, 21) | 0;
+ Sa = y;
+ q = Rb(B | 0, S | 0, 1048576, 0) | 0;
+ l = y;
+ Ta = Ob(q | 0, l | 0, 21) | 0;
+ Ua = y;
+ z = Rb(A | 0, f | 0, 1048576, 0) | 0;
+ w = y;
+ G = Ob(z | 0, w | 0, 21) | 0;
+ H = y;
+ O = Rb($ | 0, p | 0, 1048576, 0) | 0;
+ P = y;
+ d = Ob(O | 0, P | 0, 21) | 0;
+ F = y;
+ fa = Rb(La | 0, Ma | 0, 1048576, 0) | 0;
+ ga = y;
+ h = Ob(fa | 0, ga | 0, 21) | 0;
+ u = y;
+ g = Rb(_ | 0, E | 0, 1048576, 0) | 0;
+ j = y;
+ r = Ob(g | 0, j | 0, 21) | 0;
+ m = y;
+ Na = Rb(jb | 0, kb | 0, 1048576, 0) | 0;
+ ca = y;
+ sb = Ob(Na | 0, ca | 0, 21) | 0;
+ oa = Rb(sb | 0, y | 0, na | 0, oa | 0) | 0;
+ na = y;
+ ca = Sb(jb | 0, kb | 0, Na & -2097152 | 0, ca | 0) | 0;
+ Na = y;
+ kb = Rb(s | 0, n | 0, 1048576, 0) | 0;
+ jb = y;
+ sb = Ob(kb | 0, jb | 0, 21) | 0;
+ k = Rb(sb | 0, y | 0, o | 0, k | 0) | 0;
+ o = y;
+ jb = Sb(s | 0, n | 0, kb & -2097152 | 0, jb | 0) | 0;
+ kb = y;
+ n = Rb(D | 0, v | 0, 1048576, 0) | 0;
+ s = y;
+ sb = Pb(n | 0, s | 0, 21) | 0;
+ I = Rb(sb | 0, y | 0, Z | 0, I | 0) | 0;
+ Z = y;
+ s = Sb(D | 0, v | 0, n & -2097152 | 0, s & 2147483647 | 0) | 0;
+ n = y;
+ v = Nb(tb | 0, Q | 0, 666643, 0) | 0;
+ D = y;
+ sb = Nb(tb | 0, Q | 0, 470296, 0) | 0;
+ rb = y;
+ N = Nb(tb | 0, Q | 0, 654183, 0) | 0;
+ x = y;
+ J = Nb(tb | 0, Q | 0, -997805, -1) | 0;
+ K = y;
+ C = Nb(tb | 0, Q | 0, 136657, 0) | 0;
+ Oa = y;
+ Q = Nb(tb | 0, Q | 0, -683901, -1) | 0;
+ Q = Rb(wb | 0, R | 0, Q | 0, y | 0) | 0;
+ _a = Sb(Q | 0, y | 0, Za & -2097152 | 0, _a | 0) | 0;
+ m = Rb(_a | 0, y | 0, r | 0, m | 0) | 0;
+ r = y;
+ _a = Nb(I | 0, Z | 0, 666643, 0) | 0;
+ Za = y;
+ Q = Nb(I | 0, Z | 0, 470296, 0) | 0;
+ R = y;
+ wb = Nb(I | 0, Z | 0, 654183, 0) | 0;
+ tb = y;
+ W = Nb(I | 0, Z | 0, -997805, -1) | 0;
+ V = y;
+ Xa = Nb(I | 0, Z | 0, 136657, 0) | 0;
+ Ya = y;
+ Z = Nb(I | 0, Z | 0, -683901, -1) | 0;
+ I = y;
+ M = Nb(s | 0, n | 0, 666643, 0) | 0;
+ L = y;
+ ab = Nb(s | 0, n | 0, 470296, 0) | 0;
+ $a = y;
+ Ja = Nb(s | 0, n | 0, 654183, 0) | 0;
+ Ka = y;
+ qb = Nb(s | 0, n | 0, -997805, -1) | 0;
+ pb = y;
+ t = Nb(s | 0, n | 0, 136657, 0) | 0;
+ i = y;
+ n = Nb(s | 0, n | 0, -683901, -1) | 0;
+ s = y;
+ K = Rb(lb | 0, mb | 0, J | 0, K | 0) | 0;
+ Ya = Rb(K | 0, y | 0, Xa | 0, Ya | 0) | 0;
+ s = Rb(Ya | 0, y | 0, n | 0, s | 0) | 0;
+ eb = Sb(s | 0, y | 0, db & -2097152 | 0, eb | 0) | 0;
+ u = Rb(eb | 0, y | 0, h | 0, u | 0) | 0;
+ h = y;
+ eb = Nb(k | 0, o | 0, 666643, 0) | 0;
+ db = y;
+ s = Nb(k | 0, o | 0, 470296, 0) | 0;
+ n = y;
+ Ya = Nb(k | 0, o | 0, 654183, 0) | 0;
+ Xa = y;
+ K = Nb(k | 0, o | 0, -997805, -1) | 0;
+ J = y;
+ mb = Nb(k | 0, o | 0, 136657, 0) | 0;
+ lb = y;
+ o = Nb(k | 0, o | 0, -683901, -1) | 0;
+ k = y;
+ Qa = Nb(jb | 0, kb | 0, 666643, 0) | 0;
+ Pa = y;
+ gb = Nb(jb | 0, kb | 0, 470296, 0) | 0;
+ fb = y;
+ c = Nb(jb | 0, kb | 0, 654183, 0) | 0;
+ e = y;
+ Wa = Nb(jb | 0, kb | 0, -997805, -1) | 0;
+ Va = y;
+ ra = Nb(jb | 0, kb | 0, 136657, 0) | 0;
+ ma = y;
+ kb = Nb(jb | 0, kb | 0, -683901, -1) | 0;
+ jb = y;
+ rb = Rb(wb | 0, tb | 0, sb | 0, rb | 0) | 0;
+ pb = Rb(rb | 0, y | 0, qb | 0, pb | 0) | 0;
+ nb = Rb(pb | 0, y | 0, ob | 0, nb | 0) | 0;
+ lb = Rb(nb | 0, y | 0, mb | 0, lb | 0) | 0;
+ jb = Rb(lb | 0, y | 0, kb | 0, jb | 0) | 0;
+ cb = Sb(jb | 0, y | 0, ib & -2097152 | 0, cb | 0) | 0;
+ F = Rb(cb | 0, y | 0, d | 0, F | 0) | 0;
+ d = y;
+ cb = Nb(oa | 0, na | 0, 666643, 0) | 0;
+ cb = Rb(hb | 0, bb | 0, cb | 0, y | 0) | 0;
+ Sa = Rb(cb | 0, y | 0, Ra | 0, Sa | 0) | 0;
+ Ia = Sb(Sa | 0, y | 0, Ha & -2097152 | 0, Ia | 0) | 0;
+ Ha = y;
+ Sa = Nb(oa | 0, na | 0, 470296, 0) | 0;
+ Ra = y;
+ cb = Nb(oa | 0, na | 0, 654183, 0) | 0;
+ bb = y;
+ db = Rb(gb | 0, fb | 0, eb | 0, db | 0) | 0;
+ bb = Rb(db | 0, y | 0, cb | 0, bb | 0) | 0;
+ Ua = Rb(bb | 0, y | 0, Ta | 0, Ua | 0) | 0;
+ Y = Rb(Ua | 0, y | 0, X | 0, Y | 0) | 0;
+ ka = Sb(Y | 0, y | 0, ja & -2097152 | 0, ka | 0) | 0;
+ ja = y;
+ Y = Nb(oa | 0, na | 0, -997805, -1) | 0;
+ X = y;
+ Ua = Nb(oa | 0, na | 0, 136657, 0) | 0;
+ Ta = y;
+ Za = Rb(ab | 0, $a | 0, _a | 0, Za | 0) | 0;
+ Xa = Rb(Za | 0, y | 0, Ya | 0, Xa | 0) | 0;
+ Va = Rb(Xa | 0, y | 0, Wa | 0, Va | 0) | 0;
+ Ta = Rb(Va | 0, y | 0, Ua | 0, Ta | 0) | 0;
+ H = Rb(Ta | 0, y | 0, G | 0, H | 0) | 0;
+ ba = Rb(H | 0, y | 0, aa | 0, ba | 0) | 0;
+ ta = Sb(ba | 0, y | 0, ua & -2097152 | 0, ta | 0) | 0;
+ ua = y;
+ na = Nb(oa | 0, na | 0, -683901, -1) | 0;
+ oa = y;
+ ba = Rb(Ia | 0, Ha | 0, 1048576, 0) | 0;
+ aa = y;
+ H = Ob(ba | 0, aa | 0, 21) | 0;
+ G = y;
+ Pa = Rb(Sa | 0, Ra | 0, Qa | 0, Pa | 0) | 0;
+ S = Rb(Pa | 0, y | 0, B | 0, S | 0) | 0;
+ G = Rb(S | 0, y | 0, H | 0, G | 0) | 0;
+ l = Sb(G | 0, y | 0, q & -2097152 | 0, l | 0) | 0;
+ q = y;
+ G = Rb(ka | 0, ja | 0, 1048576, 0) | 0;
+ H = y;
+ S = Ob(G | 0, H | 0, 21) | 0;
+ B = y;
+ L = Rb(s | 0, n | 0, M | 0, L | 0) | 0;
+ e = Rb(L | 0, y | 0, c | 0, e | 0) | 0;
+ X = Rb(e | 0, y | 0, Y | 0, X | 0) | 0;
+ f = Rb(X | 0, y | 0, A | 0, f | 0) | 0;
+ w = Sb(f | 0, y | 0, z & -2097152 | 0, w | 0) | 0;
+ B = Rb(w | 0, y | 0, S | 0, B | 0) | 0;
+ S = y;
+ w = Rb(ta | 0, ua | 0, 1048576, 0) | 0;
+ z = y;
+ f = Ob(w | 0, z | 0, 21) | 0;
+ A = y;
+ D = Rb(Q | 0, R | 0, v | 0, D | 0) | 0;
+ Ka = Rb(D | 0, y | 0, Ja | 0, Ka | 0) | 0;
+ J = Rb(Ka | 0, y | 0, K | 0, J | 0) | 0;
+ ma = Rb(J | 0, y | 0, ra | 0, ma | 0) | 0;
+ oa = Rb(ma | 0, y | 0, na | 0, oa | 0) | 0;
+ p = Rb(oa | 0, y | 0, $ | 0, p | 0) | 0;
+ P = Sb(p | 0, y | 0, O & -2097152 | 0, P | 0) | 0;
+ A = Rb(P | 0, y | 0, f | 0, A | 0) | 0;
+ f = y;
+ P = Rb(F | 0, d | 0, 1048576, 0) | 0;
+ O = y;
+ p = Ob(P | 0, O | 0, 21) | 0;
+ $ = y;
+ x = Rb(W | 0, V | 0, N | 0, x | 0) | 0;
+ i = Rb(x | 0, y | 0, t | 0, i | 0) | 0;
+ k = Rb(i | 0, y | 0, o | 0, k | 0) | 0;
+ Ma = Rb(k | 0, y | 0, La | 0, Ma | 0) | 0;
+ ga = Sb(Ma | 0, y | 0, fa & -2097152 | 0, ga | 0) | 0;
+ $ = Rb(ga | 0, y | 0, p | 0, $ | 0) | 0;
+ p = y;
+ O = Sb(F | 0, d | 0, P & -2097152 | 0, O | 0) | 0;
+ P = y;
+ d = Rb(u | 0, h | 0, 1048576, 0) | 0;
+ F = y;
+ ga = Ob(d | 0, F | 0, 21) | 0;
+ fa = y;
+ Oa = Rb(Z | 0, I | 0, C | 0, Oa | 0) | 0;
+ E = Rb(Oa | 0, y | 0, _ | 0, E | 0) | 0;
+ j = Sb(E | 0, y | 0, g & -2097152 | 0, j | 0) | 0;
+ fa = Rb(j | 0, y | 0, ga | 0, fa | 0) | 0;
+ ga = y;
+ F = Sb(u | 0, h | 0, d & -2097152 | 0, F | 0) | 0;
+ d = y;
+ h = Rb(m | 0, r | 0, 1048576, 0) | 0;
+ u = y;
+ j = Ob(h | 0, u | 0, 21) | 0;
+ Na = Rb(j | 0, y | 0, ca | 0, Na | 0) | 0;
+ ca = y;
+ u = Sb(m | 0, r | 0, h & -2097152 | 0, u | 0) | 0;
+ h = y;
+ r = Rb(l | 0, q | 0, 1048576, 0) | 0;
+ m = y;
+ j = Ob(r | 0, m | 0, 21) | 0;
+ g = y;
+ E = Rb(B | 0, S | 0, 1048576, 0) | 0;
+ _ = y;
+ Oa = Ob(E | 0, _ | 0, 21) | 0;
+ C = y;
+ I = Rb(A | 0, f | 0, 1048576, 0) | 0;
+ Z = y;
+ Ma = Ob(I | 0, Z | 0, 21) | 0;
+ P = Rb(Ma | 0, y | 0, O | 0, P | 0) | 0;
+ O = y;
+ Z = Sb(A | 0, f | 0, I & -2097152 | 0, Z | 0) | 0;
+ I = y;
+ f = Rb($ | 0, p | 0, 1048576, 0) | 0;
+ A = y;
+ Ma = Ob(f | 0, A | 0, 21) | 0;
+ d = Rb(Ma | 0, y | 0, F | 0, d | 0) | 0;
+ F = y;
+ A = Sb($ | 0, p | 0, f & -2097152 | 0, A | 0) | 0;
+ f = y;
+ p = Rb(fa | 0, ga | 0, 1048576, 0) | 0;
+ $ = y;
+ Ma = Ob(p | 0, $ | 0, 21) | 0;
+ h = Rb(Ma | 0, y | 0, u | 0, h | 0) | 0;
+ u = y;
+ $ = Sb(fa | 0, ga | 0, p & -2097152 | 0, $ | 0) | 0;
+ p = y;
+ ga = Nb(Na | 0, ca | 0, 666643, 0) | 0;
+ fa = y;
+ Ma = Nb(Na | 0, ca | 0, 470296, 0) | 0;
+ La = y;
+ k = Nb(Na | 0, ca | 0, 654183, 0) | 0;
+ o = y;
+ i = Nb(Na | 0, ca | 0, -997805, -1) | 0;
+ t = y;
+ x = Nb(Na | 0, ca | 0, 136657, 0) | 0;
+ N = y;
+ ca = Nb(Na | 0, ca | 0, -683901, -1) | 0;
+ ca = Rb(Oa | 0, C | 0, ca | 0, y | 0) | 0;
+ ua = Rb(ca | 0, y | 0, ta | 0, ua | 0) | 0;
+ z = Sb(ua | 0, y | 0, w & -2097152 | 0, z | 0) | 0;
+ w = y;
+ ua = Nb(h | 0, u | 0, 666643, 0) | 0;
+ ta = y;
+ ca = Nb(h | 0, u | 0, 470296, 0) | 0;
+ C = y;
+ Oa = Nb(h | 0, u | 0, 654183, 0) | 0;
+ Na = y;
+ V = Nb(h | 0, u | 0, -997805, -1) | 0;
+ W = y;
+ oa = Nb(h | 0, u | 0, 136657, 0) | 0;
+ na = y;
+ u = Nb(h | 0, u | 0, -683901, -1) | 0;
+ h = y;
+ ma = Nb($ | 0, p | 0, 666643, 0) | 0;
+ ma = Rb(sa | 0, la | 0, ma | 0, y | 0) | 0;
+ la = y;
+ sa = Nb($ | 0, p | 0, 470296, 0) | 0;
+ ra = y;
+ J = Nb($ | 0, p | 0, 654183, 0) | 0;
+ K = y;
+ Ka = Nb($ | 0, p | 0, -997805, -1) | 0;
+ Ja = y;
+ D = Nb($ | 0, p | 0, 136657, 0) | 0;
+ v = y;
+ p = Nb($ | 0, p | 0, -683901, -1) | 0;
+ $ = y;
+ t = Rb(oa | 0, na | 0, i | 0, t | 0) | 0;
+ $ = Rb(t | 0, y | 0, p | 0, $ | 0) | 0;
+ g = Rb($ | 0, y | 0, j | 0, g | 0) | 0;
+ ja = Rb(g | 0, y | 0, ka | 0, ja | 0) | 0;
+ H = Sb(ja | 0, y | 0, G & -2097152 | 0, H | 0) | 0;
+ G = y;
+ ja = Nb(d | 0, F | 0, 666643, 0) | 0;
+ ka = y;
+ g = Nb(d | 0, F | 0, 470296, 0) | 0;
+ j = y;
+ $ = Nb(d | 0, F | 0, 654183, 0) | 0;
+ p = y;
+ t = Nb(d | 0, F | 0, -997805, -1) | 0;
+ i = y;
+ na = Nb(d | 0, F | 0, 136657, 0) | 0;
+ oa = y;
+ F = Nb(d | 0, F | 0, -683901, -1) | 0;
+ d = y;
+ R = Nb(A | 0, f | 0, 666643, 0) | 0;
+ Q = y;
+ X = Nb(A | 0, f | 0, 470296, 0) | 0;
+ Y = y;
+ e = Nb(A | 0, f | 0, 654183, 0) | 0;
+ c = y;
+ L = Nb(A | 0, f | 0, -997805, -1) | 0;
+ M = y;
+ n = Nb(A | 0, f | 0, 136657, 0) | 0;
+ s = y;
+ f = Nb(A | 0, f | 0, -683901, -1) | 0;
+ A = y;
+ La = Rb(Oa | 0, Na | 0, Ma | 0, La | 0) | 0;
+ Ja = Rb(La | 0, y | 0, Ka | 0, Ja | 0) | 0;
+ Ha = Rb(Ja | 0, y | 0, Ia | 0, Ha | 0) | 0;
+ aa = Sb(Ha | 0, y | 0, ba & -2097152 | 0, aa | 0) | 0;
+ oa = Rb(aa | 0, y | 0, na | 0, oa | 0) | 0;
+ A = Rb(oa | 0, y | 0, f | 0, A | 0) | 0;
+ f = y;
+ oa = Nb(P | 0, O | 0, 666643, 0) | 0;
+ T = Rb(oa | 0, y | 0, U | 0, T | 0) | 0;
+ U = y;
+ oa = Nb(P | 0, O | 0, 470296, 0) | 0;
+ na = y;
+ aa = Nb(P | 0, O | 0, 654183, 0) | 0;
+ ba = y;
+ Da = Rb(Ga | 0, Fa | 0, Ea | 0, Da | 0) | 0;
+ Ba = Sb(Da | 0, y | 0, Ca & -2097152 | 0, Ba | 0) | 0;
+ ba = Rb(Ba | 0, y | 0, aa | 0, ba | 0) | 0;
+ ka = Rb(ba | 0, y | 0, ja | 0, ka | 0) | 0;
+ Y = Rb(ka | 0, y | 0, X | 0, Y | 0) | 0;
+ X = y;
+ ka = Nb(P | 0, O | 0, -997805, -1) | 0;
+ ja = y;
+ ba = Nb(P | 0, O | 0, 136657, 0) | 0;
+ aa = y;
+ xa = Rb(Aa | 0, za | 0, ya | 0, xa | 0) | 0;
+ va = Sb(xa | 0, y | 0, wa & -2097152 | 0, va | 0) | 0;
+ ta = Rb(va | 0, y | 0, ua | 0, ta | 0) | 0;
+ ra = Rb(ta | 0, y | 0, sa | 0, ra | 0) | 0;
+ aa = Rb(ra | 0, y | 0, ba | 0, aa | 0) | 0;
+ p = Rb(aa | 0, y | 0, $ | 0, p | 0) | 0;
+ M = Rb(p | 0, y | 0, L | 0, M | 0) | 0;
+ L = y;
+ O = Nb(P | 0, O | 0, -683901, -1) | 0;
+ P = y;
+ p = Rb(T | 0, U | 0, 1048576, 0) | 0;
+ $ = y;
+ aa = Ob(p | 0, $ | 0, 21) | 0;
+ ba = y;
+ na = Rb(qa | 0, pa | 0, oa | 0, na | 0) | 0;
+ Q = Rb(na | 0, y | 0, R | 0, Q | 0) | 0;
+ ba = Rb(Q | 0, y | 0, aa | 0, ba | 0) | 0;
+ aa = y;
+ $ = Sb(T | 0, U | 0, p & -2097152 | 0, $ | 0) | 0;
+ p = y;
+ U = Rb(Y | 0, X | 0, 1048576, 0) | 0;
+ T = y;
+ Q = Ob(U | 0, T | 0, 21) | 0;
+ R = y;
+ ja = Rb(ma | 0, la | 0, ka | 0, ja | 0) | 0;
+ j = Rb(ja | 0, y | 0, g | 0, j | 0) | 0;
+ c = Rb(j | 0, y | 0, e | 0, c | 0) | 0;
+ R = Rb(c | 0, y | 0, Q | 0, R | 0) | 0;
+ Q = y;
+ c = Rb(M | 0, L | 0, 1048576, 0) | 0;
+ e = y;
+ j = Ob(c | 0, e | 0, 21) | 0;
+ g = y;
+ fa = Rb(ia | 0, ha | 0, ga | 0, fa | 0) | 0;
+ da = Sb(fa | 0, y | 0, ea & -2097152 | 0, da | 0) | 0;
+ C = Rb(da | 0, y | 0, ca | 0, C | 0) | 0;
+ K = Rb(C | 0, y | 0, J | 0, K | 0) | 0;
+ P = Rb(K | 0, y | 0, O | 0, P | 0) | 0;
+ i = Rb(P | 0, y | 0, t | 0, i | 0) | 0;
+ s = Rb(i | 0, y | 0, n | 0, s | 0) | 0;
+ g = Rb(s | 0, y | 0, j | 0, g | 0) | 0;
+ j = y;
+ s = Rb(A | 0, f | 0, 1048576, 0) | 0;
+ n = y;
+ i = Ob(s | 0, n | 0, 21) | 0;
+ t = y;
+ o = Rb(V | 0, W | 0, k | 0, o | 0) | 0;
+ v = Rb(o | 0, y | 0, D | 0, v | 0) | 0;
+ q = Rb(v | 0, y | 0, l | 0, q | 0) | 0;
+ m = Sb(q | 0, y | 0, r & -2097152 | 0, m | 0) | 0;
+ d = Rb(m | 0, y | 0, F | 0, d | 0) | 0;
+ t = Rb(d | 0, y | 0, i | 0, t | 0) | 0;
+ i = y;
+ n = Sb(A | 0, f | 0, s & -2097152 | 0, n | 0) | 0;
+ s = y;
+ f = Rb(H | 0, G | 0, 1048576, 0) | 0;
+ A = y;
+ d = Ob(f | 0, A | 0, 21) | 0;
+ F = y;
+ N = Rb(u | 0, h | 0, x | 0, N | 0) | 0;
+ S = Rb(N | 0, y | 0, B | 0, S | 0) | 0;
+ _ = Sb(S | 0, y | 0, E & -2097152 | 0, _ | 0) | 0;
+ F = Rb(_ | 0, y | 0, d | 0, F | 0) | 0;
+ d = y;
+ A = Sb(H | 0, G | 0, f & -2097152 | 0, A | 0) | 0;
+ f = y;
+ G = Rb(z | 0, w | 0, 1048576, 0) | 0;
+ H = y;
+ _ = Ob(G | 0, H | 0, 21) | 0;
+ _ = Rb(Z | 0, I | 0, _ | 0, y | 0) | 0;
+ I = y;
+ Z = Rb(ba | 0, aa | 0, 1048576, 0) | 0;
+ E = y;
+ S = Ob(Z | 0, E | 0, 21) | 0;
+ B = y;
+ N = Rb(R | 0, Q | 0, 1048576, 0) | 0;
+ x = y;
+ h = Ob(N | 0, x | 0, 21) | 0;
+ u = y;
+ m = Rb(g | 0, j | 0, 1048576, 0) | 0;
+ r = y;
+ q = Ob(m | 0, r | 0, 21) | 0;
+ q = Rb(n | 0, s | 0, q | 0, y | 0) | 0;
+ s = y;
+ n = Rb(t | 0, i | 0, 1048576, 0) | 0;
+ l = y;
+ v = Ob(n | 0, l | 0, 21) | 0;
+ v = Rb(A | 0, f | 0, v | 0, y | 0) | 0;
+ f = y;
+ l = Sb(t | 0, i | 0, n & -2097152 | 0, l | 0) | 0;
+ n = y;
+ i = Rb(F | 0, d | 0, 1048576, 0) | 0;
+ t = y;
+ A = Ob(i | 0, t | 0, 21) | 0;
+ D = y;
+ t = Sb(F | 0, d | 0, i & -2097152 | 0, t | 0) | 0;
+ i = y;
+ d = Rb(_ | 0, I | 0, 1048576, 0) | 0;
+ F = y;
+ o = Ob(d | 0, F | 0, 21) | 0;
+ k = y;
+ F = Sb(_ | 0, I | 0, d & -2097152 | 0, F | 0) | 0;
+ d = y;
+ I = Nb(o | 0, k | 0, 666643, 0) | 0;
+ I = Rb($ | 0, p | 0, I | 0, y | 0) | 0;
+ p = y;
+ $ = Nb(o | 0, k | 0, 470296, 0) | 0;
+ _ = y;
+ W = Nb(o | 0, k | 0, 654183, 0) | 0;
+ V = y;
+ P = Nb(o | 0, k | 0, -997805, -1) | 0;
+ O = y;
+ K = Nb(o | 0, k | 0, 136657, 0) | 0;
+ J = y;
+ k = Nb(o | 0, k | 0, -683901, -1) | 0;
+ o = y;
+ p = Ob(I | 0, p | 0, 21) | 0;
+ C = y;
+ _ = Rb(ba | 0, aa | 0, $ | 0, _ | 0) | 0;
+ E = Sb(_ | 0, y | 0, Z & -2097152 | 0, E | 0) | 0;
+ C = Rb(E | 0, y | 0, p | 0, C | 0) | 0;
+ p = Ob(C | 0, y | 0, 21) | 0;
+ E = y;
+ V = Rb(Y | 0, X | 0, W | 0, V | 0) | 0;
+ T = Sb(V | 0, y | 0, U & -2097152 | 0, T | 0) | 0;
+ B = Rb(T | 0, y | 0, S | 0, B | 0) | 0;
+ E = Rb(B | 0, y | 0, p | 0, E | 0) | 0;
+ p = Ob(E | 0, y | 0, 21) | 0;
+ B = y;
+ O = Rb(R | 0, Q | 0, P | 0, O | 0) | 0;
+ x = Sb(O | 0, y | 0, N & -2097152 | 0, x | 0) | 0;
+ B = Rb(x | 0, y | 0, p | 0, B | 0) | 0;
+ p = Ob(B | 0, y | 0, 21) | 0;
+ x = y;
+ J = Rb(M | 0, L | 0, K | 0, J | 0) | 0;
+ e = Sb(J | 0, y | 0, c & -2097152 | 0, e | 0) | 0;
+ u = Rb(e | 0, y | 0, h | 0, u | 0) | 0;
+ x = Rb(u | 0, y | 0, p | 0, x | 0) | 0;
+ p = Ob(x | 0, y | 0, 21) | 0;
+ u = y;
+ o = Rb(g | 0, j | 0, k | 0, o | 0) | 0;
+ r = Sb(o | 0, y | 0, m & -2097152 | 0, r | 0) | 0;
+ u = Rb(r | 0, y | 0, p | 0, u | 0) | 0;
+ p = Ob(u | 0, y | 0, 21) | 0;
+ p = Rb(q | 0, s | 0, p | 0, y | 0) | 0;
+ s = Ob(p | 0, y | 0, 21) | 0;
+ n = Rb(s | 0, y | 0, l | 0, n | 0) | 0;
+ l = Ob(n | 0, y | 0, 21) | 0;
+ l = Rb(v | 0, f | 0, l | 0, y | 0) | 0;
+ f = Ob(l | 0, y | 0, 21) | 0;
+ i = Rb(f | 0, y | 0, t | 0, i | 0) | 0;
+ t = Ob(i | 0, y | 0, 21) | 0;
+ f = y;
+ D = Rb(z | 0, w | 0, A | 0, D | 0) | 0;
+ H = Sb(D | 0, y | 0, G & -2097152 | 0, H | 0) | 0;
+ f = Rb(H | 0, y | 0, t | 0, f | 0) | 0;
+ t = Ob(f | 0, y | 0, 21) | 0;
+ d = Rb(t | 0, y | 0, F | 0, d | 0) | 0;
+ F = Ob(d | 0, y | 0, 21) | 0;
+ t = y;
+ H = Nb(F | 0, t | 0, 666643, 0) | 0;
+ I = Rb(H | 0, y | 0, I & 2097151 | 0, 0) | 0;
+ H = y;
+ G = Nb(F | 0, t | 0, 470296, 0) | 0;
+ C = Rb(G | 0, y | 0, C & 2097151 | 0, 0) | 0;
+ G = y;
+ D = Nb(F | 0, t | 0, 654183, 0) | 0;
+ E = Rb(D | 0, y | 0, E & 2097151 | 0, 0) | 0;
+ D = y;
+ A = Nb(F | 0, t | 0, -997805, -1) | 0;
+ B = Rb(A | 0, y | 0, B & 2097151 | 0, 0) | 0;
+ A = y;
+ w = Nb(F | 0, t | 0, 136657, 0) | 0;
+ x = Rb(w | 0, y | 0, x & 2097151 | 0, 0) | 0;
+ w = y;
+ t = Nb(F | 0, t | 0, -683901, -1) | 0;
+ u = Rb(t | 0, y | 0, u & 2097151 | 0, 0) | 0;
+ t = y;
+ F = Ob(I | 0, H | 0, 21) | 0;
+ F = Rb(C | 0, G | 0, F | 0, y | 0) | 0;
+ G = y;
+ C = Ob(F | 0, G | 0, 21) | 0;
+ C = Rb(E | 0, D | 0, C | 0, y | 0) | 0;
+ D = y;
+ E = F & 2097151;
+ z = Ob(C | 0, D | 0, 21) | 0;
+ z = Rb(B | 0, A | 0, z | 0, y | 0) | 0;
+ A = y;
+ B = C & 2097151;
+ v = Ob(z | 0, A | 0, 21) | 0;
+ v = Rb(x | 0, w | 0, v | 0, y | 0) | 0;
+ w = y;
+ x = z & 2097151;
+ s = Ob(v | 0, w | 0, 21) | 0;
+ s = Rb(u | 0, t | 0, s | 0, y | 0) | 0;
+ t = y;
+ u = v & 2097151;
+ q = Ob(s | 0, t | 0, 21) | 0;
+ p = Rb(q | 0, y | 0, p & 2097151 | 0, 0) | 0;
+ q = y;
+ r = s & 2097151;
+ m = Ob(p | 0, q | 0, 21) | 0;
+ n = Rb(m | 0, y | 0, n & 2097151 | 0, 0) | 0;
+ m = y;
+ o = p & 2097151;
+ k = Ob(n | 0, m | 0, 21) | 0;
+ l = Rb(k | 0, y | 0, l & 2097151 | 0, 0) | 0;
+ k = y;
+ j = Ob(l | 0, k | 0, 21) | 0;
+ i = Rb(j | 0, y | 0, i & 2097151 | 0, 0) | 0;
+ j = y;
+ g = Ob(i | 0, j | 0, 21) | 0;
+ f = Rb(g | 0, y | 0, f & 2097151 | 0, 0) | 0;
+ g = y;
+ h = i & 2097151;
+ e = Ob(f | 0, g | 0, 21) | 0;
+ d = Rb(e | 0, y | 0, d & 2097151 | 0, 0) | 0;
+ e = y;
+ c = f & 2097151;
+ a[b >> 0] = I;
+ J = Pb(I | 0, H | 0, 8) | 0;
+ a[b + 1 >> 0] = J;
+ H = Pb(I | 0, H | 0, 16) | 0;
+ I = Qb(E | 0, 0, 5) | 0;
+ a[b + 2 >> 0] = I | H & 31;
+ H = Pb(F | 0, G | 0, 3) | 0;
+ a[b + 3 >> 0] = H;
+ G = Pb(F | 0, G | 0, 11) | 0;
+ a[b + 4 >> 0] = G;
+ E = Pb(E | 0, 0, 19) | 0;
+ G = y;
+ F = Qb(B | 0, 0, 2) | 0;
+ a[b + 5 >> 0] = F | E;
+ D = Pb(C | 0, D | 0, 6) | 0;
+ a[b + 6 >> 0] = D;
+ B = Pb(B | 0, 0, 14) | 0;
+ D = y;
+ C = Qb(x | 0, 0, 7) | 0;
+ a[b + 7 >> 0] = C | B;
+ B = Pb(z | 0, A | 0, 1) | 0;
+ a[b + 8 >> 0] = B;
+ A = Pb(z | 0, A | 0, 9) | 0;
+ a[b + 9 >> 0] = A;
+ x = Pb(x | 0, 0, 17) | 0;
+ A = y;
+ z = Qb(u | 0, 0, 4) | 0;
+ a[b + 10 >> 0] = z | x;
+ x = Pb(v | 0, w | 0, 4) | 0;
+ a[b + 11 >> 0] = x;
+ w = Pb(v | 0, w | 0, 12) | 0;
+ a[b + 12 >> 0] = w;
+ u = Pb(u | 0, 0, 20) | 0;
+ w = y;
+ v = Qb(r | 0, 0, 1) | 0;
+ a[b + 13 >> 0] = v | u;
+ t = Pb(s | 0, t | 0, 7) | 0;
+ a[b + 14 >> 0] = t;
+ r = Pb(r | 0, 0, 15) | 0;
+ t = y;
+ s = Qb(o | 0, 0, 6) | 0;
+ a[b + 15 >> 0] = s | r;
+ r = Pb(p | 0, q | 0, 2) | 0;
+ a[b + 16 >> 0] = r;
+ q = Pb(p | 0, q | 0, 10) | 0;
+ a[b + 17 >> 0] = q;
+ o = Pb(o | 0, 0, 18) | 0;
+ q = y;
+ p = Qb(n | 0, m | 0, 3) | 0;
+ a[b + 18 >> 0] = p | o;
+ o = Pb(n | 0, m | 0, 5) | 0;
+ a[b + 19 >> 0] = o;
+ m = Pb(n | 0, m | 0, 13) | 0;
+ a[b + 20 >> 0] = m;
+ a[b + 21 >> 0] = l;
+ m = Pb(l | 0, k | 0, 8) | 0;
+ a[b + 22 >> 0] = m;
+ k = Pb(l | 0, k | 0, 16) | 0;
+ l = Qb(h | 0, 0, 5) | 0;
+ a[b + 23 >> 0] = l | k & 31;
+ k = Pb(i | 0, j | 0, 3) | 0;
+ a[b + 24 >> 0] = k;
+ j = Pb(i | 0, j | 0, 11) | 0;
+ a[b + 25 >> 0] = j;
+ h = Pb(h | 0, 0, 19) | 0;
+ j = y;
+ i = Qb(c | 0, 0, 2) | 0;
+ a[b + 26 >> 0] = i | h;
+ g = Pb(f | 0, g | 0, 6) | 0;
+ a[b + 27 >> 0] = g;
+ c = Pb(c | 0, 0, 14) | 0;
+ g = y;
+ f = Qb(d | 0, e | 0, 7) | 0;
+ a[b + 28 >> 0] = f | c;
+ c = Pb(d | 0, e | 0, 1) | 0;
+ a[b + 29 >> 0] = c;
+ c = Pb(d | 0, e | 0, 9) | 0;
+ a[b + 30 >> 0] = c;
+ e = Ob(d | 0, e | 0, 17) | 0;
+ a[b + 31 >> 0] = e;
+ return;
+}
+
+function Ib(a) {
+ a = a | 0;
+ var b = 0, d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, m = 0, n = 0, o = 0, p = 0, q = 0;
+ q = l;
+ l = l + 16 | 0;
+ o = q;
+ do if (a >>> 0 < 245) {
+  k = a >>> 0 < 11 ? 16 : a + 11 & -8;
+  a = k >>> 3;
+  n = c[8144] | 0;
+  b = n >>> a;
+  if (b & 3 | 0) {
+   a = (b & 1 ^ 1) + a | 0;
+   b = 32616 + (a << 1 << 2) | 0;
+   d = b + 8 | 0;
+   e = c[d >> 2] | 0;
+   f = e + 8 | 0;
+   g = c[f >> 2] | 0;
+   if ((g | 0) == (b | 0)) c[8144] = n & ~(1 << a); else {
+    c[g + 12 >> 2] = b;
+    c[d >> 2] = g;
+   }
+   p = a << 3;
+   c[e + 4 >> 2] = p | 3;
+   p = e + p + 4 | 0;
+   c[p >> 2] = c[p >> 2] | 1;
+   p = f;
+   l = q;
+   return p | 0;
+  }
+  m = c[8146] | 0;
+  if (k >>> 0 > m >>> 0) {
+   if (b | 0) {
+    i = 2 << a;
+    a = b << a & (i | 0 - i);
+    a = (a & 0 - a) + -1 | 0;
+    i = a >>> 12 & 16;
+    a = a >>> i;
+    d = a >>> 5 & 8;
+    a = a >>> d;
+    g = a >>> 2 & 4;
+    a = a >>> g;
+    b = a >>> 1 & 2;
+    a = a >>> b;
+    e = a >>> 1 & 1;
+    e = (d | i | g | b | e) + (a >>> e) | 0;
+    a = 32616 + (e << 1 << 2) | 0;
+    b = a + 8 | 0;
+    g = c[b >> 2] | 0;
+    i = g + 8 | 0;
+    d = c[i >> 2] | 0;
+    if ((d | 0) == (a | 0)) {
+     b = n & ~(1 << e);
+     c[8144] = b;
+    } else {
+     c[d + 12 >> 2] = a;
+     c[b >> 2] = d;
+     b = n;
+    }
+    p = e << 3;
+    h = p - k | 0;
+    c[g + 4 >> 2] = k | 3;
+    f = g + k | 0;
+    c[f + 4 >> 2] = h | 1;
+    c[g + p >> 2] = h;
+    if (m | 0) {
+     e = c[8149] | 0;
+     a = m >>> 3;
+     d = 32616 + (a << 1 << 2) | 0;
+     a = 1 << a;
+     if (!(b & a)) {
+      c[8144] = b | a;
+      a = d;
+      b = d + 8 | 0;
+     } else {
+      b = d + 8 | 0;
+      a = c[b >> 2] | 0;
+     }
+     c[b >> 2] = e;
+     c[a + 12 >> 2] = e;
+     c[e + 8 >> 2] = a;
+     c[e + 12 >> 2] = d;
+    }
+    c[8146] = h;
+    c[8149] = f;
+    p = i;
+    l = q;
+    return p | 0;
+   }
+   g = c[8145] | 0;
+   if (g) {
+    b = (g & 0 - g) + -1 | 0;
+    f = b >>> 12 & 16;
+    b = b >>> f;
+    e = b >>> 5 & 8;
+    b = b >>> e;
+    h = b >>> 2 & 4;
+    b = b >>> h;
+    i = b >>> 1 & 2;
+    b = b >>> i;
+    j = b >>> 1 & 1;
+    j = c[32880 + ((e | f | h | i | j) + (b >>> j) << 2) >> 2] | 0;
+    b = j;
+    i = j;
+    j = (c[j + 4 >> 2] & -8) - k | 0;
+    while (1) {
+     a = c[b + 16 >> 2] | 0;
+     if (!a) {
+      a = c[b + 20 >> 2] | 0;
+      if (!a) break;
+     }
+     h = (c[a + 4 >> 2] & -8) - k | 0;
+     f = h >>> 0 < j >>> 0;
+     b = a;
+     i = f ? a : i;
+     j = f ? h : j;
+    }
+    h = i + k | 0;
+    if (h >>> 0 > i >>> 0) {
+     f = c[i + 24 >> 2] | 0;
+     a = c[i + 12 >> 2] | 0;
+     do if ((a | 0) == (i | 0)) {
+      b = i + 20 | 0;
+      a = c[b >> 2] | 0;
+      if (!a) {
+       b = i + 16 | 0;
+       a = c[b >> 2] | 0;
+       if (!a) {
+        d = 0;
+        break;
+       }
+      }
+      while (1) {
+       e = a + 20 | 0;
+       d = c[e >> 2] | 0;
+       if (!d) {
+        e = a + 16 | 0;
+        d = c[e >> 2] | 0;
+        if (!d) break; else {
+         a = d;
+         b = e;
+        }
+       } else {
+        a = d;
+        b = e;
+       }
+      }
+      c[b >> 2] = 0;
+      d = a;
+     } else {
+      d = c[i + 8 >> 2] | 0;
+      c[d + 12 >> 2] = a;
+      c[a + 8 >> 2] = d;
+      d = a;
+     } while (0);
+     do if (f | 0) {
+      a = c[i + 28 >> 2] | 0;
+      b = 32880 + (a << 2) | 0;
+      if ((i | 0) == (c[b >> 2] | 0)) {
+       c[b >> 2] = d;
+       if (!d) {
+        c[8145] = g & ~(1 << a);
+        break;
+       }
+      } else {
+       p = f + 16 | 0;
+       c[((c[p >> 2] | 0) == (i | 0) ? p : f + 20 | 0) >> 2] = d;
+       if (!d) break;
+      }
+      c[d + 24 >> 2] = f;
+      a = c[i + 16 >> 2] | 0;
+      if (a | 0) {
+       c[d + 16 >> 2] = a;
+       c[a + 24 >> 2] = d;
+      }
+      a = c[i + 20 >> 2] | 0;
+      if (a | 0) {
+       c[d + 20 >> 2] = a;
+       c[a + 24 >> 2] = d;
+      }
+     } while (0);
+     if (j >>> 0 < 16) {
+      p = j + k | 0;
+      c[i + 4 >> 2] = p | 3;
+      p = i + p + 4 | 0;
+      c[p >> 2] = c[p >> 2] | 1;
+     } else {
+      c[i + 4 >> 2] = k | 3;
+      c[h + 4 >> 2] = j | 1;
+      c[h + j >> 2] = j;
+      if (m | 0) {
+       e = c[8149] | 0;
+       a = m >>> 3;
+       d = 32616 + (a << 1 << 2) | 0;
+       a = 1 << a;
+       if (!(a & n)) {
+        c[8144] = a | n;
+        a = d;
+        b = d + 8 | 0;
+       } else {
+        b = d + 8 | 0;
+        a = c[b >> 2] | 0;
+       }
+       c[b >> 2] = e;
+       c[a + 12 >> 2] = e;
+       c[e + 8 >> 2] = a;
+       c[e + 12 >> 2] = d;
+      }
+      c[8146] = j;
+      c[8149] = h;
+     }
+     p = i + 8 | 0;
+     l = q;
+     return p | 0;
+    }
+   }
+  }
+ } else if (a >>> 0 > 4294967231) k = -1; else {
+  a = a + 11 | 0;
+  k = a & -8;
+  j = c[8145] | 0;
+  if (j) {
+   d = 0 - k | 0;
+   a = a >>> 8;
+   if (!a) h = 0; else if (k >>> 0 > 16777215) h = 31; else {
+    n = (a + 1048320 | 0) >>> 16 & 8;
+    p = a << n;
+    m = (p + 520192 | 0) >>> 16 & 4;
+    p = p << m;
+    h = (p + 245760 | 0) >>> 16 & 2;
+    h = 14 - (m | n | h) + (p << h >>> 15) | 0;
+    h = k >>> (h + 7 | 0) & 1 | h << 1;
+   }
+   b = c[32880 + (h << 2) >> 2] | 0;
+   a : do if (!b) {
+    b = 0;
+    a = 0;
+    p = 61;
+   } else {
+    a = 0;
+    g = k << ((h | 0) == 31 ? 0 : 25 - (h >>> 1) | 0);
+    e = 0;
+    while (1) {
+     f = (c[b + 4 >> 2] & -8) - k | 0;
+     if (f >>> 0 < d >>> 0) if (!f) {
+      a = b;
+      d = 0;
+      p = 65;
+      break a;
+     } else {
+      a = b;
+      d = f;
+     }
+     p = c[b + 20 >> 2] | 0;
+     b = c[b + 16 + (g >>> 31 << 2) >> 2] | 0;
+     e = (p | 0) == 0 | (p | 0) == (b | 0) ? e : p;
+     if (!b) {
+      b = e;
+      p = 61;
+      break;
+     } else g = g << 1;
+    }
+   } while (0);
+   if ((p | 0) == 61) {
+    if ((b | 0) == 0 & (a | 0) == 0) {
+     a = 2 << h;
+     a = (a | 0 - a) & j;
+     if (!a) break;
+     n = (a & 0 - a) + -1 | 0;
+     h = n >>> 12 & 16;
+     n = n >>> h;
+     g = n >>> 5 & 8;
+     n = n >>> g;
+     i = n >>> 2 & 4;
+     n = n >>> i;
+     m = n >>> 1 & 2;
+     n = n >>> m;
+     b = n >>> 1 & 1;
+     a = 0;
+     b = c[32880 + ((g | h | i | m | b) + (n >>> b) << 2) >> 2] | 0;
+    }
+    if (!b) {
+     i = a;
+     g = d;
+    } else p = 65;
+   }
+   if ((p | 0) == 65) {
+    e = b;
+    while (1) {
+     n = (c[e + 4 >> 2] & -8) - k | 0;
+     b = n >>> 0 < d >>> 0;
+     d = b ? n : d;
+     a = b ? e : a;
+     b = c[e + 16 >> 2] | 0;
+     if (!b) b = c[e + 20 >> 2] | 0;
+     if (!b) {
+      i = a;
+      g = d;
+      break;
+     } else e = b;
+    }
+   }
+   if (i) if (g >>> 0 < ((c[8146] | 0) - k | 0) >>> 0) {
+    h = i + k | 0;
+    if (h >>> 0 > i >>> 0) {
+     f = c[i + 24 >> 2] | 0;
+     a = c[i + 12 >> 2] | 0;
+     do if ((a | 0) == (i | 0)) {
+      b = i + 20 | 0;
+      a = c[b >> 2] | 0;
+      if (!a) {
+       b = i + 16 | 0;
+       a = c[b >> 2] | 0;
+       if (!a) {
+        a = 0;
+        break;
+       }
+      }
+      while (1) {
+       e = a + 20 | 0;
+       d = c[e >> 2] | 0;
+       if (!d) {
+        e = a + 16 | 0;
+        d = c[e >> 2] | 0;
+        if (!d) break; else {
+         a = d;
+         b = e;
+        }
+       } else {
+        a = d;
+        b = e;
+       }
+      }
+      c[b >> 2] = 0;
+     } else {
+      p = c[i + 8 >> 2] | 0;
+      c[p + 12 >> 2] = a;
+      c[a + 8 >> 2] = p;
+     } while (0);
+     do if (!f) e = j; else {
+      b = c[i + 28 >> 2] | 0;
+      d = 32880 + (b << 2) | 0;
+      if ((i | 0) == (c[d >> 2] | 0)) {
+       c[d >> 2] = a;
+       if (!a) {
+        e = j & ~(1 << b);
+        c[8145] = e;
+        break;
+       }
+      } else {
+       p = f + 16 | 0;
+       c[((c[p >> 2] | 0) == (i | 0) ? p : f + 20 | 0) >> 2] = a;
+       if (!a) {
+        e = j;
+        break;
+       }
+      }
+      c[a + 24 >> 2] = f;
+      b = c[i + 16 >> 2] | 0;
+      if (b | 0) {
+       c[a + 16 >> 2] = b;
+       c[b + 24 >> 2] = a;
+      }
+      b = c[i + 20 >> 2] | 0;
+      if (!b) e = j; else {
+       c[a + 20 >> 2] = b;
+       c[b + 24 >> 2] = a;
+       e = j;
+      }
+     } while (0);
+     b : do if (g >>> 0 < 16) {
+      p = g + k | 0;
+      c[i + 4 >> 2] = p | 3;
+      p = i + p + 4 | 0;
+      c[p >> 2] = c[p >> 2] | 1;
+     } else {
+      c[i + 4 >> 2] = k | 3;
+      c[h + 4 >> 2] = g | 1;
+      c[h + g >> 2] = g;
+      a = g >>> 3;
+      if (g >>> 0 < 256) {
+       d = 32616 + (a << 1 << 2) | 0;
+       b = c[8144] | 0;
+       a = 1 << a;
+       if (!(b & a)) {
+        c[8144] = b | a;
+        a = d;
+        b = d + 8 | 0;
+       } else {
+        b = d + 8 | 0;
+        a = c[b >> 2] | 0;
+       }
+       c[b >> 2] = h;
+       c[a + 12 >> 2] = h;
+       c[h + 8 >> 2] = a;
+       c[h + 12 >> 2] = d;
+       break;
+      }
+      a = g >>> 8;
+      if (!a) d = 0; else if (g >>> 0 > 16777215) d = 31; else {
+       o = (a + 1048320 | 0) >>> 16 & 8;
+       p = a << o;
+       n = (p + 520192 | 0) >>> 16 & 4;
+       p = p << n;
+       d = (p + 245760 | 0) >>> 16 & 2;
+       d = 14 - (n | o | d) + (p << d >>> 15) | 0;
+       d = g >>> (d + 7 | 0) & 1 | d << 1;
+      }
+      a = 32880 + (d << 2) | 0;
+      c[h + 28 >> 2] = d;
+      b = h + 16 | 0;
+      c[b + 4 >> 2] = 0;
+      c[b >> 2] = 0;
+      b = 1 << d;
+      if (!(e & b)) {
+       c[8145] = e | b;
+       c[a >> 2] = h;
+       c[h + 24 >> 2] = a;
+       c[h + 12 >> 2] = h;
+       c[h + 8 >> 2] = h;
+       break;
+      }
+      a = c[a >> 2] | 0;
+      c : do if ((c[a + 4 >> 2] & -8 | 0) != (g | 0)) {
+       e = g << ((d | 0) == 31 ? 0 : 25 - (d >>> 1) | 0);
+       while (1) {
+        d = a + 16 + (e >>> 31 << 2) | 0;
+        b = c[d >> 2] | 0;
+        if (!b) break;
+        if ((c[b + 4 >> 2] & -8 | 0) == (g | 0)) {
+         a = b;
+         break c;
+        } else {
+         e = e << 1;
+         a = b;
+        }
+       }
+       c[d >> 2] = h;
+       c[h + 24 >> 2] = a;
+       c[h + 12 >> 2] = h;
+       c[h + 8 >> 2] = h;
+       break b;
+      } while (0);
+      o = a + 8 | 0;
+      p = c[o >> 2] | 0;
+      c[p + 12 >> 2] = h;
+      c[o >> 2] = h;
+      c[h + 8 >> 2] = p;
+      c[h + 12 >> 2] = a;
+      c[h + 24 >> 2] = 0;
+     } while (0);
+     p = i + 8 | 0;
+     l = q;
+     return p | 0;
+    }
+   }
+  }
+ } while (0);
+ d = c[8146] | 0;
+ if (d >>> 0 >= k >>> 0) {
+  a = d - k | 0;
+  b = c[8149] | 0;
+  if (a >>> 0 > 15) {
+   p = b + k | 0;
+   c[8149] = p;
+   c[8146] = a;
+   c[p + 4 >> 2] = a | 1;
+   c[b + d >> 2] = a;
+   c[b + 4 >> 2] = k | 3;
+  } else {
+   c[8146] = 0;
+   c[8149] = 0;
+   c[b + 4 >> 2] = d | 3;
+   p = b + d + 4 | 0;
+   c[p >> 2] = c[p >> 2] | 1;
+  }
+  p = b + 8 | 0;
+  l = q;
+  return p | 0;
+ }
+ g = c[8147] | 0;
+ if (g >>> 0 > k >>> 0) {
+  n = g - k | 0;
+  c[8147] = n;
+  p = c[8150] | 0;
+  o = p + k | 0;
+  c[8150] = o;
+  c[o + 4 >> 2] = n | 1;
+  c[p + 4 >> 2] = k | 3;
+  p = p + 8 | 0;
+  l = q;
+  return p | 0;
+ }
+ if (!(c[8262] | 0)) {
+  c[8264] = 4096;
+  c[8263] = 4096;
+  c[8265] = -1;
+  c[8266] = -1;
+  c[8267] = 0;
+  c[8255] = 0;
+  c[8262] = o & -16 ^ 1431655768;
+  a = 4096;
+ } else a = c[8264] | 0;
+ h = k + 48 | 0;
+ i = k + 47 | 0;
+ f = a + i | 0;
+ e = 0 - a | 0;
+ j = f & e;
+ if (j >>> 0 <= k >>> 0) {
+  p = 0;
+  l = q;
+  return p | 0;
+ }
+ a = c[8254] | 0;
+ if (a | 0) {
+  n = c[8252] | 0;
+  o = n + j | 0;
+  if (o >>> 0 <= n >>> 0 | o >>> 0 > a >>> 0) {
+   p = 0;
+   l = q;
+   return p | 0;
+  }
+ }
+ d : do if (!(c[8255] & 4)) {
+  b = c[8150] | 0;
+  e : do if (!b) p = 128; else {
+   d = 33024;
+   while (1) {
+    a = c[d >> 2] | 0;
+    if (a >>> 0 <= b >>> 0) if ((a + (c[d + 4 >> 2] | 0) | 0) >>> 0 > b >>> 0) break;
+    a = c[d + 8 >> 2] | 0;
+    if (!a) {
+     p = 128;
+     break e;
+    } else d = a;
+   }
+   a = f - g & e;
+   if (a >>> 0 < 2147483647) {
+    e = Wb(a | 0) | 0;
+    if ((e | 0) == ((c[d >> 2] | 0) + (c[d + 4 >> 2] | 0) | 0)) {
+     if ((e | 0) != (-1 | 0)) {
+      p = 145;
+      break d;
+     }
+    } else p = 136;
+   } else a = 0;
+  } while (0);
+  do if ((p | 0) == 128) {
+   e = Wb(0) | 0;
+   if ((e | 0) == (-1 | 0)) a = 0; else {
+    a = e;
+    b = c[8263] | 0;
+    d = b + -1 | 0;
+    a = ((d & a | 0) == 0 ? 0 : (d + a & 0 - b) - a | 0) + j | 0;
+    b = c[8252] | 0;
+    d = a + b | 0;
+    if (a >>> 0 > k >>> 0 & a >>> 0 < 2147483647) {
+     f = c[8254] | 0;
+     if (f | 0) if (d >>> 0 <= b >>> 0 | d >>> 0 > f >>> 0) {
+      a = 0;
+      break;
+     }
+     b = Wb(a | 0) | 0;
+     if ((b | 0) == (e | 0)) {
+      p = 145;
+      break d;
+     } else {
+      e = b;
+      p = 136;
+     }
+    } else a = 0;
+   }
+  } while (0);
+  do if ((p | 0) == 136) {
+   d = 0 - a | 0;
+   if (!(h >>> 0 > a >>> 0 & (a >>> 0 < 2147483647 & (e | 0) != (-1 | 0)))) if ((e | 0) == (-1 | 0)) {
+    a = 0;
+    break;
+   } else {
+    p = 145;
+    break d;
+   }
+   b = c[8264] | 0;
+   b = i - a + b & 0 - b;
+   if (b >>> 0 >= 2147483647) {
+    p = 145;
+    break d;
+   }
+   if ((Wb(b | 0) | 0) == (-1 | 0)) {
+    Wb(d | 0) | 0;
+    a = 0;
+    break;
+   } else {
+    a = b + a | 0;
+    p = 145;
+    break d;
+   }
+  } while (0);
+  c[8255] = c[8255] | 4;
+  p = 143;
+ } else {
+  a = 0;
+  p = 143;
+ } while (0);
+ if ((p | 0) == 143) if (j >>> 0 < 2147483647) {
+  e = Wb(j | 0) | 0;
+  o = Wb(0) | 0;
+  b = o - e | 0;
+  d = b >>> 0 > (k + 40 | 0) >>> 0;
+  if (!((e | 0) == (-1 | 0) | d ^ 1 | e >>> 0 < o >>> 0 & ((e | 0) != (-1 | 0) & (o | 0) != (-1 | 0)) ^ 1)) {
+   a = d ? b : a;
+   p = 145;
+  }
+ }
+ if ((p | 0) == 145) {
+  b = (c[8252] | 0) + a | 0;
+  c[8252] = b;
+  if (b >>> 0 > (c[8253] | 0) >>> 0) c[8253] = b;
+  j = c[8150] | 0;
+  f : do if (!j) {
+   p = c[8148] | 0;
+   if ((p | 0) == 0 | e >>> 0 < p >>> 0) c[8148] = e;
+   c[8256] = e;
+   c[8257] = a;
+   c[8259] = 0;
+   c[8153] = c[8262];
+   c[8152] = -1;
+   c[8157] = 32616;
+   c[8156] = 32616;
+   c[8159] = 32624;
+   c[8158] = 32624;
+   c[8161] = 32632;
+   c[8160] = 32632;
+   c[8163] = 32640;
+   c[8162] = 32640;
+   c[8165] = 32648;
+   c[8164] = 32648;
+   c[8167] = 32656;
+   c[8166] = 32656;
+   c[8169] = 32664;
+   c[8168] = 32664;
+   c[8171] = 32672;
+   c[8170] = 32672;
+   c[8173] = 32680;
+   c[8172] = 32680;
+   c[8175] = 32688;
+   c[8174] = 32688;
+   c[8177] = 32696;
+   c[8176] = 32696;
+   c[8179] = 32704;
+   c[8178] = 32704;
+   c[8181] = 32712;
+   c[8180] = 32712;
+   c[8183] = 32720;
+   c[8182] = 32720;
+   c[8185] = 32728;
+   c[8184] = 32728;
+   c[8187] = 32736;
+   c[8186] = 32736;
+   c[8189] = 32744;
+   c[8188] = 32744;
+   c[8191] = 32752;
+   c[8190] = 32752;
+   c[8193] = 32760;
+   c[8192] = 32760;
+   c[8195] = 32768;
+   c[8194] = 32768;
+   c[8197] = 32776;
+   c[8196] = 32776;
+   c[8199] = 32784;
+   c[8198] = 32784;
+   c[8201] = 32792;
+   c[8200] = 32792;
+   c[8203] = 32800;
+   c[8202] = 32800;
+   c[8205] = 32808;
+   c[8204] = 32808;
+   c[8207] = 32816;
+   c[8206] = 32816;
+   c[8209] = 32824;
+   c[8208] = 32824;
+   c[8211] = 32832;
+   c[8210] = 32832;
+   c[8213] = 32840;
+   c[8212] = 32840;
+   c[8215] = 32848;
+   c[8214] = 32848;
+   c[8217] = 32856;
+   c[8216] = 32856;
+   c[8219] = 32864;
+   c[8218] = 32864;
+   p = a + -40 | 0;
+   n = e + 8 | 0;
+   n = (n & 7 | 0) == 0 ? 0 : 0 - n & 7;
+   o = e + n | 0;
+   n = p - n | 0;
+   c[8150] = o;
+   c[8147] = n;
+   c[o + 4 >> 2] = n | 1;
+   c[e + p + 4 >> 2] = 40;
+   c[8151] = c[8266];
+  } else {
+   b = 33024;
+   do {
+    d = c[b >> 2] | 0;
+    f = c[b + 4 >> 2] | 0;
+    if ((e | 0) == (d + f | 0)) {
+     p = 154;
+     break;
+    }
+    b = c[b + 8 >> 2] | 0;
+   } while ((b | 0) != 0);
+   if ((p | 0) == 154) {
+    g = b + 4 | 0;
+    if (!(c[b + 12 >> 2] & 8)) if (e >>> 0 > j >>> 0 & d >>> 0 <= j >>> 0) {
+     c[g >> 2] = f + a;
+     p = (c[8147] | 0) + a | 0;
+     n = j + 8 | 0;
+     n = (n & 7 | 0) == 0 ? 0 : 0 - n & 7;
+     o = j + n | 0;
+     n = p - n | 0;
+     c[8150] = o;
+     c[8147] = n;
+     c[o + 4 >> 2] = n | 1;
+     c[j + p + 4 >> 2] = 40;
+     c[8151] = c[8266];
+     break;
+    }
+   }
+   if (e >>> 0 < (c[8148] | 0) >>> 0) c[8148] = e;
+   d = e + a | 0;
+   b = 33024;
+   do {
+    if ((c[b >> 2] | 0) == (d | 0)) {
+     p = 162;
+     break;
+    }
+    b = c[b + 8 >> 2] | 0;
+   } while ((b | 0) != 0);
+   if ((p | 0) == 162) if (!(c[b + 12 >> 2] & 8)) {
+    c[b >> 2] = e;
+    n = b + 4 | 0;
+    c[n >> 2] = (c[n >> 2] | 0) + a;
+    n = e + 8 | 0;
+    n = e + ((n & 7 | 0) == 0 ? 0 : 0 - n & 7) | 0;
+    a = d + 8 | 0;
+    a = d + ((a & 7 | 0) == 0 ? 0 : 0 - a & 7) | 0;
+    m = n + k | 0;
+    i = a - n - k | 0;
+    c[n + 4 >> 2] = k | 3;
+    g : do if ((j | 0) == (a | 0)) {
+     p = (c[8147] | 0) + i | 0;
+     c[8147] = p;
+     c[8150] = m;
+     c[m + 4 >> 2] = p | 1;
+    } else {
+     if ((c[8149] | 0) == (a | 0)) {
+      p = (c[8146] | 0) + i | 0;
+      c[8146] = p;
+      c[8149] = m;
+      c[m + 4 >> 2] = p | 1;
+      c[m + p >> 2] = p;
+      break;
+     }
+     b = c[a + 4 >> 2] | 0;
+     if ((b & 3 | 0) == 1) {
+      h = b & -8;
+      e = b >>> 3;
+      h : do if (b >>> 0 < 256) {
+       b = c[a + 8 >> 2] | 0;
+       d = c[a + 12 >> 2] | 0;
+       if ((d | 0) == (b | 0)) {
+        c[8144] = c[8144] & ~(1 << e);
+        break;
+       } else {
+        c[b + 12 >> 2] = d;
+        c[d + 8 >> 2] = b;
+        break;
+       }
+      } else {
+       g = c[a + 24 >> 2] | 0;
+       b = c[a + 12 >> 2] | 0;
+       do if ((b | 0) == (a | 0)) {
+        d = a + 16 | 0;
+        e = d + 4 | 0;
+        b = c[e >> 2] | 0;
+        if (!b) {
+         b = c[d >> 2] | 0;
+         if (!b) {
+          b = 0;
+          break;
+         }
+        } else d = e;
+        while (1) {
+         f = b + 20 | 0;
+         e = c[f >> 2] | 0;
+         if (!e) {
+          f = b + 16 | 0;
+          e = c[f >> 2] | 0;
+          if (!e) break; else {
+           b = e;
+           d = f;
+          }
+         } else {
+          b = e;
+          d = f;
+         }
+        }
+        c[d >> 2] = 0;
+       } else {
+        p = c[a + 8 >> 2] | 0;
+        c[p + 12 >> 2] = b;
+        c[b + 8 >> 2] = p;
+       } while (0);
+       if (!g) break;
+       d = c[a + 28 >> 2] | 0;
+       e = 32880 + (d << 2) | 0;
+       do if ((c[e >> 2] | 0) == (a | 0)) {
+        c[e >> 2] = b;
+        if (b | 0) break;
+        c[8145] = c[8145] & ~(1 << d);
+        break h;
+       } else {
+        p = g + 16 | 0;
+        c[((c[p >> 2] | 0) == (a | 0) ? p : g + 20 | 0) >> 2] = b;
+        if (!b) break h;
+       } while (0);
+       c[b + 24 >> 2] = g;
+       d = a + 16 | 0;
+       e = c[d >> 2] | 0;
+       if (e | 0) {
+        c[b + 16 >> 2] = e;
+        c[e + 24 >> 2] = b;
+       }
+       d = c[d + 4 >> 2] | 0;
+       if (!d) break;
+       c[b + 20 >> 2] = d;
+       c[d + 24 >> 2] = b;
+      } while (0);
+      a = a + h | 0;
+      f = h + i | 0;
+     } else f = i;
+     a = a + 4 | 0;
+     c[a >> 2] = c[a >> 2] & -2;
+     c[m + 4 >> 2] = f | 1;
+     c[m + f >> 2] = f;
+     a = f >>> 3;
+     if (f >>> 0 < 256) {
+      d = 32616 + (a << 1 << 2) | 0;
+      b = c[8144] | 0;
+      a = 1 << a;
+      if (!(b & a)) {
+       c[8144] = b | a;
+       a = d;
+       b = d + 8 | 0;
+      } else {
+       b = d + 8 | 0;
+       a = c[b >> 2] | 0;
+      }
+      c[b >> 2] = m;
+      c[a + 12 >> 2] = m;
+      c[m + 8 >> 2] = a;
+      c[m + 12 >> 2] = d;
+      break;
+     }
+     a = f >>> 8;
+     do if (!a) e = 0; else {
+      if (f >>> 0 > 16777215) {
+       e = 31;
+       break;
+      }
+      o = (a + 1048320 | 0) >>> 16 & 8;
+      p = a << o;
+      k = (p + 520192 | 0) >>> 16 & 4;
+      p = p << k;
+      e = (p + 245760 | 0) >>> 16 & 2;
+      e = 14 - (k | o | e) + (p << e >>> 15) | 0;
+      e = f >>> (e + 7 | 0) & 1 | e << 1;
+     } while (0);
+     a = 32880 + (e << 2) | 0;
+     c[m + 28 >> 2] = e;
+     b = m + 16 | 0;
+     c[b + 4 >> 2] = 0;
+     c[b >> 2] = 0;
+     b = c[8145] | 0;
+     d = 1 << e;
+     if (!(b & d)) {
+      c[8145] = b | d;
+      c[a >> 2] = m;
+      c[m + 24 >> 2] = a;
+      c[m + 12 >> 2] = m;
+      c[m + 8 >> 2] = m;
+      break;
+     }
+     a = c[a >> 2] | 0;
+     i : do if ((c[a + 4 >> 2] & -8 | 0) != (f | 0)) {
+      e = f << ((e | 0) == 31 ? 0 : 25 - (e >>> 1) | 0);
+      while (1) {
+       d = a + 16 + (e >>> 31 << 2) | 0;
+       b = c[d >> 2] | 0;
+       if (!b) break;
+       if ((c[b + 4 >> 2] & -8 | 0) == (f | 0)) {
+        a = b;
+        break i;
+       } else {
+        e = e << 1;
+        a = b;
+       }
+      }
+      c[d >> 2] = m;
+      c[m + 24 >> 2] = a;
+      c[m + 12 >> 2] = m;
+      c[m + 8 >> 2] = m;
+      break g;
+     } while (0);
+     o = a + 8 | 0;
+     p = c[o >> 2] | 0;
+     c[p + 12 >> 2] = m;
+     c[o >> 2] = m;
+     c[m + 8 >> 2] = p;
+     c[m + 12 >> 2] = a;
+     c[m + 24 >> 2] = 0;
+    } while (0);
+    p = n + 8 | 0;
+    l = q;
+    return p | 0;
+   }
+   d = 33024;
+   while (1) {
+    b = c[d >> 2] | 0;
+    if (b >>> 0 <= j >>> 0) {
+     b = b + (c[d + 4 >> 2] | 0) | 0;
+     if (b >>> 0 > j >>> 0) break;
+    }
+    d = c[d + 8 >> 2] | 0;
+   }
+   g = b + -47 | 0;
+   d = g + 8 | 0;
+   d = g + ((d & 7 | 0) == 0 ? 0 : 0 - d & 7) | 0;
+   g = j + 16 | 0;
+   d = d >>> 0 < g >>> 0 ? j : d;
+   p = d + 8 | 0;
+   f = a + -40 | 0;
+   n = e + 8 | 0;
+   n = (n & 7 | 0) == 0 ? 0 : 0 - n & 7;
+   o = e + n | 0;
+   n = f - n | 0;
+   c[8150] = o;
+   c[8147] = n;
+   c[o + 4 >> 2] = n | 1;
+   c[e + f + 4 >> 2] = 40;
+   c[8151] = c[8266];
+   f = d + 4 | 0;
+   c[f >> 2] = 27;
+   c[p >> 2] = c[8256];
+   c[p + 4 >> 2] = c[8257];
+   c[p + 8 >> 2] = c[8258];
+   c[p + 12 >> 2] = c[8259];
+   c[8256] = e;
+   c[8257] = a;
+   c[8259] = 0;
+   c[8258] = p;
+   a = d + 24 | 0;
+   do {
+    p = a;
+    a = a + 4 | 0;
+    c[a >> 2] = 7;
+   } while ((p + 8 | 0) >>> 0 < b >>> 0);
+   if ((d | 0) != (j | 0)) {
+    h = d - j | 0;
+    c[f >> 2] = c[f >> 2] & -2;
+    c[j + 4 >> 2] = h | 1;
+    c[d >> 2] = h;
+    a = h >>> 3;
+    if (h >>> 0 < 256) {
+     d = 32616 + (a << 1 << 2) | 0;
+     b = c[8144] | 0;
+     a = 1 << a;
+     if (!(b & a)) {
+      c[8144] = b | a;
+      a = d;
+      b = d + 8 | 0;
+     } else {
+      b = d + 8 | 0;
+      a = c[b >> 2] | 0;
+     }
+     c[b >> 2] = j;
+     c[a + 12 >> 2] = j;
+     c[j + 8 >> 2] = a;
+     c[j + 12 >> 2] = d;
+     break;
+    }
+    a = h >>> 8;
+    if (!a) e = 0; else if (h >>> 0 > 16777215) e = 31; else {
+     o = (a + 1048320 | 0) >>> 16 & 8;
+     p = a << o;
+     n = (p + 520192 | 0) >>> 16 & 4;
+     p = p << n;
+     e = (p + 245760 | 0) >>> 16 & 2;
+     e = 14 - (n | o | e) + (p << e >>> 15) | 0;
+     e = h >>> (e + 7 | 0) & 1 | e << 1;
+    }
+    d = 32880 + (e << 2) | 0;
+    c[j + 28 >> 2] = e;
+    c[j + 20 >> 2] = 0;
+    c[g >> 2] = 0;
+    a = c[8145] | 0;
+    b = 1 << e;
+    if (!(a & b)) {
+     c[8145] = a | b;
+     c[d >> 2] = j;
+     c[j + 24 >> 2] = d;
+     c[j + 12 >> 2] = j;
+     c[j + 8 >> 2] = j;
+     break;
+    }
+    a = c[d >> 2] | 0;
+    j : do if ((c[a + 4 >> 2] & -8 | 0) != (h | 0)) {
+     e = h << ((e | 0) == 31 ? 0 : 25 - (e >>> 1) | 0);
+     while (1) {
+      d = a + 16 + (e >>> 31 << 2) | 0;
+      b = c[d >> 2] | 0;
+      if (!b) break;
+      if ((c[b + 4 >> 2] & -8 | 0) == (h | 0)) {
+       a = b;
+       break j;
+      } else {
+       e = e << 1;
+       a = b;
+      }
+     }
+     c[d >> 2] = j;
+     c[j + 24 >> 2] = a;
+     c[j + 12 >> 2] = j;
+     c[j + 8 >> 2] = j;
+     break f;
+    } while (0);
+    o = a + 8 | 0;
+    p = c[o >> 2] | 0;
+    c[p + 12 >> 2] = j;
+    c[o >> 2] = j;
+    c[j + 8 >> 2] = p;
+    c[j + 12 >> 2] = a;
+    c[j + 24 >> 2] = 0;
+   }
+  } while (0);
+  a = c[8147] | 0;
+  if (a >>> 0 > k >>> 0) {
+   n = a - k | 0;
+   c[8147] = n;
+   p = c[8150] | 0;
+   o = p + k | 0;
+   c[8150] = o;
+   c[o + 4 >> 2] = n | 1;
+   c[p + 4 >> 2] = k | 3;
+   p = p + 8 | 0;
+   l = q;
+   return p | 0;
+  }
+ }
+ c[(Kb() | 0) >> 2] = 12;
+ p = 0;
+ l = q;
+ return p | 0;
+}
+
+function wb(b) {
+ b = b | 0;
+ var c = 0, d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, z = 0, A = 0, B = 0, C = 0, D = 0, E = 0, F = 0, G = 0, H = 0, I = 0, J = 0, K = 0, L = 0, M = 0, N = 0, O = 0, P = 0, Q = 0, R = 0, S = 0, T = 0, U = 0, V = 0, W = 0, X = 0, Y = 0, Z = 0, _ = 0, $ = 0, aa = 0, ba = 0, ca = 0, da = 0, ea = 0, fa = 0, ga = 0, ha = 0, ia = 0, ja = 0, ka = 0, la = 0, ma = 0, na = 0, oa = 0, pa = 0, qa = 0, ra = 0, sa = 0, ta = 0, ua = 0, va = 0, wa = 0, xa = 0, ya = 0, za = 0, Aa = 0, Ba = 0, Ca = 0, Da = 0, Ea = 0, Fa = 0, Ga = 0, Ha = 0, Ia = 0, Ja = 0, Ka = 0;
+ $ = b + 1 | 0;
+ Y = b + 2 | 0;
+ ga = xb(a[b >> 0] | 0, a[$ >> 0] | 0, a[Y >> 0] | 0) | 0;
+ ja = yb(Y) | 0;
+ ja = Pb(ja | 0, y | 0, 5) | 0;
+ U = b + 5 | 0;
+ S = b + 6 | 0;
+ P = b + 7 | 0;
+ l = xb(a[U >> 0] | 0, a[S >> 0] | 0, a[P >> 0] | 0) | 0;
+ l = Pb(l | 0, y | 0, 2) | 0;
+ A = yb(P) | 0;
+ A = Pb(A | 0, y | 0, 7) | 0;
+ L = b + 10 | 0;
+ ha = yb(L) | 0;
+ ha = Pb(ha | 0, y | 0, 4) | 0;
+ H = b + 13 | 0;
+ F = b + 14 | 0;
+ C = b + 15 | 0;
+ na = xb(a[H >> 0] | 0, a[F >> 0] | 0, a[C >> 0] | 0) | 0;
+ na = Pb(na | 0, y | 0, 1) | 0;
+ W = yb(C) | 0;
+ W = Pb(W | 0, y | 0, 6) | 0;
+ x = b + 18 | 0;
+ w = b + 19 | 0;
+ t = b + 20 | 0;
+ Aa = xb(a[x >> 0] | 0, a[w >> 0] | 0, a[t >> 0] | 0) | 0;
+ Aa = Pb(Aa | 0, y | 0, 3) | 0;
+ s = b + 21 | 0;
+ r = b + 22 | 0;
+ o = b + 23 | 0;
+ Fa = xb(a[s >> 0] | 0, a[r >> 0] | 0, a[o >> 0] | 0) | 0;
+ xa = yb(o) | 0;
+ xa = Pb(xa | 0, y | 0, 5) | 0;
+ k = b + 26 | 0;
+ i = b + 27 | 0;
+ f = b + 28 | 0;
+ Ea = xb(a[k >> 0] | 0, a[i >> 0] | 0, a[f >> 0] | 0) | 0;
+ Ea = Pb(Ea | 0, y | 0, 2) | 0;
+ sa = yb(f) | 0;
+ sa = Pb(sa | 0, y | 0, 7) | 0;
+ c = b + 31 | 0;
+ Ja = yb(c) | 0;
+ Ja = Pb(Ja | 0, y | 0, 4) | 0;
+ ea = b + 36 | 0;
+ _ = xb(a[b + 34 >> 0] | 0, a[b + 35 >> 0] | 0, a[ea >> 0] | 0) | 0;
+ _ = Pb(_ | 0, y | 0, 1) | 0;
+ ea = yb(ea) | 0;
+ ea = Pb(ea | 0, y | 0, 6) | 0;
+ V = xb(a[b + 39 >> 0] | 0, a[b + 40 >> 0] | 0, a[b + 41 >> 0] | 0) | 0;
+ V = Pb(V | 0, y | 0, 3) | 0;
+ ca = b + 44 | 0;
+ j = xb(a[b + 42 >> 0] | 0, a[b + 43 >> 0] | 0, a[ca >> 0] | 0) | 0;
+ ca = yb(ca) | 0;
+ ca = Pb(ca | 0, y | 0, 5) | 0;
+ Ka = b + 49 | 0;
+ ua = xb(a[b + 47 >> 0] | 0, a[b + 48 >> 0] | 0, a[Ka >> 0] | 0) | 0;
+ ua = Pb(ua | 0, y | 0, 2) | 0;
+ ua = ua & 2097151;
+ Ka = yb(Ka) | 0;
+ Ka = Pb(Ka | 0, y | 0, 7) | 0;
+ Ka = Ka & 2097151;
+ N = yb(b + 52 | 0) | 0;
+ N = Pb(N | 0, y | 0, 4) | 0;
+ N = N & 2097151;
+ p = b + 57 | 0;
+ Z = xb(a[b + 55 >> 0] | 0, a[b + 56 >> 0] | 0, a[p >> 0] | 0) | 0;
+ Z = Pb(Z | 0, y | 0, 1) | 0;
+ Z = Z & 2097151;
+ p = yb(p) | 0;
+ p = Pb(p | 0, y | 0, 6) | 0;
+ p = p & 2097151;
+ ia = yb(b + 60 | 0) | 0;
+ ia = Pb(ia | 0, y | 0, 3) | 0;
+ m = y;
+ G = Nb(ia | 0, m | 0, 666643, 0) | 0;
+ E = y;
+ Ca = Nb(ia | 0, m | 0, 470296, 0) | 0;
+ K = y;
+ u = Nb(ia | 0, m | 0, 654183, 0) | 0;
+ B = y;
+ R = Nb(ia | 0, m | 0, -997805, -1) | 0;
+ q = y;
+ D = Nb(ia | 0, m | 0, 136657, 0) | 0;
+ V = Rb(D | 0, y | 0, V & 2097151 | 0, 0) | 0;
+ D = y;
+ m = Nb(ia | 0, m | 0, -683901, -1) | 0;
+ j = Rb(m | 0, y | 0, j & 2097151 | 0, 0) | 0;
+ m = y;
+ ia = Nb(p | 0, 0, 666643, 0) | 0;
+ da = y;
+ O = Nb(p | 0, 0, 470296, 0) | 0;
+ qa = y;
+ n = Nb(p | 0, 0, 654183, 0) | 0;
+ e = y;
+ la = Nb(p | 0, 0, -997805, -1) | 0;
+ ka = y;
+ fa = Nb(p | 0, 0, 136657, 0) | 0;
+ Q = y;
+ p = Nb(p | 0, 0, -683901, -1) | 0;
+ p = Rb(V | 0, D | 0, p | 0, y | 0) | 0;
+ D = y;
+ V = Nb(Z | 0, 0, 666643, 0) | 0;
+ ma = y;
+ X = Nb(Z | 0, 0, 470296, 0) | 0;
+ ta = y;
+ ba = Nb(Z | 0, 0, 654183, 0) | 0;
+ J = y;
+ Ga = Nb(Z | 0, 0, -997805, -1) | 0;
+ Ba = y;
+ pa = Nb(Z | 0, 0, 136657, 0) | 0;
+ h = y;
+ Z = Nb(Z | 0, 0, -683901, -1) | 0;
+ ea = Rb(Z | 0, y | 0, ea & 2097151 | 0, 0) | 0;
+ q = Rb(ea | 0, y | 0, R | 0, q | 0) | 0;
+ Q = Rb(q | 0, y | 0, fa | 0, Q | 0) | 0;
+ fa = y;
+ q = Nb(N | 0, 0, 666643, 0) | 0;
+ R = y;
+ ea = Nb(N | 0, 0, 470296, 0) | 0;
+ Z = y;
+ M = Nb(N | 0, 0, 654183, 0) | 0;
+ oa = y;
+ d = Nb(N | 0, 0, -997805, -1) | 0;
+ g = y;
+ Ia = Nb(N | 0, 0, 136657, 0) | 0;
+ Ha = y;
+ N = Nb(N | 0, 0, -683901, -1) | 0;
+ v = y;
+ I = Nb(Ka | 0, 0, 666643, 0) | 0;
+ z = y;
+ ya = Nb(Ka | 0, 0, 470296, 0) | 0;
+ za = y;
+ wa = Nb(Ka | 0, 0, 654183, 0) | 0;
+ va = y;
+ Da = Nb(Ka | 0, 0, -997805, -1) | 0;
+ aa = y;
+ ra = Nb(Ka | 0, 0, 136657, 0) | 0;
+ T = y;
+ Ka = Nb(Ka | 0, 0, -683901, -1) | 0;
+ Ja = Rb(Ka | 0, y | 0, Ja & 2097151 | 0, 0) | 0;
+ Ha = Rb(Ja | 0, y | 0, Ia | 0, Ha | 0) | 0;
+ Ba = Rb(Ha | 0, y | 0, Ga | 0, Ba | 0) | 0;
+ K = Rb(Ba | 0, y | 0, Ca | 0, K | 0) | 0;
+ e = Rb(K | 0, y | 0, n | 0, e | 0) | 0;
+ n = y;
+ K = Nb(ua | 0, 0, 666643, 0) | 0;
+ W = Rb(K | 0, y | 0, W & 2097151 | 0, 0) | 0;
+ K = y;
+ Ca = Nb(ua | 0, 0, 470296, 0) | 0;
+ Ba = y;
+ Ga = Nb(ua | 0, 0, 654183, 0) | 0;
+ Fa = Rb(Ga | 0, y | 0, Fa & 2097151 | 0, 0) | 0;
+ za = Rb(Fa | 0, y | 0, ya | 0, za | 0) | 0;
+ R = Rb(za | 0, y | 0, q | 0, R | 0) | 0;
+ q = y;
+ za = Nb(ua | 0, 0, -997805, -1) | 0;
+ ya = y;
+ Fa = Nb(ua | 0, 0, 136657, 0) | 0;
+ Ea = Rb(Fa | 0, y | 0, Ea & 2097151 | 0, 0) | 0;
+ aa = Rb(Ea | 0, y | 0, Da | 0, aa | 0) | 0;
+ oa = Rb(aa | 0, y | 0, M | 0, oa | 0) | 0;
+ ta = Rb(oa | 0, y | 0, X | 0, ta | 0) | 0;
+ da = Rb(ta | 0, y | 0, ia | 0, da | 0) | 0;
+ ia = y;
+ ua = Nb(ua | 0, 0, -683901, -1) | 0;
+ ta = y;
+ X = Rb(W | 0, K | 0, 1048576, 0) | 0;
+ oa = y;
+ M = Pb(X | 0, oa | 0, 21) | 0;
+ aa = y;
+ Aa = Rb(Ca | 0, Ba | 0, Aa & 2097151 | 0, 0) | 0;
+ z = Rb(Aa | 0, y | 0, I | 0, z | 0) | 0;
+ aa = Rb(z | 0, y | 0, M | 0, aa | 0) | 0;
+ M = y;
+ oa = Sb(W | 0, K | 0, X & -2097152 | 0, oa & 2047 | 0) | 0;
+ X = y;
+ K = Rb(R | 0, q | 0, 1048576, 0) | 0;
+ W = y;
+ z = Pb(K | 0, W | 0, 21) | 0;
+ I = y;
+ xa = Rb(za | 0, ya | 0, xa & 2097151 | 0, 0) | 0;
+ va = Rb(xa | 0, y | 0, wa | 0, va | 0) | 0;
+ Z = Rb(va | 0, y | 0, ea | 0, Z | 0) | 0;
+ ma = Rb(Z | 0, y | 0, V | 0, ma | 0) | 0;
+ I = Rb(ma | 0, y | 0, z | 0, I | 0) | 0;
+ z = y;
+ ma = Rb(da | 0, ia | 0, 1048576, 0) | 0;
+ V = y;
+ Z = Ob(ma | 0, V | 0, 21) | 0;
+ ea = y;
+ sa = Rb(ua | 0, ta | 0, sa & 2097151 | 0, 0) | 0;
+ T = Rb(sa | 0, y | 0, ra | 0, T | 0) | 0;
+ g = Rb(T | 0, y | 0, d | 0, g | 0) | 0;
+ J = Rb(g | 0, y | 0, ba | 0, J | 0) | 0;
+ E = Rb(J | 0, y | 0, G | 0, E | 0) | 0;
+ qa = Rb(E | 0, y | 0, O | 0, qa | 0) | 0;
+ ea = Rb(qa | 0, y | 0, Z | 0, ea | 0) | 0;
+ Z = y;
+ qa = Rb(e | 0, n | 0, 1048576, 0) | 0;
+ O = y;
+ E = Ob(qa | 0, O | 0, 21) | 0;
+ G = y;
+ _ = Rb(N | 0, v | 0, _ & 2097151 | 0, 0) | 0;
+ h = Rb(_ | 0, y | 0, pa | 0, h | 0) | 0;
+ B = Rb(h | 0, y | 0, u | 0, B | 0) | 0;
+ ka = Rb(B | 0, y | 0, la | 0, ka | 0) | 0;
+ G = Rb(ka | 0, y | 0, E | 0, G | 0) | 0;
+ E = y;
+ O = Sb(e | 0, n | 0, qa & -2097152 | 0, O | 0) | 0;
+ qa = y;
+ n = Rb(Q | 0, fa | 0, 1048576, 0) | 0;
+ e = y;
+ ka = Ob(n | 0, e | 0, 21) | 0;
+ ka = Rb(p | 0, D | 0, ka | 0, y | 0) | 0;
+ D = y;
+ e = Sb(Q | 0, fa | 0, n & -2097152 | 0, e | 0) | 0;
+ n = y;
+ fa = Rb(j | 0, m | 0, 1048576, 0) | 0;
+ Q = y;
+ p = Ob(fa | 0, Q | 0, 21) | 0;
+ ca = Rb(p | 0, y | 0, ca & 2097151 | 0, 0) | 0;
+ p = y;
+ Q = Sb(j | 0, m | 0, fa & -2097152 | 0, Q | 0) | 0;
+ fa = y;
+ m = Rb(aa | 0, M | 0, 1048576, 0) | 0;
+ j = y;
+ la = Pb(m | 0, j | 0, 21) | 0;
+ B = y;
+ j = Sb(aa | 0, M | 0, m & -2097152 | 0, j | 0) | 0;
+ m = y;
+ M = Rb(I | 0, z | 0, 1048576, 0) | 0;
+ aa = y;
+ u = Ob(M | 0, aa | 0, 21) | 0;
+ h = y;
+ pa = Rb(ea | 0, Z | 0, 1048576, 0) | 0;
+ _ = y;
+ v = Ob(pa | 0, _ | 0, 21) | 0;
+ qa = Rb(v | 0, y | 0, O | 0, qa | 0) | 0;
+ O = y;
+ _ = Sb(ea | 0, Z | 0, pa & -2097152 | 0, _ | 0) | 0;
+ pa = y;
+ Z = Rb(G | 0, E | 0, 1048576, 0) | 0;
+ ea = y;
+ v = Ob(Z | 0, ea | 0, 21) | 0;
+ n = Rb(v | 0, y | 0, e | 0, n | 0) | 0;
+ e = y;
+ ea = Sb(G | 0, E | 0, Z & -2097152 | 0, ea | 0) | 0;
+ Z = y;
+ E = Rb(ka | 0, D | 0, 1048576, 0) | 0;
+ G = y;
+ v = Ob(E | 0, G | 0, 21) | 0;
+ fa = Rb(v | 0, y | 0, Q | 0, fa | 0) | 0;
+ Q = y;
+ G = Sb(ka | 0, D | 0, E & -2097152 | 0, G | 0) | 0;
+ E = y;
+ D = Nb(ca | 0, p | 0, 666643, 0) | 0;
+ na = Rb(D | 0, y | 0, na & 2097151 | 0, 0) | 0;
+ D = y;
+ ka = Nb(ca | 0, p | 0, 470296, 0) | 0;
+ ka = Rb(oa | 0, X | 0, ka | 0, y | 0) | 0;
+ X = y;
+ oa = Nb(ca | 0, p | 0, 654183, 0) | 0;
+ oa = Rb(j | 0, m | 0, oa | 0, y | 0) | 0;
+ m = y;
+ j = Nb(ca | 0, p | 0, -997805, -1) | 0;
+ v = y;
+ N = Nb(ca | 0, p | 0, 136657, 0) | 0;
+ J = y;
+ p = Nb(ca | 0, p | 0, -683901, -1) | 0;
+ ia = Rb(p | 0, y | 0, da | 0, ia | 0) | 0;
+ h = Rb(ia | 0, y | 0, u | 0, h | 0) | 0;
+ V = Sb(h | 0, y | 0, ma & -2097152 | 0, V | 0) | 0;
+ ma = y;
+ h = Nb(fa | 0, Q | 0, 666643, 0) | 0;
+ ha = Rb(h | 0, y | 0, ha & 2097151 | 0, 0) | 0;
+ h = y;
+ u = Nb(fa | 0, Q | 0, 470296, 0) | 0;
+ u = Rb(na | 0, D | 0, u | 0, y | 0) | 0;
+ D = y;
+ na = Nb(fa | 0, Q | 0, 654183, 0) | 0;
+ na = Rb(ka | 0, X | 0, na | 0, y | 0) | 0;
+ X = y;
+ ka = Nb(fa | 0, Q | 0, -997805, -1) | 0;
+ ka = Rb(oa | 0, m | 0, ka | 0, y | 0) | 0;
+ m = y;
+ oa = Nb(fa | 0, Q | 0, 136657, 0) | 0;
+ ia = y;
+ Q = Nb(fa | 0, Q | 0, -683901, -1) | 0;
+ fa = y;
+ da = Nb(G | 0, E | 0, 666643, 0) | 0;
+ A = Rb(da | 0, y | 0, A & 2097151 | 0, 0) | 0;
+ da = y;
+ p = Nb(G | 0, E | 0, 470296, 0) | 0;
+ p = Rb(ha | 0, h | 0, p | 0, y | 0) | 0;
+ h = y;
+ ha = Nb(G | 0, E | 0, 654183, 0) | 0;
+ ha = Rb(u | 0, D | 0, ha | 0, y | 0) | 0;
+ D = y;
+ u = Nb(G | 0, E | 0, -997805, -1) | 0;
+ u = Rb(na | 0, X | 0, u | 0, y | 0) | 0;
+ X = y;
+ na = Nb(G | 0, E | 0, 136657, 0) | 0;
+ na = Rb(ka | 0, m | 0, na | 0, y | 0) | 0;
+ m = y;
+ E = Nb(G | 0, E | 0, -683901, -1) | 0;
+ G = y;
+ q = Rb(la | 0, B | 0, R | 0, q | 0) | 0;
+ W = Sb(q | 0, y | 0, K & -2097152 | 0, W | 0) | 0;
+ v = Rb(W | 0, y | 0, j | 0, v | 0) | 0;
+ ia = Rb(v | 0, y | 0, oa | 0, ia | 0) | 0;
+ G = Rb(ia | 0, y | 0, E | 0, G | 0) | 0;
+ E = y;
+ ia = Nb(n | 0, e | 0, 666643, 0) | 0;
+ l = Rb(ia | 0, y | 0, l & 2097151 | 0, 0) | 0;
+ ia = y;
+ oa = Nb(n | 0, e | 0, 470296, 0) | 0;
+ oa = Rb(A | 0, da | 0, oa | 0, y | 0) | 0;
+ da = y;
+ A = Nb(n | 0, e | 0, 654183, 0) | 0;
+ A = Rb(p | 0, h | 0, A | 0, y | 0) | 0;
+ h = y;
+ p = Nb(n | 0, e | 0, -997805, -1) | 0;
+ p = Rb(ha | 0, D | 0, p | 0, y | 0) | 0;
+ D = y;
+ ha = Nb(n | 0, e | 0, 136657, 0) | 0;
+ ha = Rb(u | 0, X | 0, ha | 0, y | 0) | 0;
+ X = y;
+ e = Nb(n | 0, e | 0, -683901, -1) | 0;
+ e = Rb(na | 0, m | 0, e | 0, y | 0) | 0;
+ m = y;
+ na = Nb(ea | 0, Z | 0, 666643, 0) | 0;
+ ja = Rb(na | 0, y | 0, ja & 2097151 | 0, 0) | 0;
+ na = y;
+ n = Nb(ea | 0, Z | 0, 470296, 0) | 0;
+ n = Rb(l | 0, ia | 0, n | 0, y | 0) | 0;
+ ia = y;
+ l = Nb(ea | 0, Z | 0, 654183, 0) | 0;
+ l = Rb(oa | 0, da | 0, l | 0, y | 0) | 0;
+ da = y;
+ oa = Nb(ea | 0, Z | 0, -997805, -1) | 0;
+ oa = Rb(A | 0, h | 0, oa | 0, y | 0) | 0;
+ h = y;
+ A = Nb(ea | 0, Z | 0, 136657, 0) | 0;
+ A = Rb(p | 0, D | 0, A | 0, y | 0) | 0;
+ D = y;
+ Z = Nb(ea | 0, Z | 0, -683901, -1) | 0;
+ Z = Rb(ha | 0, X | 0, Z | 0, y | 0) | 0;
+ X = y;
+ ha = Nb(qa | 0, O | 0, 666643, 0) | 0;
+ ga = Rb(ha | 0, y | 0, ga & 2097151 | 0, 0) | 0;
+ ha = y;
+ ea = Nb(qa | 0, O | 0, 470296, 0) | 0;
+ ea = Rb(ja | 0, na | 0, ea | 0, y | 0) | 0;
+ na = y;
+ ja = Nb(qa | 0, O | 0, 654183, 0) | 0;
+ ja = Rb(n | 0, ia | 0, ja | 0, y | 0) | 0;
+ ia = y;
+ n = Nb(qa | 0, O | 0, -997805, -1) | 0;
+ n = Rb(l | 0, da | 0, n | 0, y | 0) | 0;
+ da = y;
+ l = Nb(qa | 0, O | 0, 136657, 0) | 0;
+ l = Rb(oa | 0, h | 0, l | 0, y | 0) | 0;
+ h = y;
+ O = Nb(qa | 0, O | 0, -683901, -1) | 0;
+ O = Rb(A | 0, D | 0, O | 0, y | 0) | 0;
+ D = y;
+ A = Rb(ga | 0, ha | 0, 1048576, 0) | 0;
+ qa = y;
+ oa = Ob(A | 0, qa | 0, 21) | 0;
+ oa = Rb(ea | 0, na | 0, oa | 0, y | 0) | 0;
+ na = y;
+ qa = Sb(ga | 0, ha | 0, A & -2097152 | 0, qa | 0) | 0;
+ A = y;
+ ha = Rb(ja | 0, ia | 0, 1048576, 0) | 0;
+ ga = y;
+ ea = Ob(ha | 0, ga | 0, 21) | 0;
+ ea = Rb(n | 0, da | 0, ea | 0, y | 0) | 0;
+ da = y;
+ n = Rb(l | 0, h | 0, 1048576, 0) | 0;
+ p = y;
+ u = Ob(n | 0, p | 0, 21) | 0;
+ u = Rb(O | 0, D | 0, u | 0, y | 0) | 0;
+ D = y;
+ O = Rb(Z | 0, X | 0, 1048576, 0) | 0;
+ v = y;
+ j = Ob(O | 0, v | 0, 21) | 0;
+ j = Rb(e | 0, m | 0, j | 0, y | 0) | 0;
+ m = y;
+ v = Sb(Z | 0, X | 0, O & -2097152 | 0, v | 0) | 0;
+ O = y;
+ X = Rb(G | 0, E | 0, 1048576, 0) | 0;
+ Z = y;
+ e = Ob(X | 0, Z | 0, 21) | 0;
+ W = y;
+ z = Rb(N | 0, J | 0, I | 0, z | 0) | 0;
+ aa = Sb(z | 0, y | 0, M & -2097152 | 0, aa | 0) | 0;
+ fa = Rb(aa | 0, y | 0, Q | 0, fa | 0) | 0;
+ W = Rb(fa | 0, y | 0, e | 0, W | 0) | 0;
+ e = y;
+ Z = Sb(G | 0, E | 0, X & -2097152 | 0, Z | 0) | 0;
+ X = y;
+ E = Rb(V | 0, ma | 0, 1048576, 0) | 0;
+ G = y;
+ fa = Ob(E | 0, G | 0, 21) | 0;
+ pa = Rb(fa | 0, y | 0, _ | 0, pa | 0) | 0;
+ _ = y;
+ G = Sb(V | 0, ma | 0, E & -2097152 | 0, G | 0) | 0;
+ E = y;
+ ma = Rb(oa | 0, na | 0, 1048576, 0) | 0;
+ V = y;
+ fa = Ob(ma | 0, V | 0, 21) | 0;
+ Q = y;
+ aa = Rb(ea | 0, da | 0, 1048576, 0) | 0;
+ M = y;
+ z = Ob(aa | 0, M | 0, 21) | 0;
+ I = y;
+ J = Rb(u | 0, D | 0, 1048576, 0) | 0;
+ N = y;
+ K = Ob(J | 0, N | 0, 21) | 0;
+ K = Rb(v | 0, O | 0, K | 0, y | 0) | 0;
+ O = y;
+ v = Rb(j | 0, m | 0, 1048576, 0) | 0;
+ q = y;
+ R = Ob(v | 0, q | 0, 21) | 0;
+ R = Rb(Z | 0, X | 0, R | 0, y | 0) | 0;
+ X = y;
+ q = Sb(j | 0, m | 0, v & -2097152 | 0, q | 0) | 0;
+ v = y;
+ m = Rb(W | 0, e | 0, 1048576, 0) | 0;
+ j = y;
+ Z = Ob(m | 0, j | 0, 21) | 0;
+ Z = Rb(G | 0, E | 0, Z | 0, y | 0) | 0;
+ E = y;
+ j = Sb(W | 0, e | 0, m & -2097152 | 0, j | 0) | 0;
+ m = y;
+ e = Rb(pa | 0, _ | 0, 1048576, 0) | 0;
+ W = y;
+ G = Ob(e | 0, W | 0, 21) | 0;
+ B = y;
+ W = Sb(pa | 0, _ | 0, e & -2097152 | 0, W | 0) | 0;
+ e = y;
+ _ = Nb(G | 0, B | 0, 666643, 0) | 0;
+ _ = Rb(qa | 0, A | 0, _ | 0, y | 0) | 0;
+ A = y;
+ qa = Nb(G | 0, B | 0, 470296, 0) | 0;
+ pa = y;
+ la = Nb(G | 0, B | 0, 654183, 0) | 0;
+ ka = y;
+ ca = Nb(G | 0, B | 0, -997805, -1) | 0;
+ ba = y;
+ g = Nb(G | 0, B | 0, 136657, 0) | 0;
+ d = y;
+ B = Nb(G | 0, B | 0, -683901, -1) | 0;
+ G = y;
+ A = Ob(_ | 0, A | 0, 21) | 0;
+ T = y;
+ na = Rb(qa | 0, pa | 0, oa | 0, na | 0) | 0;
+ V = Sb(na | 0, y | 0, ma & -2097152 | 0, V | 0) | 0;
+ T = Rb(V | 0, y | 0, A | 0, T | 0) | 0;
+ A = Ob(T | 0, y | 0, 21) | 0;
+ V = y;
+ ia = Rb(la | 0, ka | 0, ja | 0, ia | 0) | 0;
+ ga = Sb(ia | 0, y | 0, ha & -2097152 | 0, ga | 0) | 0;
+ Q = Rb(ga | 0, y | 0, fa | 0, Q | 0) | 0;
+ V = Rb(Q | 0, y | 0, A | 0, V | 0) | 0;
+ A = Ob(V | 0, y | 0, 21) | 0;
+ Q = y;
+ ba = Rb(ea | 0, da | 0, ca | 0, ba | 0) | 0;
+ M = Sb(ba | 0, y | 0, aa & -2097152 | 0, M | 0) | 0;
+ Q = Rb(M | 0, y | 0, A | 0, Q | 0) | 0;
+ A = Ob(Q | 0, y | 0, 21) | 0;
+ M = y;
+ h = Rb(g | 0, d | 0, l | 0, h | 0) | 0;
+ p = Sb(h | 0, y | 0, n & -2097152 | 0, p | 0) | 0;
+ I = Rb(p | 0, y | 0, z | 0, I | 0) | 0;
+ M = Rb(I | 0, y | 0, A | 0, M | 0) | 0;
+ A = Ob(M | 0, y | 0, 21) | 0;
+ I = y;
+ G = Rb(u | 0, D | 0, B | 0, G | 0) | 0;
+ N = Sb(G | 0, y | 0, J & -2097152 | 0, N | 0) | 0;
+ I = Rb(N | 0, y | 0, A | 0, I | 0) | 0;
+ A = Ob(I | 0, y | 0, 21) | 0;
+ A = Rb(K | 0, O | 0, A | 0, y | 0) | 0;
+ O = Ob(A | 0, y | 0, 21) | 0;
+ v = Rb(O | 0, y | 0, q | 0, v | 0) | 0;
+ q = Ob(v | 0, y | 0, 21) | 0;
+ q = Rb(R | 0, X | 0, q | 0, y | 0) | 0;
+ X = Ob(q | 0, y | 0, 21) | 0;
+ m = Rb(X | 0, y | 0, j | 0, m | 0) | 0;
+ j = Ob(m | 0, y | 0, 21) | 0;
+ j = Rb(Z | 0, E | 0, j | 0, y | 0) | 0;
+ E = Ob(j | 0, y | 0, 21) | 0;
+ e = Rb(E | 0, y | 0, W | 0, e | 0) | 0;
+ W = Ob(e | 0, y | 0, 21) | 0;
+ E = y;
+ Z = Nb(W | 0, E | 0, 666643, 0) | 0;
+ _ = Rb(Z | 0, y | 0, _ & 2097151 | 0, 0) | 0;
+ Z = y;
+ X = Nb(W | 0, E | 0, 470296, 0) | 0;
+ T = Rb(X | 0, y | 0, T & 2097151 | 0, 0) | 0;
+ X = y;
+ R = Nb(W | 0, E | 0, 654183, 0) | 0;
+ V = Rb(R | 0, y | 0, V & 2097151 | 0, 0) | 0;
+ R = y;
+ O = Nb(W | 0, E | 0, -997805, -1) | 0;
+ Q = Rb(O | 0, y | 0, Q & 2097151 | 0, 0) | 0;
+ O = y;
+ K = Nb(W | 0, E | 0, 136657, 0) | 0;
+ M = Rb(K | 0, y | 0, M & 2097151 | 0, 0) | 0;
+ K = y;
+ E = Nb(W | 0, E | 0, -683901, -1) | 0;
+ I = Rb(E | 0, y | 0, I & 2097151 | 0, 0) | 0;
+ E = y;
+ W = Ob(_ | 0, Z | 0, 21) | 0;
+ W = Rb(T | 0, X | 0, W | 0, y | 0) | 0;
+ X = y;
+ T = Ob(W | 0, X | 0, 21) | 0;
+ T = Rb(V | 0, R | 0, T | 0, y | 0) | 0;
+ R = y;
+ V = W & 2097151;
+ N = Ob(T | 0, R | 0, 21) | 0;
+ N = Rb(Q | 0, O | 0, N | 0, y | 0) | 0;
+ O = y;
+ Q = T & 2097151;
+ J = Ob(N | 0, O | 0, 21) | 0;
+ J = Rb(M | 0, K | 0, J | 0, y | 0) | 0;
+ K = y;
+ M = N & 2097151;
+ G = Ob(J | 0, K | 0, 21) | 0;
+ G = Rb(I | 0, E | 0, G | 0, y | 0) | 0;
+ E = y;
+ I = J & 2097151;
+ B = Ob(G | 0, E | 0, 21) | 0;
+ A = Rb(B | 0, y | 0, A & 2097151 | 0, 0) | 0;
+ B = y;
+ D = G & 2097151;
+ u = Ob(A | 0, B | 0, 21) | 0;
+ v = Rb(u | 0, y | 0, v & 2097151 | 0, 0) | 0;
+ u = y;
+ z = A & 2097151;
+ p = Ob(v | 0, u | 0, 21) | 0;
+ q = Rb(p | 0, y | 0, q & 2097151 | 0, 0) | 0;
+ p = y;
+ n = Ob(q | 0, p | 0, 21) | 0;
+ m = Rb(n | 0, y | 0, m & 2097151 | 0, 0) | 0;
+ n = y;
+ h = Ob(m | 0, n | 0, 21) | 0;
+ j = Rb(h | 0, y | 0, j & 2097151 | 0, 0) | 0;
+ h = y;
+ l = m & 2097151;
+ d = Ob(j | 0, h | 0, 21) | 0;
+ e = Rb(d | 0, y | 0, e & 2097151 | 0, 0) | 0;
+ d = y;
+ g = j & 2097151;
+ a[b >> 0] = _;
+ aa = Pb(_ | 0, Z | 0, 8) | 0;
+ a[$ >> 0] = aa;
+ Z = Pb(_ | 0, Z | 0, 16) | 0;
+ _ = Qb(V | 0, 0, 5) | 0;
+ a[Y >> 0] = _ | Z & 31;
+ Y = Pb(W | 0, X | 0, 3) | 0;
+ a[b + 3 >> 0] = Y;
+ X = Pb(W | 0, X | 0, 11) | 0;
+ a[b + 4 >> 0] = X;
+ V = Pb(V | 0, 0, 19) | 0;
+ X = y;
+ W = Qb(Q | 0, 0, 2) | 0;
+ a[U >> 0] = W | V;
+ R = Pb(T | 0, R | 0, 6) | 0;
+ a[S >> 0] = R;
+ Q = Pb(Q | 0, 0, 14) | 0;
+ S = y;
+ R = Qb(M | 0, 0, 7) | 0;
+ a[P >> 0] = R | Q;
+ P = Pb(N | 0, O | 0, 1) | 0;
+ a[b + 8 >> 0] = P;
+ O = Pb(N | 0, O | 0, 9) | 0;
+ a[b + 9 >> 0] = O;
+ M = Pb(M | 0, 0, 17) | 0;
+ O = y;
+ N = Qb(I | 0, 0, 4) | 0;
+ a[L >> 0] = N | M;
+ L = Pb(J | 0, K | 0, 4) | 0;
+ a[b + 11 >> 0] = L;
+ K = Pb(J | 0, K | 0, 12) | 0;
+ a[b + 12 >> 0] = K;
+ I = Pb(I | 0, 0, 20) | 0;
+ K = y;
+ J = Qb(D | 0, 0, 1) | 0;
+ a[H >> 0] = J | I;
+ E = Pb(G | 0, E | 0, 7) | 0;
+ a[F >> 0] = E;
+ D = Pb(D | 0, 0, 15) | 0;
+ F = y;
+ E = Qb(z | 0, 0, 6) | 0;
+ a[C >> 0] = E | D;
+ C = Pb(A | 0, B | 0, 2) | 0;
+ a[b + 16 >> 0] = C;
+ B = Pb(A | 0, B | 0, 10) | 0;
+ a[b + 17 >> 0] = B;
+ z = Pb(z | 0, 0, 18) | 0;
+ B = y;
+ A = Qb(v | 0, u | 0, 3) | 0;
+ a[x >> 0] = A | z;
+ x = Pb(v | 0, u | 0, 5) | 0;
+ a[w >> 0] = x;
+ u = Pb(v | 0, u | 0, 13) | 0;
+ a[t >> 0] = u;
+ a[s >> 0] = q;
+ s = Pb(q | 0, p | 0, 8) | 0;
+ a[r >> 0] = s;
+ p = Pb(q | 0, p | 0, 16) | 0;
+ q = Qb(l | 0, 0, 5) | 0;
+ a[o >> 0] = q | p & 31;
+ o = Pb(m | 0, n | 0, 3) | 0;
+ a[b + 24 >> 0] = o;
+ n = Pb(m | 0, n | 0, 11) | 0;
+ a[b + 25 >> 0] = n;
+ l = Pb(l | 0, 0, 19) | 0;
+ n = y;
+ m = Qb(g | 0, 0, 2) | 0;
+ a[k >> 0] = m | l;
+ h = Pb(j | 0, h | 0, 6) | 0;
+ a[i >> 0] = h;
+ g = Pb(g | 0, 0, 14) | 0;
+ i = y;
+ h = Qb(e | 0, d | 0, 7) | 0;
+ a[f >> 0] = h | g;
+ f = Pb(e | 0, d | 0, 1) | 0;
+ a[b + 29 >> 0] = f;
+ f = Pb(e | 0, d | 0, 9) | 0;
+ a[b + 30 >> 0] = f;
+ b = Ob(e | 0, d | 0, 17) | 0;
+ a[c >> 0] = b;
+ return;
+}
+
+function ta(a, b, d) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, z = 0, A = 0;
+ h = Ob(0, c[b >> 2] | 0, 32) | 0;
+ n = y;
+ w = Ob(0, c[d >> 2] | 0, 32) | 0;
+ n = Nb(w | 0, y | 0, h | 0, n | 0) | 0;
+ h = a;
+ c[h >> 2] = n;
+ c[h + 4 >> 2] = y;
+ h = Ob(0, c[b >> 2] | 0, 32) | 0;
+ n = y;
+ w = d + 8 | 0;
+ s = Ob(0, c[w >> 2] | 0, 32) | 0;
+ n = Nb(s | 0, y | 0, h | 0, n | 0) | 0;
+ h = y;
+ s = b + 8 | 0;
+ r = Ob(0, c[s >> 2] | 0, 32) | 0;
+ p = y;
+ v = Ob(0, c[d >> 2] | 0, 32) | 0;
+ p = Nb(v | 0, y | 0, r | 0, p | 0) | 0;
+ h = Rb(p | 0, y | 0, n | 0, h | 0) | 0;
+ n = a + 8 | 0;
+ c[n >> 2] = h;
+ c[n + 4 >> 2] = y;
+ n = Ob(0, c[s >> 2] | 0, 31) | 0;
+ h = y;
+ p = Ob(0, c[w >> 2] | 0, 32) | 0;
+ h = Nb(p | 0, y | 0, n | 0, h | 0) | 0;
+ n = y;
+ p = Ob(0, c[b >> 2] | 0, 32) | 0;
+ r = y;
+ v = d + 16 | 0;
+ l = Ob(0, c[v >> 2] | 0, 32) | 0;
+ r = Nb(l | 0, y | 0, p | 0, r | 0) | 0;
+ n = Rb(r | 0, y | 0, h | 0, n | 0) | 0;
+ h = y;
+ r = b + 16 | 0;
+ p = Ob(0, c[r >> 2] | 0, 32) | 0;
+ l = y;
+ u = Ob(0, c[d >> 2] | 0, 32) | 0;
+ l = Nb(u | 0, y | 0, p | 0, l | 0) | 0;
+ l = Rb(n | 0, h | 0, l | 0, y | 0) | 0;
+ h = a + 16 | 0;
+ c[h >> 2] = l;
+ c[h + 4 >> 2] = y;
+ h = Ob(0, c[s >> 2] | 0, 32) | 0;
+ l = y;
+ n = Ob(0, c[v >> 2] | 0, 32) | 0;
+ l = Nb(n | 0, y | 0, h | 0, l | 0) | 0;
+ h = y;
+ n = Ob(0, c[r >> 2] | 0, 32) | 0;
+ p = y;
+ u = Ob(0, c[w >> 2] | 0, 32) | 0;
+ p = Nb(u | 0, y | 0, n | 0, p | 0) | 0;
+ h = Rb(p | 0, y | 0, l | 0, h | 0) | 0;
+ l = y;
+ p = Ob(0, c[b >> 2] | 0, 32) | 0;
+ n = y;
+ u = d + 24 | 0;
+ g = Ob(0, c[u >> 2] | 0, 32) | 0;
+ n = Nb(g | 0, y | 0, p | 0, n | 0) | 0;
+ n = Rb(h | 0, l | 0, n | 0, y | 0) | 0;
+ l = y;
+ h = b + 24 | 0;
+ p = Ob(0, c[h >> 2] | 0, 32) | 0;
+ g = y;
+ j = Ob(0, c[d >> 2] | 0, 32) | 0;
+ g = Nb(j | 0, y | 0, p | 0, g | 0) | 0;
+ g = Rb(n | 0, l | 0, g | 0, y | 0) | 0;
+ l = a + 24 | 0;
+ c[l >> 2] = g;
+ c[l + 4 >> 2] = y;
+ l = Ob(0, c[r >> 2] | 0, 32) | 0;
+ g = y;
+ n = Ob(0, c[v >> 2] | 0, 32) | 0;
+ g = Nb(n | 0, y | 0, l | 0, g | 0) | 0;
+ l = y;
+ n = Ob(0, c[s >> 2] | 0, 32) | 0;
+ p = y;
+ j = Ob(0, c[u >> 2] | 0, 32) | 0;
+ p = Nb(j | 0, y | 0, n | 0, p | 0) | 0;
+ n = y;
+ j = Ob(0, c[h >> 2] | 0, 32) | 0;
+ q = y;
+ o = Ob(0, c[w >> 2] | 0, 32) | 0;
+ q = Nb(o | 0, y | 0, j | 0, q | 0) | 0;
+ n = Rb(q | 0, y | 0, p | 0, n | 0) | 0;
+ n = Qb(n | 0, y | 0, 1) | 0;
+ l = Rb(n | 0, y | 0, g | 0, l | 0) | 0;
+ g = y;
+ n = Ob(0, c[b >> 2] | 0, 32) | 0;
+ p = y;
+ q = d + 32 | 0;
+ j = Ob(0, c[q >> 2] | 0, 32) | 0;
+ p = Nb(j | 0, y | 0, n | 0, p | 0) | 0;
+ p = Rb(l | 0, g | 0, p | 0, y | 0) | 0;
+ g = y;
+ l = b + 32 | 0;
+ n = Ob(0, c[l >> 2] | 0, 32) | 0;
+ j = y;
+ o = Ob(0, c[d >> 2] | 0, 32) | 0;
+ j = Nb(o | 0, y | 0, n | 0, j | 0) | 0;
+ j = Rb(p | 0, g | 0, j | 0, y | 0) | 0;
+ g = a + 32 | 0;
+ c[g >> 2] = j;
+ c[g + 4 >> 2] = y;
+ g = Ob(0, c[r >> 2] | 0, 32) | 0;
+ j = y;
+ p = Ob(0, c[u >> 2] | 0, 32) | 0;
+ j = Nb(p | 0, y | 0, g | 0, j | 0) | 0;
+ g = y;
+ p = Ob(0, c[h >> 2] | 0, 32) | 0;
+ n = y;
+ o = Ob(0, c[v >> 2] | 0, 32) | 0;
+ n = Nb(o | 0, y | 0, p | 0, n | 0) | 0;
+ g = Rb(n | 0, y | 0, j | 0, g | 0) | 0;
+ j = y;
+ n = Ob(0, c[s >> 2] | 0, 32) | 0;
+ p = y;
+ o = Ob(0, c[q >> 2] | 0, 32) | 0;
+ p = Nb(o | 0, y | 0, n | 0, p | 0) | 0;
+ p = Rb(g | 0, j | 0, p | 0, y | 0) | 0;
+ j = y;
+ g = Ob(0, c[l >> 2] | 0, 32) | 0;
+ n = y;
+ o = Ob(0, c[w >> 2] | 0, 32) | 0;
+ n = Nb(o | 0, y | 0, g | 0, n | 0) | 0;
+ n = Rb(p | 0, j | 0, n | 0, y | 0) | 0;
+ j = y;
+ p = Ob(0, c[b >> 2] | 0, 32) | 0;
+ g = y;
+ o = d + 40 | 0;
+ t = Ob(0, c[o >> 2] | 0, 32) | 0;
+ g = Nb(t | 0, y | 0, p | 0, g | 0) | 0;
+ g = Rb(n | 0, j | 0, g | 0, y | 0) | 0;
+ j = y;
+ n = b + 40 | 0;
+ p = Ob(0, c[n >> 2] | 0, 32) | 0;
+ t = y;
+ k = Ob(0, c[d >> 2] | 0, 32) | 0;
+ t = Nb(k | 0, y | 0, p | 0, t | 0) | 0;
+ t = Rb(g | 0, j | 0, t | 0, y | 0) | 0;
+ j = a + 40 | 0;
+ c[j >> 2] = t;
+ c[j + 4 >> 2] = y;
+ j = Ob(0, c[h >> 2] | 0, 32) | 0;
+ t = y;
+ g = Ob(0, c[u >> 2] | 0, 32) | 0;
+ t = Nb(g | 0, y | 0, j | 0, t | 0) | 0;
+ j = y;
+ g = Ob(0, c[s >> 2] | 0, 32) | 0;
+ p = y;
+ k = Ob(0, c[o >> 2] | 0, 32) | 0;
+ p = Nb(k | 0, y | 0, g | 0, p | 0) | 0;
+ j = Rb(p | 0, y | 0, t | 0, j | 0) | 0;
+ t = y;
+ p = Ob(0, c[n >> 2] | 0, 32) | 0;
+ g = y;
+ k = Ob(0, c[w >> 2] | 0, 32) | 0;
+ g = Nb(k | 0, y | 0, p | 0, g | 0) | 0;
+ g = Rb(j | 0, t | 0, g | 0, y | 0) | 0;
+ g = Qb(g | 0, y | 0, 1) | 0;
+ t = y;
+ j = Ob(0, c[r >> 2] | 0, 32) | 0;
+ p = y;
+ k = Ob(0, c[q >> 2] | 0, 32) | 0;
+ p = Nb(k | 0, y | 0, j | 0, p | 0) | 0;
+ p = Rb(g | 0, t | 0, p | 0, y | 0) | 0;
+ t = y;
+ g = Ob(0, c[l >> 2] | 0, 32) | 0;
+ j = y;
+ k = Ob(0, c[v >> 2] | 0, 32) | 0;
+ j = Nb(k | 0, y | 0, g | 0, j | 0) | 0;
+ j = Rb(p | 0, t | 0, j | 0, y | 0) | 0;
+ t = y;
+ p = Ob(0, c[b >> 2] | 0, 32) | 0;
+ g = y;
+ k = d + 48 | 0;
+ x = Ob(0, c[k >> 2] | 0, 32) | 0;
+ g = Nb(x | 0, y | 0, p | 0, g | 0) | 0;
+ g = Rb(j | 0, t | 0, g | 0, y | 0) | 0;
+ t = y;
+ j = b + 48 | 0;
+ p = Ob(0, c[j >> 2] | 0, 32) | 0;
+ x = y;
+ m = Ob(0, c[d >> 2] | 0, 32) | 0;
+ x = Nb(m | 0, y | 0, p | 0, x | 0) | 0;
+ x = Rb(g | 0, t | 0, x | 0, y | 0) | 0;
+ t = a + 48 | 0;
+ c[t >> 2] = x;
+ c[t + 4 >> 2] = y;
+ t = Ob(0, c[h >> 2] | 0, 32) | 0;
+ x = y;
+ g = Ob(0, c[q >> 2] | 0, 32) | 0;
+ x = Nb(g | 0, y | 0, t | 0, x | 0) | 0;
+ t = y;
+ g = Ob(0, c[l >> 2] | 0, 32) | 0;
+ p = y;
+ m = Ob(0, c[u >> 2] | 0, 32) | 0;
+ p = Nb(m | 0, y | 0, g | 0, p | 0) | 0;
+ t = Rb(p | 0, y | 0, x | 0, t | 0) | 0;
+ x = y;
+ p = Ob(0, c[r >> 2] | 0, 32) | 0;
+ g = y;
+ m = Ob(0, c[o >> 2] | 0, 32) | 0;
+ g = Nb(m | 0, y | 0, p | 0, g | 0) | 0;
+ g = Rb(t | 0, x | 0, g | 0, y | 0) | 0;
+ x = y;
+ t = Ob(0, c[n >> 2] | 0, 32) | 0;
+ p = y;
+ m = Ob(0, c[v >> 2] | 0, 32) | 0;
+ p = Nb(m | 0, y | 0, t | 0, p | 0) | 0;
+ p = Rb(g | 0, x | 0, p | 0, y | 0) | 0;
+ x = y;
+ g = Ob(0, c[s >> 2] | 0, 32) | 0;
+ t = y;
+ m = Ob(0, c[k >> 2] | 0, 32) | 0;
+ t = Nb(m | 0, y | 0, g | 0, t | 0) | 0;
+ t = Rb(p | 0, x | 0, t | 0, y | 0) | 0;
+ x = y;
+ p = Ob(0, c[j >> 2] | 0, 32) | 0;
+ g = y;
+ m = Ob(0, c[w >> 2] | 0, 32) | 0;
+ g = Nb(m | 0, y | 0, p | 0, g | 0) | 0;
+ g = Rb(t | 0, x | 0, g | 0, y | 0) | 0;
+ x = y;
+ t = Ob(0, c[b >> 2] | 0, 32) | 0;
+ p = y;
+ m = d + 56 | 0;
+ z = Ob(0, c[m >> 2] | 0, 32) | 0;
+ p = Nb(z | 0, y | 0, t | 0, p | 0) | 0;
+ p = Rb(g | 0, x | 0, p | 0, y | 0) | 0;
+ x = y;
+ g = b + 56 | 0;
+ t = Ob(0, c[g >> 2] | 0, 32) | 0;
+ z = y;
+ i = Ob(0, c[d >> 2] | 0, 32) | 0;
+ z = Nb(i | 0, y | 0, t | 0, z | 0) | 0;
+ z = Rb(p | 0, x | 0, z | 0, y | 0) | 0;
+ x = a + 56 | 0;
+ c[x >> 2] = z;
+ c[x + 4 >> 2] = y;
+ x = Ob(0, c[l >> 2] | 0, 32) | 0;
+ z = y;
+ p = Ob(0, c[q >> 2] | 0, 32) | 0;
+ z = Nb(p | 0, y | 0, x | 0, z | 0) | 0;
+ x = y;
+ p = Ob(0, c[h >> 2] | 0, 32) | 0;
+ t = y;
+ i = Ob(0, c[o >> 2] | 0, 32) | 0;
+ t = Nb(i | 0, y | 0, p | 0, t | 0) | 0;
+ p = y;
+ i = Ob(0, c[n >> 2] | 0, 32) | 0;
+ f = y;
+ e = Ob(0, c[u >> 2] | 0, 32) | 0;
+ f = Nb(e | 0, y | 0, i | 0, f | 0) | 0;
+ p = Rb(f | 0, y | 0, t | 0, p | 0) | 0;
+ t = y;
+ f = Ob(0, c[s >> 2] | 0, 32) | 0;
+ i = y;
+ e = Ob(0, c[m >> 2] | 0, 32) | 0;
+ i = Nb(e | 0, y | 0, f | 0, i | 0) | 0;
+ i = Rb(p | 0, t | 0, i | 0, y | 0) | 0;
+ t = y;
+ p = Ob(0, c[g >> 2] | 0, 32) | 0;
+ f = y;
+ e = Ob(0, c[w >> 2] | 0, 32) | 0;
+ f = Nb(e | 0, y | 0, p | 0, f | 0) | 0;
+ f = Rb(i | 0, t | 0, f | 0, y | 0) | 0;
+ f = Qb(f | 0, y | 0, 1) | 0;
+ x = Rb(f | 0, y | 0, z | 0, x | 0) | 0;
+ z = y;
+ f = Ob(0, c[r >> 2] | 0, 32) | 0;
+ t = y;
+ i = Ob(0, c[k >> 2] | 0, 32) | 0;
+ t = Nb(i | 0, y | 0, f | 0, t | 0) | 0;
+ t = Rb(x | 0, z | 0, t | 0, y | 0) | 0;
+ z = y;
+ x = Ob(0, c[j >> 2] | 0, 32) | 0;
+ f = y;
+ i = Ob(0, c[v >> 2] | 0, 32) | 0;
+ f = Nb(i | 0, y | 0, x | 0, f | 0) | 0;
+ f = Rb(t | 0, z | 0, f | 0, y | 0) | 0;
+ z = y;
+ t = Ob(0, c[b >> 2] | 0, 32) | 0;
+ x = y;
+ i = d + 64 | 0;
+ p = Ob(0, c[i >> 2] | 0, 32) | 0;
+ x = Nb(p | 0, y | 0, t | 0, x | 0) | 0;
+ x = Rb(f | 0, z | 0, x | 0, y | 0) | 0;
+ z = y;
+ f = b + 64 | 0;
+ t = Ob(0, c[f >> 2] | 0, 32) | 0;
+ p = y;
+ e = Ob(0, c[d >> 2] | 0, 32) | 0;
+ p = Nb(e | 0, y | 0, t | 0, p | 0) | 0;
+ p = Rb(x | 0, z | 0, p | 0, y | 0) | 0;
+ z = a + 64 | 0;
+ c[z >> 2] = p;
+ c[z + 4 >> 2] = y;
+ z = Ob(0, c[l >> 2] | 0, 32) | 0;
+ p = y;
+ x = Ob(0, c[o >> 2] | 0, 32) | 0;
+ p = Nb(x | 0, y | 0, z | 0, p | 0) | 0;
+ z = y;
+ x = Ob(0, c[n >> 2] | 0, 32) | 0;
+ t = y;
+ e = Ob(0, c[q >> 2] | 0, 32) | 0;
+ t = Nb(e | 0, y | 0, x | 0, t | 0) | 0;
+ z = Rb(t | 0, y | 0, p | 0, z | 0) | 0;
+ p = y;
+ t = Ob(0, c[h >> 2] | 0, 32) | 0;
+ x = y;
+ e = Ob(0, c[k >> 2] | 0, 32) | 0;
+ x = Nb(e | 0, y | 0, t | 0, x | 0) | 0;
+ x = Rb(z | 0, p | 0, x | 0, y | 0) | 0;
+ p = y;
+ z = Ob(0, c[j >> 2] | 0, 32) | 0;
+ t = y;
+ e = Ob(0, c[u >> 2] | 0, 32) | 0;
+ t = Nb(e | 0, y | 0, z | 0, t | 0) | 0;
+ t = Rb(x | 0, p | 0, t | 0, y | 0) | 0;
+ p = y;
+ x = Ob(0, c[r >> 2] | 0, 32) | 0;
+ z = y;
+ e = Ob(0, c[m >> 2] | 0, 32) | 0;
+ z = Nb(e | 0, y | 0, x | 0, z | 0) | 0;
+ z = Rb(t | 0, p | 0, z | 0, y | 0) | 0;
+ p = y;
+ t = Ob(0, c[g >> 2] | 0, 32) | 0;
+ x = y;
+ e = Ob(0, c[v >> 2] | 0, 32) | 0;
+ x = Nb(e | 0, y | 0, t | 0, x | 0) | 0;
+ x = Rb(z | 0, p | 0, x | 0, y | 0) | 0;
+ p = y;
+ z = Ob(0, c[s >> 2] | 0, 32) | 0;
+ t = y;
+ e = Ob(0, c[i >> 2] | 0, 32) | 0;
+ t = Nb(e | 0, y | 0, z | 0, t | 0) | 0;
+ t = Rb(x | 0, p | 0, t | 0, y | 0) | 0;
+ p = y;
+ x = Ob(0, c[f >> 2] | 0, 32) | 0;
+ z = y;
+ e = Ob(0, c[w >> 2] | 0, 32) | 0;
+ z = Nb(e | 0, y | 0, x | 0, z | 0) | 0;
+ z = Rb(t | 0, p | 0, z | 0, y | 0) | 0;
+ p = y;
+ t = Ob(0, c[b >> 2] | 0, 32) | 0;
+ x = y;
+ e = d + 72 | 0;
+ A = Ob(0, c[e >> 2] | 0, 32) | 0;
+ x = Nb(A | 0, y | 0, t | 0, x | 0) | 0;
+ x = Rb(z | 0, p | 0, x | 0, y | 0) | 0;
+ p = y;
+ b = b + 72 | 0;
+ z = Ob(0, c[b >> 2] | 0, 32) | 0;
+ t = y;
+ d = Ob(0, c[d >> 2] | 0, 32) | 0;
+ t = Nb(d | 0, y | 0, z | 0, t | 0) | 0;
+ t = Rb(x | 0, p | 0, t | 0, y | 0) | 0;
+ d = a + 72 | 0;
+ c[d >> 2] = t;
+ c[d + 4 >> 2] = y;
+ d = Ob(0, c[n >> 2] | 0, 32) | 0;
+ t = y;
+ p = Ob(0, c[o >> 2] | 0, 32) | 0;
+ t = Nb(p | 0, y | 0, d | 0, t | 0) | 0;
+ d = y;
+ p = Ob(0, c[h >> 2] | 0, 32) | 0;
+ x = y;
+ z = Ob(0, c[m >> 2] | 0, 32) | 0;
+ x = Nb(z | 0, y | 0, p | 0, x | 0) | 0;
+ d = Rb(x | 0, y | 0, t | 0, d | 0) | 0;
+ t = y;
+ x = Ob(0, c[g >> 2] | 0, 32) | 0;
+ p = y;
+ z = Ob(0, c[u >> 2] | 0, 32) | 0;
+ p = Nb(z | 0, y | 0, x | 0, p | 0) | 0;
+ p = Rb(d | 0, t | 0, p | 0, y | 0) | 0;
+ t = y;
+ d = Ob(0, c[s >> 2] | 0, 32) | 0;
+ s = y;
+ x = Ob(0, c[e >> 2] | 0, 32) | 0;
+ s = Nb(x | 0, y | 0, d | 0, s | 0) | 0;
+ s = Rb(p | 0, t | 0, s | 0, y | 0) | 0;
+ t = y;
+ p = Ob(0, c[b >> 2] | 0, 32) | 0;
+ d = y;
+ w = Ob(0, c[w >> 2] | 0, 32) | 0;
+ d = Nb(w | 0, y | 0, p | 0, d | 0) | 0;
+ d = Rb(s | 0, t | 0, d | 0, y | 0) | 0;
+ d = Qb(d | 0, y | 0, 1) | 0;
+ t = y;
+ s = Ob(0, c[l >> 2] | 0, 32) | 0;
+ p = y;
+ w = Ob(0, c[k >> 2] | 0, 32) | 0;
+ p = Nb(w | 0, y | 0, s | 0, p | 0) | 0;
+ p = Rb(d | 0, t | 0, p | 0, y | 0) | 0;
+ t = y;
+ d = Ob(0, c[j >> 2] | 0, 32) | 0;
+ s = y;
+ w = Ob(0, c[q >> 2] | 0, 32) | 0;
+ s = Nb(w | 0, y | 0, d | 0, s | 0) | 0;
+ s = Rb(p | 0, t | 0, s | 0, y | 0) | 0;
+ t = y;
+ p = Ob(0, c[r >> 2] | 0, 32) | 0;
+ d = y;
+ w = Ob(0, c[i >> 2] | 0, 32) | 0;
+ d = Nb(w | 0, y | 0, p | 0, d | 0) | 0;
+ d = Rb(s | 0, t | 0, d | 0, y | 0) | 0;
+ t = y;
+ s = Ob(0, c[f >> 2] | 0, 32) | 0;
+ p = y;
+ w = Ob(0, c[v >> 2] | 0, 32) | 0;
+ p = Nb(w | 0, y | 0, s | 0, p | 0) | 0;
+ p = Rb(d | 0, t | 0, p | 0, y | 0) | 0;
+ t = a + 80 | 0;
+ c[t >> 2] = p;
+ c[t + 4 >> 2] = y;
+ t = Ob(0, c[n >> 2] | 0, 32) | 0;
+ p = y;
+ d = Ob(0, c[k >> 2] | 0, 32) | 0;
+ p = Nb(d | 0, y | 0, t | 0, p | 0) | 0;
+ t = y;
+ d = Ob(0, c[j >> 2] | 0, 32) | 0;
+ s = y;
+ w = Ob(0, c[o >> 2] | 0, 32) | 0;
+ s = Nb(w | 0, y | 0, d | 0, s | 0) | 0;
+ t = Rb(s | 0, y | 0, p | 0, t | 0) | 0;
+ p = y;
+ s = Ob(0, c[l >> 2] | 0, 32) | 0;
+ d = y;
+ w = Ob(0, c[m >> 2] | 0, 32) | 0;
+ d = Nb(w | 0, y | 0, s | 0, d | 0) | 0;
+ d = Rb(t | 0, p | 0, d | 0, y | 0) | 0;
+ p = y;
+ t = Ob(0, c[g >> 2] | 0, 32) | 0;
+ s = y;
+ w = Ob(0, c[q >> 2] | 0, 32) | 0;
+ s = Nb(w | 0, y | 0, t | 0, s | 0) | 0;
+ s = Rb(d | 0, p | 0, s | 0, y | 0) | 0;
+ p = y;
+ d = Ob(0, c[h >> 2] | 0, 32) | 0;
+ t = y;
+ w = Ob(0, c[i >> 2] | 0, 32) | 0;
+ t = Nb(w | 0, y | 0, d | 0, t | 0) | 0;
+ t = Rb(s | 0, p | 0, t | 0, y | 0) | 0;
+ p = y;
+ s = Ob(0, c[f >> 2] | 0, 32) | 0;
+ d = y;
+ w = Ob(0, c[u >> 2] | 0, 32) | 0;
+ d = Nb(w | 0, y | 0, s | 0, d | 0) | 0;
+ d = Rb(t | 0, p | 0, d | 0, y | 0) | 0;
+ p = y;
+ r = Ob(0, c[r >> 2] | 0, 32) | 0;
+ t = y;
+ s = Ob(0, c[e >> 2] | 0, 32) | 0;
+ t = Nb(s | 0, y | 0, r | 0, t | 0) | 0;
+ t = Rb(d | 0, p | 0, t | 0, y | 0) | 0;
+ p = y;
+ d = Ob(0, c[b >> 2] | 0, 32) | 0;
+ r = y;
+ v = Ob(0, c[v >> 2] | 0, 32) | 0;
+ r = Nb(v | 0, y | 0, d | 0, r | 0) | 0;
+ r = Rb(t | 0, p | 0, r | 0, y | 0) | 0;
+ p = a + 88 | 0;
+ c[p >> 2] = r;
+ c[p + 4 >> 2] = y;
+ p = Ob(0, c[j >> 2] | 0, 32) | 0;
+ r = y;
+ t = Ob(0, c[k >> 2] | 0, 32) | 0;
+ r = Nb(t | 0, y | 0, p | 0, r | 0) | 0;
+ p = y;
+ t = Ob(0, c[n >> 2] | 0, 32) | 0;
+ d = y;
+ v = Ob(0, c[m >> 2] | 0, 32) | 0;
+ d = Nb(v | 0, y | 0, t | 0, d | 0) | 0;
+ t = y;
+ v = Ob(0, c[g >> 2] | 0, 32) | 0;
+ s = y;
+ w = Ob(0, c[o >> 2] | 0, 32) | 0;
+ s = Nb(w | 0, y | 0, v | 0, s | 0) | 0;
+ t = Rb(s | 0, y | 0, d | 0, t | 0) | 0;
+ d = y;
+ h = Ob(0, c[h >> 2] | 0, 32) | 0;
+ s = y;
+ v = Ob(0, c[e >> 2] | 0, 32) | 0;
+ s = Nb(v | 0, y | 0, h | 0, s | 0) | 0;
+ s = Rb(t | 0, d | 0, s | 0, y | 0) | 0;
+ d = y;
+ t = Ob(0, c[b >> 2] | 0, 32) | 0;
+ h = y;
+ u = Ob(0, c[u >> 2] | 0, 32) | 0;
+ h = Nb(u | 0, y | 0, t | 0, h | 0) | 0;
+ h = Rb(s | 0, d | 0, h | 0, y | 0) | 0;
+ h = Qb(h | 0, y | 0, 1) | 0;
+ p = Rb(h | 0, y | 0, r | 0, p | 0) | 0;
+ r = y;
+ h = Ob(0, c[l >> 2] | 0, 32) | 0;
+ d = y;
+ s = Ob(0, c[i >> 2] | 0, 32) | 0;
+ d = Nb(s | 0, y | 0, h | 0, d | 0) | 0;
+ d = Rb(p | 0, r | 0, d | 0, y | 0) | 0;
+ r = y;
+ p = Ob(0, c[f >> 2] | 0, 32) | 0;
+ h = y;
+ s = Ob(0, c[q >> 2] | 0, 32) | 0;
+ h = Nb(s | 0, y | 0, p | 0, h | 0) | 0;
+ h = Rb(d | 0, r | 0, h | 0, y | 0) | 0;
+ r = a + 96 | 0;
+ c[r >> 2] = h;
+ c[r + 4 >> 2] = y;
+ r = Ob(0, c[j >> 2] | 0, 32) | 0;
+ h = y;
+ d = Ob(0, c[m >> 2] | 0, 32) | 0;
+ h = Nb(d | 0, y | 0, r | 0, h | 0) | 0;
+ r = y;
+ d = Ob(0, c[g >> 2] | 0, 32) | 0;
+ p = y;
+ s = Ob(0, c[k >> 2] | 0, 32) | 0;
+ p = Nb(s | 0, y | 0, d | 0, p | 0) | 0;
+ r = Rb(p | 0, y | 0, h | 0, r | 0) | 0;
+ h = y;
+ p = Ob(0, c[n >> 2] | 0, 32) | 0;
+ d = y;
+ s = Ob(0, c[i >> 2] | 0, 32) | 0;
+ d = Nb(s | 0, y | 0, p | 0, d | 0) | 0;
+ d = Rb(r | 0, h | 0, d | 0, y | 0) | 0;
+ h = y;
+ r = Ob(0, c[f >> 2] | 0, 32) | 0;
+ p = y;
+ s = Ob(0, c[o >> 2] | 0, 32) | 0;
+ p = Nb(s | 0, y | 0, r | 0, p | 0) | 0;
+ p = Rb(d | 0, h | 0, p | 0, y | 0) | 0;
+ h = y;
+ l = Ob(0, c[l >> 2] | 0, 32) | 0;
+ d = y;
+ r = Ob(0, c[e >> 2] | 0, 32) | 0;
+ d = Nb(r | 0, y | 0, l | 0, d | 0) | 0;
+ d = Rb(p | 0, h | 0, d | 0, y | 0) | 0;
+ h = y;
+ p = Ob(0, c[b >> 2] | 0, 32) | 0;
+ l = y;
+ q = Ob(0, c[q >> 2] | 0, 32) | 0;
+ l = Nb(q | 0, y | 0, p | 0, l | 0) | 0;
+ l = Rb(d | 0, h | 0, l | 0, y | 0) | 0;
+ h = a + 104 | 0;
+ c[h >> 2] = l;
+ c[h + 4 >> 2] = y;
+ h = Ob(0, c[g >> 2] | 0, 32) | 0;
+ l = y;
+ d = Ob(0, c[m >> 2] | 0, 32) | 0;
+ l = Nb(d | 0, y | 0, h | 0, l | 0) | 0;
+ h = y;
+ d = Ob(0, c[n >> 2] | 0, 32) | 0;
+ n = y;
+ p = Ob(0, c[e >> 2] | 0, 32) | 0;
+ n = Nb(p | 0, y | 0, d | 0, n | 0) | 0;
+ h = Rb(n | 0, y | 0, l | 0, h | 0) | 0;
+ l = y;
+ n = Ob(0, c[b >> 2] | 0, 32) | 0;
+ d = y;
+ o = Ob(0, c[o >> 2] | 0, 32) | 0;
+ d = Nb(o | 0, y | 0, n | 0, d | 0) | 0;
+ d = Rb(h | 0, l | 0, d | 0, y | 0) | 0;
+ d = Qb(d | 0, y | 0, 1) | 0;
+ l = y;
+ h = Ob(0, c[j >> 2] | 0, 32) | 0;
+ n = y;
+ o = Ob(0, c[i >> 2] | 0, 32) | 0;
+ n = Nb(o | 0, y | 0, h | 0, n | 0) | 0;
+ n = Rb(d | 0, l | 0, n | 0, y | 0) | 0;
+ l = y;
+ d = Ob(0, c[f >> 2] | 0, 32) | 0;
+ h = y;
+ o = Ob(0, c[k >> 2] | 0, 32) | 0;
+ h = Nb(o | 0, y | 0, d | 0, h | 0) | 0;
+ h = Rb(n | 0, l | 0, h | 0, y | 0) | 0;
+ l = a + 112 | 0;
+ c[l >> 2] = h;
+ c[l + 4 >> 2] = y;
+ l = Ob(0, c[g >> 2] | 0, 32) | 0;
+ h = y;
+ n = Ob(0, c[i >> 2] | 0, 32) | 0;
+ h = Nb(n | 0, y | 0, l | 0, h | 0) | 0;
+ l = y;
+ n = Ob(0, c[f >> 2] | 0, 32) | 0;
+ d = y;
+ o = Ob(0, c[m >> 2] | 0, 32) | 0;
+ d = Nb(o | 0, y | 0, n | 0, d | 0) | 0;
+ l = Rb(d | 0, y | 0, h | 0, l | 0) | 0;
+ h = y;
+ d = Ob(0, c[j >> 2] | 0, 32) | 0;
+ j = y;
+ n = Ob(0, c[e >> 2] | 0, 32) | 0;
+ j = Nb(n | 0, y | 0, d | 0, j | 0) | 0;
+ j = Rb(l | 0, h | 0, j | 0, y | 0) | 0;
+ h = y;
+ l = Ob(0, c[b >> 2] | 0, 32) | 0;
+ d = y;
+ k = Ob(0, c[k >> 2] | 0, 32) | 0;
+ d = Nb(k | 0, y | 0, l | 0, d | 0) | 0;
+ d = Rb(j | 0, h | 0, d | 0, y | 0) | 0;
+ h = a + 120 | 0;
+ c[h >> 2] = d;
+ c[h + 4 >> 2] = y;
+ h = Ob(0, c[f >> 2] | 0, 32) | 0;
+ d = y;
+ j = Ob(0, c[i >> 2] | 0, 32) | 0;
+ d = Nb(j | 0, y | 0, h | 0, d | 0) | 0;
+ h = y;
+ g = Ob(0, c[g >> 2] | 0, 32) | 0;
+ j = y;
+ l = Ob(0, c[e >> 2] | 0, 32) | 0;
+ j = Nb(l | 0, y | 0, g | 0, j | 0) | 0;
+ g = y;
+ l = Ob(0, c[b >> 2] | 0, 32) | 0;
+ k = y;
+ m = Ob(0, c[m >> 2] | 0, 32) | 0;
+ k = Nb(m | 0, y | 0, l | 0, k | 0) | 0;
+ g = Rb(k | 0, y | 0, j | 0, g | 0) | 0;
+ g = Qb(g | 0, y | 0, 1) | 0;
+ h = Rb(g | 0, y | 0, d | 0, h | 0) | 0;
+ d = a + 128 | 0;
+ c[d >> 2] = h;
+ c[d + 4 >> 2] = y;
+ f = Ob(0, c[f >> 2] | 0, 32) | 0;
+ d = y;
+ h = Ob(0, c[e >> 2] | 0, 32) | 0;
+ d = Nb(h | 0, y | 0, f | 0, d | 0) | 0;
+ f = y;
+ h = Ob(0, c[b >> 2] | 0, 32) | 0;
+ g = y;
+ i = Ob(0, c[i >> 2] | 0, 32) | 0;
+ g = Nb(i | 0, y | 0, h | 0, g | 0) | 0;
+ f = Rb(g | 0, y | 0, d | 0, f | 0) | 0;
+ d = a + 136 | 0;
+ c[d >> 2] = f;
+ c[d + 4 >> 2] = y;
+ d = Ob(0, c[b >> 2] | 0, 31) | 0;
+ b = y;
+ e = Ob(0, c[e >> 2] | 0, 32) | 0;
+ b = Nb(e | 0, y | 0, d | 0, b | 0) | 0;
+ d = a + 144 | 0;
+ c[d >> 2] = b;
+ c[d + 4 >> 2] = y;
+ return;
+}
+
+function Qa(a, b, d) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, z = 0, A = 0, B = 0, C = 0, D = 0, E = 0, F = 0, G = 0, H = 0, I = 0, J = 0, K = 0, L = 0, M = 0, N = 0, O = 0, P = 0, Q = 0, R = 0, S = 0, T = 0, U = 0, V = 0, W = 0, X = 0, Y = 0, Z = 0, _ = 0, $ = 0, aa = 0, ba = 0, ca = 0, da = 0, ea = 0, fa = 0, ga = 0, ha = 0, ia = 0, ja = 0, ka = 0, la = 0, ma = 0, na = 0, oa = 0, pa = 0, qa = 0, ra = 0, sa = 0, ta = 0, ua = 0, va = 0, wa = 0, xa = 0, ya = 0, za = 0, Aa = 0, Ba = 0, Ca = 0, Da = 0, Ea = 0, Fa = 0, Ga = 0, Ha = 0, Ia = 0, Ja = 0, Ka = 0, La = 0, Ma = 0, Na = 0, Oa = 0, Pa = 0, Qa = 0, Ra = 0, Sa = 0, Ta = 0, Ua = 0, Va = 0, Wa = 0, Xa = 0, Ya = 0, Za = 0, _a = 0, $a = 0, ab = 0, bb = 0, cb = 0, db = 0, eb = 0, fb = 0, gb = 0, hb = 0, ib = 0, jb = 0, kb = 0, lb = 0, mb = 0, nb = 0, ob = 0, pb = 0, qb = 0, rb = 0, sb = 0, tb = 0, ub = 0, vb = 0, wb = 0, xb = 0, yb = 0, zb = 0, Ab = 0, Bb = 0, Cb = 0, Db = 0, Eb = 0, Fb = 0, Gb = 0, Hb = 0, Ib = 0, Jb = 0, Kb = 0, Lb = 0, Mb = 0, Qb = 0, Tb = 0, Ub = 0, Vb = 0, Wb = 0, Xb = 0, Yb = 0, Zb = 0, _b = 0, $b = 0, ac = 0, bc = 0, cc = 0, dc = 0, ec = 0, fc = 0, gc = 0, hc = 0, ic = 0, jc = 0, kc = 0, lc = 0, mc = 0, nc = 0, oc = 0, pc = 0, qc = 0, rc = 0, sc = 0, tc = 0, uc = 0, vc = 0, wc = 0, xc = 0, yc = 0, zc = 0, Ac = 0, Bc = 0, Cc = 0, Dc = 0, Ec = 0, Fc = 0, Gc = 0, Hc = 0, Ic = 0, Jc = 0, Kc = 0, Lc = 0, Mc = 0, Nc = 0, Oc = 0, Pc = 0, Qc = 0, Rc = 0, Sc = 0, Tc = 0, Uc = 0, Vc = 0, Wc = 0, Xc = 0;
+ r = c[b >> 2] | 0;
+ t = c[b + 4 >> 2] | 0;
+ k = c[b + 8 >> 2] | 0;
+ Yb = c[b + 12 >> 2] | 0;
+ g = c[b + 16 >> 2] | 0;
+ Aa = c[b + 20 >> 2] | 0;
+ h = c[b + 24 >> 2] | 0;
+ Bb = c[b + 28 >> 2] | 0;
+ fa = c[b + 32 >> 2] | 0;
+ ha = c[b + 36 >> 2] | 0;
+ I = c[d >> 2] | 0;
+ K = c[d + 4 >> 2] | 0;
+ G = c[d + 8 >> 2] | 0;
+ E = c[d + 12 >> 2] | 0;
+ C = c[d + 16 >> 2] | 0;
+ A = c[d + 20 >> 2] | 0;
+ x = c[d + 24 >> 2] | 0;
+ v = c[d + 28 >> 2] | 0;
+ j = c[d + 32 >> 2] | 0;
+ u = c[d + 36 >> 2] | 0;
+ Tc = K * 19 | 0;
+ ic = G * 19 | 0;
+ sb = E * 19 | 0;
+ Ia = C * 19 | 0;
+ oc = A * 19 | 0;
+ Fb = x * 19 | 0;
+ Ua = v * 19 | 0;
+ Xc = j * 19 | 0;
+ Vc = u * 19 | 0;
+ b = t << 1;
+ i = Yb << 1;
+ f = Aa << 1;
+ e = Bb << 1;
+ N = ha << 1;
+ s = ((r | 0) < 0) << 31 >> 31;
+ J = ((I | 0) < 0) << 31 >> 31;
+ Rc = Nb(I | 0, J | 0, r | 0, s | 0) | 0;
+ Qc = y;
+ L = ((K | 0) < 0) << 31 >> 31;
+ Bc = Nb(K | 0, L | 0, r | 0, s | 0) | 0;
+ Ac = y;
+ H = ((G | 0) < 0) << 31 >> 31;
+ vb = Nb(G | 0, H | 0, r | 0, s | 0) | 0;
+ ub = y;
+ F = ((E | 0) < 0) << 31 >> 31;
+ La = Nb(E | 0, F | 0, r | 0, s | 0) | 0;
+ Ka = y;
+ D = ((C | 0) < 0) << 31 >> 31;
+ rc = Nb(C | 0, D | 0, r | 0, s | 0) | 0;
+ qc = y;
+ B = ((A | 0) < 0) << 31 >> 31;
+ Ib = Nb(A | 0, B | 0, r | 0, s | 0) | 0;
+ Hb = y;
+ z = ((x | 0) < 0) << 31 >> 31;
+ Xa = Nb(x | 0, z | 0, r | 0, s | 0) | 0;
+ Wa = y;
+ w = ((v | 0) < 0) << 31 >> 31;
+ ka = Nb(v | 0, w | 0, r | 0, s | 0) | 0;
+ ja = y;
+ Uc = ((j | 0) < 0) << 31 >> 31;
+ Q = Nb(j | 0, Uc | 0, r | 0, s | 0) | 0;
+ P = y;
+ s = Nb(u | 0, ((u | 0) < 0) << 31 >> 31 | 0, r | 0, s | 0) | 0;
+ r = y;
+ u = ((t | 0) < 0) << 31 >> 31;
+ kc = Nb(I | 0, J | 0, t | 0, u | 0) | 0;
+ lc = y;
+ l = ((b | 0) < 0) << 31 >> 31;
+ zb = Nb(K | 0, L | 0, b | 0, l | 0) | 0;
+ yb = y;
+ Na = Nb(G | 0, H | 0, t | 0, u | 0) | 0;
+ Ma = y;
+ tc = Nb(E | 0, F | 0, b | 0, l | 0) | 0;
+ sc = y;
+ Kb = Nb(C | 0, D | 0, t | 0, u | 0) | 0;
+ Jb = y;
+ Za = Nb(A | 0, B | 0, b | 0, l | 0) | 0;
+ Ya = y;
+ ma = Nb(x | 0, z | 0, t | 0, u | 0) | 0;
+ la = y;
+ S = Nb(v | 0, w | 0, b | 0, l | 0) | 0;
+ R = y;
+ u = Nb(j | 0, Uc | 0, t | 0, u | 0) | 0;
+ t = y;
+ Uc = ((Vc | 0) < 0) << 31 >> 31;
+ l = Nb(Vc | 0, Uc | 0, b | 0, l | 0) | 0;
+ b = y;
+ j = ((k | 0) < 0) << 31 >> 31;
+ xb = Nb(I | 0, J | 0, k | 0, j | 0) | 0;
+ wb = y;
+ Ra = Nb(K | 0, L | 0, k | 0, j | 0) | 0;
+ Qa = y;
+ vc = Nb(G | 0, H | 0, k | 0, j | 0) | 0;
+ uc = y;
+ Mb = Nb(E | 0, F | 0, k | 0, j | 0) | 0;
+ Lb = y;
+ $a = Nb(C | 0, D | 0, k | 0, j | 0) | 0;
+ _a = y;
+ oa = Nb(A | 0, B | 0, k | 0, j | 0) | 0;
+ na = y;
+ U = Nb(x | 0, z | 0, k | 0, j | 0) | 0;
+ T = y;
+ w = Nb(v | 0, w | 0, k | 0, j | 0) | 0;
+ v = y;
+ Wc = ((Xc | 0) < 0) << 31 >> 31;
+ Dc = Nb(Xc | 0, Wc | 0, k | 0, j | 0) | 0;
+ Cc = y;
+ j = Nb(Vc | 0, Uc | 0, k | 0, j | 0) | 0;
+ k = y;
+ Zb = ((Yb | 0) < 0) << 31 >> 31;
+ Pa = Nb(I | 0, J | 0, Yb | 0, Zb | 0) | 0;
+ Oa = y;
+ q = ((i | 0) < 0) << 31 >> 31;
+ zc = Nb(K | 0, L | 0, i | 0, q | 0) | 0;
+ yc = y;
+ Tb = Nb(G | 0, H | 0, Yb | 0, Zb | 0) | 0;
+ Qb = y;
+ bb = Nb(E | 0, F | 0, i | 0, q | 0) | 0;
+ ab = y;
+ qa = Nb(C | 0, D | 0, Yb | 0, Zb | 0) | 0;
+ pa = y;
+ W = Nb(A | 0, B | 0, i | 0, q | 0) | 0;
+ V = y;
+ z = Nb(x | 0, z | 0, Yb | 0, Zb | 0) | 0;
+ x = y;
+ Va = ((Ua | 0) < 0) << 31 >> 31;
+ Fc = Nb(Ua | 0, Va | 0, i | 0, q | 0) | 0;
+ Ec = y;
+ Zb = Nb(Xc | 0, Wc | 0, Yb | 0, Zb | 0) | 0;
+ Yb = y;
+ q = Nb(Vc | 0, Uc | 0, i | 0, q | 0) | 0;
+ i = y;
+ za = ((g | 0) < 0) << 31 >> 31;
+ xc = Nb(I | 0, J | 0, g | 0, za | 0) | 0;
+ wc = y;
+ Xb = Nb(K | 0, L | 0, g | 0, za | 0) | 0;
+ Wb = y;
+ db = Nb(G | 0, H | 0, g | 0, za | 0) | 0;
+ cb = y;
+ sa = Nb(E | 0, F | 0, g | 0, za | 0) | 0;
+ ra = y;
+ Y = Nb(C | 0, D | 0, g | 0, za | 0) | 0;
+ X = y;
+ B = Nb(A | 0, B | 0, g | 0, za | 0) | 0;
+ A = y;
+ Gb = ((Fb | 0) < 0) << 31 >> 31;
+ Hc = Nb(Fb | 0, Gb | 0, g | 0, za | 0) | 0;
+ Gc = y;
+ $b = Nb(Ua | 0, Va | 0, g | 0, za | 0) | 0;
+ _b = y;
+ jb = Nb(Xc | 0, Wc | 0, g | 0, za | 0) | 0;
+ ib = y;
+ za = Nb(Vc | 0, Uc | 0, g | 0, za | 0) | 0;
+ g = y;
+ Ba = ((Aa | 0) < 0) << 31 >> 31;
+ Vb = Nb(I | 0, J | 0, Aa | 0, Ba | 0) | 0;
+ Ub = y;
+ p = ((f | 0) < 0) << 31 >> 31;
+ hb = Nb(K | 0, L | 0, f | 0, p | 0) | 0;
+ gb = y;
+ ua = Nb(G | 0, H | 0, Aa | 0, Ba | 0) | 0;
+ ta = y;
+ _ = Nb(E | 0, F | 0, f | 0, p | 0) | 0;
+ Z = y;
+ D = Nb(C | 0, D | 0, Aa | 0, Ba | 0) | 0;
+ C = y;
+ pc = ((oc | 0) < 0) << 31 >> 31;
+ Jc = Nb(oc | 0, pc | 0, f | 0, p | 0) | 0;
+ Ic = y;
+ bc = Nb(Fb | 0, Gb | 0, Aa | 0, Ba | 0) | 0;
+ ac = y;
+ lb = Nb(Ua | 0, Va | 0, f | 0, p | 0) | 0;
+ kb = y;
+ Ba = Nb(Xc | 0, Wc | 0, Aa | 0, Ba | 0) | 0;
+ Aa = y;
+ p = Nb(Vc | 0, Uc | 0, f | 0, p | 0) | 0;
+ f = y;
+ Ab = ((h | 0) < 0) << 31 >> 31;
+ fb = Nb(I | 0, J | 0, h | 0, Ab | 0) | 0;
+ eb = y;
+ ya = Nb(K | 0, L | 0, h | 0, Ab | 0) | 0;
+ xa = y;
+ aa = Nb(G | 0, H | 0, h | 0, Ab | 0) | 0;
+ $ = y;
+ F = Nb(E | 0, F | 0, h | 0, Ab | 0) | 0;
+ E = y;
+ Ja = ((Ia | 0) < 0) << 31 >> 31;
+ Lc = Nb(Ia | 0, Ja | 0, h | 0, Ab | 0) | 0;
+ Kc = y;
+ dc = Nb(oc | 0, pc | 0, h | 0, Ab | 0) | 0;
+ cc = y;
+ nb = Nb(Fb | 0, Gb | 0, h | 0, Ab | 0) | 0;
+ mb = y;
+ Da = Nb(Ua | 0, Va | 0, h | 0, Ab | 0) | 0;
+ Ca = y;
+ m = Nb(Xc | 0, Wc | 0, h | 0, Ab | 0) | 0;
+ n = y;
+ Ab = Nb(Vc | 0, Uc | 0, h | 0, Ab | 0) | 0;
+ h = y;
+ Cb = ((Bb | 0) < 0) << 31 >> 31;
+ wa = Nb(I | 0, J | 0, Bb | 0, Cb | 0) | 0;
+ va = y;
+ d = ((e | 0) < 0) << 31 >> 31;
+ ea = Nb(K | 0, L | 0, e | 0, d | 0) | 0;
+ da = y;
+ H = Nb(G | 0, H | 0, Bb | 0, Cb | 0) | 0;
+ G = y;
+ tb = ((sb | 0) < 0) << 31 >> 31;
+ Nc = Nb(sb | 0, tb | 0, e | 0, d | 0) | 0;
+ Mc = y;
+ fc = Nb(Ia | 0, Ja | 0, Bb | 0, Cb | 0) | 0;
+ ec = y;
+ pb = Nb(oc | 0, pc | 0, e | 0, d | 0) | 0;
+ ob = y;
+ Fa = Nb(Fb | 0, Gb | 0, Bb | 0, Cb | 0) | 0;
+ Ea = y;
+ M = Nb(Ua | 0, Va | 0, e | 0, d | 0) | 0;
+ o = y;
+ Cb = Nb(Xc | 0, Wc | 0, Bb | 0, Cb | 0) | 0;
+ Bb = y;
+ d = Nb(Vc | 0, Uc | 0, e | 0, d | 0) | 0;
+ e = y;
+ ga = ((fa | 0) < 0) << 31 >> 31;
+ ca = Nb(I | 0, J | 0, fa | 0, ga | 0) | 0;
+ ba = y;
+ L = Nb(K | 0, L | 0, fa | 0, ga | 0) | 0;
+ K = y;
+ jc = ((ic | 0) < 0) << 31 >> 31;
+ Pc = Nb(ic | 0, jc | 0, fa | 0, ga | 0) | 0;
+ Oc = y;
+ hc = Nb(sb | 0, tb | 0, fa | 0, ga | 0) | 0;
+ gc = y;
+ rb = Nb(Ia | 0, Ja | 0, fa | 0, ga | 0) | 0;
+ qb = y;
+ Ha = Nb(oc | 0, pc | 0, fa | 0, ga | 0) | 0;
+ Ga = y;
+ nc = Nb(Fb | 0, Gb | 0, fa | 0, ga | 0) | 0;
+ mc = y;
+ Eb = Nb(Ua | 0, Va | 0, fa | 0, ga | 0) | 0;
+ Db = y;
+ Ta = Nb(Xc | 0, Wc | 0, fa | 0, ga | 0) | 0;
+ Sa = y;
+ ga = Nb(Vc | 0, Uc | 0, fa | 0, ga | 0) | 0;
+ fa = y;
+ ia = ((ha | 0) < 0) << 31 >> 31;
+ J = Nb(I | 0, J | 0, ha | 0, ia | 0) | 0;
+ I = y;
+ O = ((N | 0) < 0) << 31 >> 31;
+ Tc = Nb(Tc | 0, ((Tc | 0) < 0) << 31 >> 31 | 0, N | 0, O | 0) | 0;
+ Sc = y;
+ jc = Nb(ic | 0, jc | 0, ha | 0, ia | 0) | 0;
+ ic = y;
+ tb = Nb(sb | 0, tb | 0, N | 0, O | 0) | 0;
+ sb = y;
+ Ja = Nb(Ia | 0, Ja | 0, ha | 0, ia | 0) | 0;
+ Ia = y;
+ pc = Nb(oc | 0, pc | 0, N | 0, O | 0) | 0;
+ oc = y;
+ Gb = Nb(Fb | 0, Gb | 0, ha | 0, ia | 0) | 0;
+ Fb = y;
+ Va = Nb(Ua | 0, Va | 0, N | 0, O | 0) | 0;
+ Ua = y;
+ ia = Nb(Xc | 0, Wc | 0, ha | 0, ia | 0) | 0;
+ ha = y;
+ O = Nb(Vc | 0, Uc | 0, N | 0, O | 0) | 0;
+ N = y;
+ Qc = Rb(Tc | 0, Sc | 0, Rc | 0, Qc | 0) | 0;
+ Oc = Rb(Qc | 0, y | 0, Pc | 0, Oc | 0) | 0;
+ Mc = Rb(Oc | 0, y | 0, Nc | 0, Mc | 0) | 0;
+ Kc = Rb(Mc | 0, y | 0, Lc | 0, Kc | 0) | 0;
+ Ic = Rb(Kc | 0, y | 0, Jc | 0, Ic | 0) | 0;
+ Gc = Rb(Ic | 0, y | 0, Hc | 0, Gc | 0) | 0;
+ Ec = Rb(Gc | 0, y | 0, Fc | 0, Ec | 0) | 0;
+ Cc = Rb(Ec | 0, y | 0, Dc | 0, Cc | 0) | 0;
+ b = Rb(Cc | 0, y | 0, l | 0, b | 0) | 0;
+ l = y;
+ lc = Rb(Bc | 0, Ac | 0, kc | 0, lc | 0) | 0;
+ kc = y;
+ wc = Rb(zc | 0, yc | 0, xc | 0, wc | 0) | 0;
+ uc = Rb(wc | 0, y | 0, vc | 0, uc | 0) | 0;
+ sc = Rb(uc | 0, y | 0, tc | 0, sc | 0) | 0;
+ qc = Rb(sc | 0, y | 0, rc | 0, qc | 0) | 0;
+ oc = Rb(qc | 0, y | 0, pc | 0, oc | 0) | 0;
+ mc = Rb(oc | 0, y | 0, nc | 0, mc | 0) | 0;
+ o = Rb(mc | 0, y | 0, M | 0, o | 0) | 0;
+ n = Rb(o | 0, y | 0, m | 0, n | 0) | 0;
+ f = Rb(n | 0, y | 0, p | 0, f | 0) | 0;
+ p = y;
+ n = Rb(b | 0, l | 0, 33554432, 0) | 0;
+ m = y;
+ o = Ob(n | 0, m | 0, 26) | 0;
+ M = y;
+ ic = Rb(lc | 0, kc | 0, jc | 0, ic | 0) | 0;
+ gc = Rb(ic | 0, y | 0, hc | 0, gc | 0) | 0;
+ ec = Rb(gc | 0, y | 0, fc | 0, ec | 0) | 0;
+ cc = Rb(ec | 0, y | 0, dc | 0, cc | 0) | 0;
+ ac = Rb(cc | 0, y | 0, bc | 0, ac | 0) | 0;
+ _b = Rb(ac | 0, y | 0, $b | 0, _b | 0) | 0;
+ Yb = Rb(_b | 0, y | 0, Zb | 0, Yb | 0) | 0;
+ k = Rb(Yb | 0, y | 0, j | 0, k | 0) | 0;
+ M = Rb(k | 0, y | 0, o | 0, M | 0) | 0;
+ o = y;
+ m = Sb(b | 0, l | 0, n & -67108864 | 0, m | 0) | 0;
+ n = y;
+ l = Rb(f | 0, p | 0, 33554432, 0) | 0;
+ b = y;
+ k = Ob(l | 0, b | 0, 26) | 0;
+ j = y;
+ Ub = Rb(Xb | 0, Wb | 0, Vb | 0, Ub | 0) | 0;
+ Qb = Rb(Ub | 0, y | 0, Tb | 0, Qb | 0) | 0;
+ Lb = Rb(Qb | 0, y | 0, Mb | 0, Lb | 0) | 0;
+ Jb = Rb(Lb | 0, y | 0, Kb | 0, Jb | 0) | 0;
+ Hb = Rb(Jb | 0, y | 0, Ib | 0, Hb | 0) | 0;
+ Fb = Rb(Hb | 0, y | 0, Gb | 0, Fb | 0) | 0;
+ Db = Rb(Fb | 0, y | 0, Eb | 0, Db | 0) | 0;
+ Bb = Rb(Db | 0, y | 0, Cb | 0, Bb | 0) | 0;
+ h = Rb(Bb | 0, y | 0, Ab | 0, h | 0) | 0;
+ j = Rb(h | 0, y | 0, k | 0, j | 0) | 0;
+ k = y;
+ b = Sb(f | 0, p | 0, l & -67108864 | 0, b | 0) | 0;
+ l = y;
+ p = Rb(M | 0, o | 0, 16777216, 0) | 0;
+ f = Ob(p | 0, y | 0, 25) | 0;
+ h = y;
+ wb = Rb(zb | 0, yb | 0, xb | 0, wb | 0) | 0;
+ ub = Rb(wb | 0, y | 0, vb | 0, ub | 0) | 0;
+ sb = Rb(ub | 0, y | 0, tb | 0, sb | 0) | 0;
+ qb = Rb(sb | 0, y | 0, rb | 0, qb | 0) | 0;
+ ob = Rb(qb | 0, y | 0, pb | 0, ob | 0) | 0;
+ mb = Rb(ob | 0, y | 0, nb | 0, mb | 0) | 0;
+ kb = Rb(mb | 0, y | 0, lb | 0, kb | 0) | 0;
+ ib = Rb(kb | 0, y | 0, jb | 0, ib | 0) | 0;
+ i = Rb(ib | 0, y | 0, q | 0, i | 0) | 0;
+ h = Rb(i | 0, y | 0, f | 0, h | 0) | 0;
+ f = y;
+ p = Sb(M | 0, o | 0, p & -33554432 | 0, 0) | 0;
+ o = y;
+ M = Rb(j | 0, k | 0, 16777216, 0) | 0;
+ i = Ob(M | 0, y | 0, 25) | 0;
+ q = y;
+ eb = Rb(hb | 0, gb | 0, fb | 0, eb | 0) | 0;
+ cb = Rb(eb | 0, y | 0, db | 0, cb | 0) | 0;
+ ab = Rb(cb | 0, y | 0, bb | 0, ab | 0) | 0;
+ _a = Rb(ab | 0, y | 0, $a | 0, _a | 0) | 0;
+ Ya = Rb(_a | 0, y | 0, Za | 0, Ya | 0) | 0;
+ Wa = Rb(Ya | 0, y | 0, Xa | 0, Wa | 0) | 0;
+ Ua = Rb(Wa | 0, y | 0, Va | 0, Ua | 0) | 0;
+ Sa = Rb(Ua | 0, y | 0, Ta | 0, Sa | 0) | 0;
+ e = Rb(Sa | 0, y | 0, d | 0, e | 0) | 0;
+ q = Rb(e | 0, y | 0, i | 0, q | 0) | 0;
+ i = y;
+ M = Sb(j | 0, k | 0, M & -33554432 | 0, 0) | 0;
+ k = y;
+ j = Rb(h | 0, f | 0, 33554432, 0) | 0;
+ e = Ob(j | 0, y | 0, 26) | 0;
+ d = y;
+ Oa = Rb(Ra | 0, Qa | 0, Pa | 0, Oa | 0) | 0;
+ Ma = Rb(Oa | 0, y | 0, Na | 0, Ma | 0) | 0;
+ Ka = Rb(Ma | 0, y | 0, La | 0, Ka | 0) | 0;
+ Ia = Rb(Ka | 0, y | 0, Ja | 0, Ia | 0) | 0;
+ Ga = Rb(Ia | 0, y | 0, Ha | 0, Ga | 0) | 0;
+ Ea = Rb(Ga | 0, y | 0, Fa | 0, Ea | 0) | 0;
+ Ca = Rb(Ea | 0, y | 0, Da | 0, Ca | 0) | 0;
+ Aa = Rb(Ca | 0, y | 0, Ba | 0, Aa | 0) | 0;
+ g = Rb(Aa | 0, y | 0, za | 0, g | 0) | 0;
+ d = Rb(g | 0, y | 0, e | 0, d | 0) | 0;
+ e = y;
+ j = Sb(h | 0, f | 0, j & -67108864 | 0, 0) | 0;
+ f = Rb(q | 0, i | 0, 33554432, 0) | 0;
+ h = Ob(f | 0, y | 0, 26) | 0;
+ g = y;
+ va = Rb(ya | 0, xa | 0, wa | 0, va | 0) | 0;
+ ta = Rb(va | 0, y | 0, ua | 0, ta | 0) | 0;
+ ra = Rb(ta | 0, y | 0, sa | 0, ra | 0) | 0;
+ pa = Rb(ra | 0, y | 0, qa | 0, pa | 0) | 0;
+ na = Rb(pa | 0, y | 0, oa | 0, na | 0) | 0;
+ la = Rb(na | 0, y | 0, ma | 0, la | 0) | 0;
+ ja = Rb(la | 0, y | 0, ka | 0, ja | 0) | 0;
+ ha = Rb(ja | 0, y | 0, ia | 0, ha | 0) | 0;
+ fa = Rb(ha | 0, y | 0, ga | 0, fa | 0) | 0;
+ g = Rb(fa | 0, y | 0, h | 0, g | 0) | 0;
+ h = y;
+ f = Sb(q | 0, i | 0, f & -67108864 | 0, 0) | 0;
+ i = Rb(d | 0, e | 0, 16777216, 0) | 0;
+ q = Ob(i | 0, y | 0, 25) | 0;
+ l = Rb(q | 0, y | 0, b | 0, l | 0) | 0;
+ b = y;
+ i = Sb(d | 0, e | 0, i & -33554432 | 0, 0) | 0;
+ e = Rb(g | 0, h | 0, 16777216, 0) | 0;
+ d = Ob(e | 0, y | 0, 25) | 0;
+ q = y;
+ ba = Rb(ea | 0, da | 0, ca | 0, ba | 0) | 0;
+ $ = Rb(ba | 0, y | 0, aa | 0, $ | 0) | 0;
+ Z = Rb($ | 0, y | 0, _ | 0, Z | 0) | 0;
+ X = Rb(Z | 0, y | 0, Y | 0, X | 0) | 0;
+ V = Rb(X | 0, y | 0, W | 0, V | 0) | 0;
+ T = Rb(V | 0, y | 0, U | 0, T | 0) | 0;
+ R = Rb(T | 0, y | 0, S | 0, R | 0) | 0;
+ P = Rb(R | 0, y | 0, Q | 0, P | 0) | 0;
+ N = Rb(P | 0, y | 0, O | 0, N | 0) | 0;
+ q = Rb(N | 0, y | 0, d | 0, q | 0) | 0;
+ d = y;
+ e = Sb(g | 0, h | 0, e & -33554432 | 0, 0) | 0;
+ h = Rb(l | 0, b | 0, 33554432, 0) | 0;
+ g = Pb(h | 0, y | 0, 26) | 0;
+ g = Rb(M | 0, k | 0, g | 0, y | 0) | 0;
+ h = Sb(l | 0, b | 0, h & -67108864 | 0, 0) | 0;
+ b = Rb(q | 0, d | 0, 33554432, 0) | 0;
+ l = Ob(b | 0, y | 0, 26) | 0;
+ k = y;
+ I = Rb(L | 0, K | 0, J | 0, I | 0) | 0;
+ G = Rb(I | 0, y | 0, H | 0, G | 0) | 0;
+ E = Rb(G | 0, y | 0, F | 0, E | 0) | 0;
+ C = Rb(E | 0, y | 0, D | 0, C | 0) | 0;
+ A = Rb(C | 0, y | 0, B | 0, A | 0) | 0;
+ x = Rb(A | 0, y | 0, z | 0, x | 0) | 0;
+ v = Rb(x | 0, y | 0, w | 0, v | 0) | 0;
+ t = Rb(v | 0, y | 0, u | 0, t | 0) | 0;
+ r = Rb(t | 0, y | 0, s | 0, r | 0) | 0;
+ k = Rb(r | 0, y | 0, l | 0, k | 0) | 0;
+ l = y;
+ b = Sb(q | 0, d | 0, b & -67108864 | 0, 0) | 0;
+ d = Rb(k | 0, l | 0, 16777216, 0) | 0;
+ q = Ob(d | 0, y | 0, 25) | 0;
+ q = Nb(q | 0, y | 0, 19, 0) | 0;
+ n = Rb(q | 0, y | 0, m | 0, n | 0) | 0;
+ m = y;
+ d = Sb(k | 0, l | 0, d & -33554432 | 0, 0) | 0;
+ l = Rb(n | 0, m | 0, 33554432, 0) | 0;
+ k = Pb(l | 0, y | 0, 26) | 0;
+ k = Rb(p | 0, o | 0, k | 0, y | 0) | 0;
+ l = Sb(n | 0, m | 0, l & -67108864 | 0, 0) | 0;
+ c[a >> 2] = l;
+ c[a + 4 >> 2] = k;
+ c[a + 8 >> 2] = j;
+ c[a + 12 >> 2] = i;
+ c[a + 16 >> 2] = h;
+ c[a + 20 >> 2] = g;
+ c[a + 24 >> 2] = f;
+ c[a + 28 >> 2] = e;
+ c[a + 32 >> 2] = b;
+ c[a + 36 >> 2] = d;
+ return;
+}
+function Bb(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, z = 0, A = 0, B = 0, C = 0, D = 0, E = 0, F = 0, G = 0, H = 0, I = 0, J = 0, K = 0, L = 0, M = 0, N = 0, O = 0, P = 0, Q = 0, R = 0, S = 0, T = 0, U = 0, V = 0, W = 0, X = 0, Y = 0, Z = 0, _ = 0, $ = 0, aa = 0, ba = 0, ca = 0, da = 0, ea = 0, fa = 0, ga = 0, ha = 0, ia = 0, ja = 0, ka = 0, la = 0, ma = 0, na = 0, oa = 0, pa = 0, qa = 0, ra = 0;
+ T = l;
+ l = l + 640 | 0;
+ S = T;
+ d = Cb(a) | 0;
+ e = y;
+ R = S;
+ c[R >> 2] = d;
+ c[R + 4 >> 2] = e;
+ R = Cb(a + 8 | 0) | 0;
+ Q = S + 8 | 0;
+ c[Q >> 2] = R;
+ c[Q + 4 >> 2] = y;
+ Q = Cb(a + 16 | 0) | 0;
+ R = S + 16 | 0;
+ c[R >> 2] = Q;
+ c[R + 4 >> 2] = y;
+ R = Cb(a + 24 | 0) | 0;
+ Q = S + 24 | 0;
+ c[Q >> 2] = R;
+ c[Q + 4 >> 2] = y;
+ Q = Cb(a + 32 | 0) | 0;
+ R = S + 32 | 0;
+ c[R >> 2] = Q;
+ c[R + 4 >> 2] = y;
+ R = Cb(a + 40 | 0) | 0;
+ Q = S + 40 | 0;
+ c[Q >> 2] = R;
+ c[Q + 4 >> 2] = y;
+ Q = Cb(a + 48 | 0) | 0;
+ R = S + 48 | 0;
+ c[R >> 2] = Q;
+ c[R + 4 >> 2] = y;
+ R = Cb(a + 56 | 0) | 0;
+ Q = S + 56 | 0;
+ c[Q >> 2] = R;
+ c[Q + 4 >> 2] = y;
+ Q = Cb(a + 64 | 0) | 0;
+ R = S + 64 | 0;
+ c[R >> 2] = Q;
+ c[R + 4 >> 2] = y;
+ R = Cb(a + 72 | 0) | 0;
+ Q = S + 72 | 0;
+ c[Q >> 2] = R;
+ c[Q + 4 >> 2] = y;
+ Q = Cb(a + 80 | 0) | 0;
+ R = S + 80 | 0;
+ c[R >> 2] = Q;
+ c[R + 4 >> 2] = y;
+ R = Cb(a + 88 | 0) | 0;
+ Q = S + 88 | 0;
+ c[Q >> 2] = R;
+ c[Q + 4 >> 2] = y;
+ Q = Cb(a + 96 | 0) | 0;
+ R = S + 96 | 0;
+ c[R >> 2] = Q;
+ c[R + 4 >> 2] = y;
+ R = Cb(a + 104 | 0) | 0;
+ Q = S + 104 | 0;
+ c[Q >> 2] = R;
+ c[Q + 4 >> 2] = y;
+ Q = Cb(a + 112 | 0) | 0;
+ R = S + 112 | 0;
+ c[R >> 2] = Q;
+ c[R + 4 >> 2] = y;
+ R = Cb(a + 120 | 0) | 0;
+ a = S + 120 | 0;
+ c[a >> 2] = R;
+ c[a + 4 >> 2] = y;
+ a = 16;
+ do {
+  I = S + (a + -2 << 3) | 0;
+  E = c[I >> 2] | 0;
+  I = c[I + 4 >> 2] | 0;
+  J = Qb(E | 0, I | 0, 45) | 0;
+  L = y;
+  K = Pb(E | 0, I | 0, 19) | 0;
+  L = L | y;
+  G = Qb(E | 0, I | 0, 3) | 0;
+  F = y;
+  H = Pb(E | 0, I | 0, 61) | 0;
+  F = F | y;
+  I = Pb(E | 0, I | 0, 6) | 0;
+  L = F ^ y ^ L;
+  F = S + (a + -7 << 3) | 0;
+  E = c[F >> 2] | 0;
+  F = c[F + 4 >> 2] | 0;
+  P = S + (a + -15 << 3) | 0;
+  C = d;
+  d = c[P >> 2] | 0;
+  D = e;
+  e = c[P + 4 >> 2] | 0;
+  P = Qb(d | 0, e | 0, 63) | 0;
+  Q = y;
+  R = Pb(d | 0, e | 0, 1) | 0;
+  Q = Q | y;
+  M = Qb(d | 0, e | 0, 56) | 0;
+  B = y;
+  N = Pb(d | 0, e | 0, 8) | 0;
+  B = B | y;
+  O = Pb(d | 0, e | 0, 7) | 0;
+  Q = B ^ y ^ Q;
+  F = Rb(C | 0, D | 0, E | 0, F | 0) | 0;
+  L = Rb(F | 0, y | 0, (G | H) ^ I ^ (J | K) | 0, L | 0) | 0;
+  Q = Rb(L | 0, y | 0, (M | N) ^ O ^ (P | R) | 0, Q | 0) | 0;
+  R = S + (a << 3) | 0;
+  c[R >> 2] = Q;
+  c[R + 4 >> 2] = y;
+  a = a + 1 | 0;
+ } while ((a | 0) != 80);
+ e = b;
+ d = c[e >> 2] | 0;
+ e = c[e + 4 >> 2] | 0;
+ f = b + 8 | 0;
+ h = f;
+ g = c[h >> 2] | 0;
+ h = c[h + 4 >> 2] | 0;
+ i = b + 16 | 0;
+ k = i;
+ j = c[k >> 2] | 0;
+ k = c[k + 4 >> 2] | 0;
+ m = b + 24 | 0;
+ o = m;
+ n = c[o >> 2] | 0;
+ o = c[o + 4 >> 2] | 0;
+ p = b + 32 | 0;
+ r = p;
+ q = c[r >> 2] | 0;
+ r = c[r + 4 >> 2] | 0;
+ s = b + 40 | 0;
+ u = s;
+ t = c[u >> 2] | 0;
+ u = c[u + 4 >> 2] | 0;
+ v = b + 48 | 0;
+ x = v;
+ w = c[x >> 2] | 0;
+ x = c[x + 4 >> 2] | 0;
+ z = b + 56 | 0;
+ B = z;
+ A = c[B >> 2] | 0;
+ B = c[B + 4 >> 2] | 0;
+ a = 0;
+ C = q;
+ D = r;
+ E = w;
+ F = t;
+ G = x;
+ H = u;
+ I = A;
+ J = B;
+ K = d;
+ L = e;
+ M = g;
+ N = h;
+ O = j;
+ P = k;
+ Q = n;
+ R = o;
+ do {
+  ia = Qb(C | 0, D | 0, 50) | 0;
+  ja = y;
+  qa = Pb(C | 0, D | 0, 14) | 0;
+  ja = ja | y;
+  _ = Qb(C | 0, D | 0, 46) | 0;
+  V = y;
+  na = Pb(C | 0, D | 0, 18) | 0;
+  V = ja ^ (V | y);
+  ja = Qb(C | 0, D | 0, 23) | 0;
+  da = y;
+  oa = Pb(C | 0, D | 0, 41) | 0;
+  da = V ^ (da | y);
+  V = 31904 + (a << 3) | 0;
+  ha = c[V >> 2] | 0;
+  V = c[V + 4 >> 2] | 0;
+  ma = S + (a << 3) | 0;
+  W = c[ma >> 2] | 0;
+  ma = c[ma + 4 >> 2] | 0;
+  U = Rb((F ^ E) & C ^ E | 0, (H ^ G) & D ^ G | 0, I | 0, J | 0) | 0;
+  da = Rb(U | 0, y | 0, (ia | qa) ^ (_ | na) ^ (ja | oa) | 0, da | 0) | 0;
+  V = Rb(da | 0, y | 0, ha | 0, V | 0) | 0;
+  ma = Rb(V | 0, y | 0, W | 0, ma | 0) | 0;
+  W = y;
+  V = Qb(K | 0, L | 0, 36) | 0;
+  ha = y;
+  da = Pb(K | 0, L | 0, 28) | 0;
+  ha = ha | y;
+  oa = Qb(K | 0, L | 0, 30) | 0;
+  ja = y;
+  na = Pb(K | 0, L | 0, 34) | 0;
+  ja = ha ^ (ja | y);
+  ha = Qb(K | 0, L | 0, 25) | 0;
+  _ = y;
+  qa = Pb(K | 0, L | 0, 39) | 0;
+  _ = Rb((V | da) ^ (oa | na) ^ (ha | qa) | 0, ja ^ (_ | y) | 0, (K | M) & O | K & M | 0, (L | N) & P | L & N | 0) | 0;
+  ja = y;
+  qa = Rb(ma | 0, W | 0, Q | 0, R | 0) | 0;
+  ha = y;
+  W = Rb(_ | 0, ja | 0, ma | 0, W | 0) | 0;
+  ma = y;
+  ja = Qb(qa | 0, ha | 0, 50) | 0;
+  _ = y;
+  na = Pb(qa | 0, ha | 0, 14) | 0;
+  _ = _ | y;
+  oa = Qb(qa | 0, ha | 0, 46) | 0;
+  da = y;
+  V = Pb(qa | 0, ha | 0, 18) | 0;
+  da = _ ^ (da | y);
+  _ = Qb(qa | 0, ha | 0, 23) | 0;
+  ia = y;
+  U = Pb(qa | 0, ha | 0, 41) | 0;
+  ia = da ^ (ia | y);
+  da = a | 1;
+  ga = 31904 + (da << 3) | 0;
+  da = S + (da << 3) | 0;
+  aa = c[da >> 2] | 0;
+  da = c[da + 4 >> 2] | 0;
+  ga = Rb(c[ga >> 2] | 0, c[ga + 4 >> 2] | 0, E | 0, G | 0) | 0;
+  da = Rb(ga | 0, y | 0, aa | 0, da | 0) | 0;
+  da = Rb(da | 0, y | 0, qa & (C ^ F) ^ F | 0, ha & (D ^ H) ^ H | 0) | 0;
+  ia = Rb(da | 0, y | 0, (ja | na) ^ (oa | V) ^ (_ | U) | 0, ia | 0) | 0;
+  U = y;
+  _ = Qb(W | 0, ma | 0, 36) | 0;
+  V = y;
+  oa = Pb(W | 0, ma | 0, 28) | 0;
+  V = V | y;
+  na = Qb(W | 0, ma | 0, 30) | 0;
+  ja = y;
+  da = Pb(W | 0, ma | 0, 34) | 0;
+  ja = V ^ (ja | y);
+  V = Qb(W | 0, ma | 0, 25) | 0;
+  aa = y;
+  ga = Pb(W | 0, ma | 0, 39) | 0;
+  aa = Rb((_ | oa) ^ (na | da) ^ (V | ga) | 0, ja ^ (aa | y) | 0, (W | K) & M | W & K | 0, (ma | L) & N | ma & L | 0) | 0;
+  ja = y;
+  ga = Rb(ia | 0, U | 0, O | 0, P | 0) | 0;
+  V = y;
+  U = Rb(aa | 0, ja | 0, ia | 0, U | 0) | 0;
+  ia = y;
+  ja = Qb(ga | 0, V | 0, 50) | 0;
+  aa = y;
+  da = Pb(ga | 0, V | 0, 14) | 0;
+  aa = aa | y;
+  na = Qb(ga | 0, V | 0, 46) | 0;
+  oa = y;
+  _ = Pb(ga | 0, V | 0, 18) | 0;
+  oa = aa ^ (oa | y);
+  aa = Qb(ga | 0, V | 0, 23) | 0;
+  ea = y;
+  $ = Pb(ga | 0, V | 0, 41) | 0;
+  ea = oa ^ (ea | y);
+  oa = a | 2;
+  ca = 31904 + (oa << 3) | 0;
+  oa = S + (oa << 3) | 0;
+  ba = c[oa >> 2] | 0;
+  oa = c[oa + 4 >> 2] | 0;
+  ca = Rb(c[ca >> 2] | 0, c[ca + 4 >> 2] | 0, F | 0, H | 0) | 0;
+  oa = Rb(ca | 0, y | 0, ba | 0, oa | 0) | 0;
+  oa = Rb(oa | 0, y | 0, ga & (qa ^ C) ^ C | 0, V & (ha ^ D) ^ D | 0) | 0;
+  ea = Rb(oa | 0, y | 0, (ja | da) ^ (na | _) ^ (aa | $) | 0, ea | 0) | 0;
+  $ = y;
+  aa = Qb(U | 0, ia | 0, 36) | 0;
+  _ = y;
+  na = Pb(U | 0, ia | 0, 28) | 0;
+  _ = _ | y;
+  da = Qb(U | 0, ia | 0, 30) | 0;
+  ja = y;
+  oa = Pb(U | 0, ia | 0, 34) | 0;
+  ja = _ ^ (ja | y);
+  _ = Qb(U | 0, ia | 0, 25) | 0;
+  ba = y;
+  ca = Pb(U | 0, ia | 0, 39) | 0;
+  ba = Rb((aa | na) ^ (da | oa) ^ (_ | ca) | 0, ja ^ (ba | y) | 0, (U | W) & K | U & W | 0, (ia | ma) & L | ia & ma | 0) | 0;
+  ja = y;
+  ca = Rb(ea | 0, $ | 0, M | 0, N | 0) | 0;
+  _ = y;
+  $ = Rb(ba | 0, ja | 0, ea | 0, $ | 0) | 0;
+  ea = y;
+  ja = Qb(ca | 0, _ | 0, 50) | 0;
+  ba = y;
+  oa = Pb(ca | 0, _ | 0, 14) | 0;
+  ba = ba | y;
+  da = Qb(ca | 0, _ | 0, 46) | 0;
+  na = y;
+  aa = Pb(ca | 0, _ | 0, 18) | 0;
+  na = ba ^ (na | y);
+  ba = Qb(ca | 0, _ | 0, 23) | 0;
+  Y = y;
+  Z = Pb(ca | 0, _ | 0, 41) | 0;
+  Y = na ^ (Y | y);
+  na = a | 3;
+  X = 31904 + (na << 3) | 0;
+  na = S + (na << 3) | 0;
+  pa = c[na >> 2] | 0;
+  na = c[na + 4 >> 2] | 0;
+  X = Rb(c[X >> 2] | 0, c[X + 4 >> 2] | 0, C | 0, D | 0) | 0;
+  na = Rb(X | 0, y | 0, pa | 0, na | 0) | 0;
+  na = Rb(na | 0, y | 0, ca & (ga ^ qa) ^ qa | 0, _ & (V ^ ha) ^ ha | 0) | 0;
+  Y = Rb(na | 0, y | 0, (ja | oa) ^ (da | aa) ^ (ba | Z) | 0, Y | 0) | 0;
+  Z = y;
+  ba = Qb($ | 0, ea | 0, 36) | 0;
+  aa = y;
+  da = Pb($ | 0, ea | 0, 28) | 0;
+  aa = aa | y;
+  oa = Qb($ | 0, ea | 0, 30) | 0;
+  ja = y;
+  na = Pb($ | 0, ea | 0, 34) | 0;
+  ja = aa ^ (ja | y);
+  aa = Qb($ | 0, ea | 0, 25) | 0;
+  pa = y;
+  X = Pb($ | 0, ea | 0, 39) | 0;
+  pa = Rb((ba | da) ^ (oa | na) ^ (aa | X) | 0, ja ^ (pa | y) | 0, ($ | U) & W | $ & U | 0, (ea | ia) & ma | ea & ia | 0) | 0;
+  ja = y;
+  X = Rb(Y | 0, Z | 0, K | 0, L | 0) | 0;
+  aa = y;
+  Z = Rb(pa | 0, ja | 0, Y | 0, Z | 0) | 0;
+  Y = y;
+  ja = Qb(X | 0, aa | 0, 50) | 0;
+  pa = y;
+  na = Pb(X | 0, aa | 0, 14) | 0;
+  pa = pa | y;
+  oa = Qb(X | 0, aa | 0, 46) | 0;
+  da = y;
+  ba = Pb(X | 0, aa | 0, 18) | 0;
+  da = pa ^ (da | y);
+  pa = Qb(X | 0, aa | 0, 23) | 0;
+  la = y;
+  fa = Pb(X | 0, aa | 0, 41) | 0;
+  la = da ^ (la | y);
+  da = a | 4;
+  ra = 31904 + (da << 3) | 0;
+  da = S + (da << 3) | 0;
+  ka = c[da >> 2] | 0;
+  da = c[da + 4 >> 2] | 0;
+  ha = Rb(c[ra >> 2] | 0, c[ra + 4 >> 2] | 0, qa | 0, ha | 0) | 0;
+  da = Rb(ha | 0, y | 0, ka | 0, da | 0) | 0;
+  da = Rb(da | 0, y | 0, X & (ca ^ ga) ^ ga | 0, aa & (_ ^ V) ^ V | 0) | 0;
+  la = Rb(da | 0, y | 0, (ja | na) ^ (oa | ba) ^ (pa | fa) | 0, la | 0) | 0;
+  fa = y;
+  pa = Qb(Z | 0, Y | 0, 36) | 0;
+  ba = y;
+  oa = Pb(Z | 0, Y | 0, 28) | 0;
+  ba = ba | y;
+  na = Qb(Z | 0, Y | 0, 30) | 0;
+  ja = y;
+  da = Pb(Z | 0, Y | 0, 34) | 0;
+  ja = ba ^ (ja | y);
+  ba = Qb(Z | 0, Y | 0, 25) | 0;
+  ka = y;
+  ha = Pb(Z | 0, Y | 0, 39) | 0;
+  ka = Rb((pa | oa) ^ (na | da) ^ (ba | ha) | 0, ja ^ (ka | y) | 0, (Z | $) & U | Z & $ | 0, (Y | ea) & ia | Y & ea | 0) | 0;
+  ja = y;
+  I = Rb(la | 0, fa | 0, W | 0, ma | 0) | 0;
+  J = y;
+  Q = Rb(ka | 0, ja | 0, la | 0, fa | 0) | 0;
+  R = y;
+  fa = Qb(I | 0, J | 0, 50) | 0;
+  la = y;
+  ja = Pb(I | 0, J | 0, 14) | 0;
+  la = la | y;
+  ka = Qb(I | 0, J | 0, 46) | 0;
+  ma = y;
+  W = Pb(I | 0, J | 0, 18) | 0;
+  ma = la ^ (ma | y);
+  la = Qb(I | 0, J | 0, 23) | 0;
+  ha = y;
+  ba = Pb(I | 0, J | 0, 41) | 0;
+  ha = ma ^ (ha | y);
+  ma = a | 5;
+  da = 31904 + (ma << 3) | 0;
+  ma = S + (ma << 3) | 0;
+  da = Rb(c[ma >> 2] | 0, c[ma + 4 >> 2] | 0, c[da >> 2] | 0, c[da + 4 >> 2] | 0) | 0;
+  V = Rb(da | 0, y | 0, ga | 0, V | 0) | 0;
+  V = Rb(V | 0, y | 0, I & (X ^ ca) ^ ca | 0, J & (aa ^ _) ^ _ | 0) | 0;
+  ha = Rb(V | 0, y | 0, (fa | ja) ^ (ka | W) ^ (la | ba) | 0, ha | 0) | 0;
+  ba = y;
+  la = Qb(Q | 0, R | 0, 36) | 0;
+  W = y;
+  ka = Pb(Q | 0, R | 0, 28) | 0;
+  W = W | y;
+  ja = Qb(Q | 0, R | 0, 30) | 0;
+  fa = y;
+  V = Pb(Q | 0, R | 0, 34) | 0;
+  fa = W ^ (fa | y);
+  W = Qb(Q | 0, R | 0, 25) | 0;
+  ga = y;
+  da = Pb(Q | 0, R | 0, 39) | 0;
+  ga = Rb((la | ka) ^ (ja | V) ^ (W | da) | 0, fa ^ (ga | y) | 0, (Q | Z) & $ | Q & Z | 0, (R | Y) & ea | R & Y | 0) | 0;
+  fa = y;
+  E = Rb(ha | 0, ba | 0, U | 0, ia | 0) | 0;
+  G = y;
+  O = Rb(ga | 0, fa | 0, ha | 0, ba | 0) | 0;
+  P = y;
+  ba = Qb(E | 0, G | 0, 50) | 0;
+  ha = y;
+  fa = Pb(E | 0, G | 0, 14) | 0;
+  ha = ha | y;
+  ga = Qb(E | 0, G | 0, 46) | 0;
+  ia = y;
+  U = Pb(E | 0, G | 0, 18) | 0;
+  ia = ha ^ (ia | y);
+  ha = Qb(E | 0, G | 0, 23) | 0;
+  da = y;
+  W = Pb(E | 0, G | 0, 41) | 0;
+  da = ia ^ (da | y);
+  ia = a | 6;
+  V = 31904 + (ia << 3) | 0;
+  ia = S + (ia << 3) | 0;
+  V = Rb(c[ia >> 2] | 0, c[ia + 4 >> 2] | 0, c[V >> 2] | 0, c[V + 4 >> 2] | 0) | 0;
+  _ = Rb(V | 0, y | 0, ca | 0, _ | 0) | 0;
+  _ = Rb(_ | 0, y | 0, E & (I ^ X) ^ X | 0, G & (J ^ aa) ^ aa | 0) | 0;
+  da = Rb(_ | 0, y | 0, (ba | fa) ^ (ga | U) ^ (ha | W) | 0, da | 0) | 0;
+  W = y;
+  ha = Qb(O | 0, P | 0, 36) | 0;
+  U = y;
+  ga = Pb(O | 0, P | 0, 28) | 0;
+  U = U | y;
+  fa = Qb(O | 0, P | 0, 30) | 0;
+  ba = y;
+  _ = Pb(O | 0, P | 0, 34) | 0;
+  ba = U ^ (ba | y);
+  U = Qb(O | 0, P | 0, 25) | 0;
+  ca = y;
+  V = Pb(O | 0, P | 0, 39) | 0;
+  ca = Rb((ha | ga) ^ (fa | _) ^ (U | V) | 0, ba ^ (ca | y) | 0, (O | Q) & Z | O & Q | 0, (P | R) & Y | P & R | 0) | 0;
+  ba = y;
+  F = Rb(da | 0, W | 0, $ | 0, ea | 0) | 0;
+  H = y;
+  M = Rb(ca | 0, ba | 0, da | 0, W | 0) | 0;
+  N = y;
+  W = Qb(F | 0, H | 0, 50) | 0;
+  da = y;
+  ba = Pb(F | 0, H | 0, 14) | 0;
+  da = da | y;
+  ca = Qb(F | 0, H | 0, 46) | 0;
+  ea = y;
+  $ = Pb(F | 0, H | 0, 18) | 0;
+  ea = da ^ (ea | y);
+  da = Qb(F | 0, H | 0, 23) | 0;
+  V = y;
+  U = Pb(F | 0, H | 0, 41) | 0;
+  V = ea ^ (V | y);
+  ea = a | 7;
+  _ = 31904 + (ea << 3) | 0;
+  ea = S + (ea << 3) | 0;
+  _ = Rb(c[ea >> 2] | 0, c[ea + 4 >> 2] | 0, c[_ >> 2] | 0, c[_ + 4 >> 2] | 0) | 0;
+  aa = Rb(_ | 0, y | 0, X | 0, aa | 0) | 0;
+  aa = Rb(aa | 0, y | 0, F & (E ^ I) ^ I | 0, H & (G ^ J) ^ J | 0) | 0;
+  V = Rb(aa | 0, y | 0, (W | ba) ^ (ca | $) ^ (da | U) | 0, V | 0) | 0;
+  U = y;
+  da = Qb(M | 0, N | 0, 36) | 0;
+  $ = y;
+  ca = Pb(M | 0, N | 0, 28) | 0;
+  $ = $ | y;
+  ba = Qb(M | 0, N | 0, 30) | 0;
+  W = y;
+  aa = Pb(M | 0, N | 0, 34) | 0;
+  W = $ ^ (W | y);
+  $ = Qb(M | 0, N | 0, 25) | 0;
+  X = y;
+  _ = Pb(M | 0, N | 0, 39) | 0;
+  X = Rb((da | ca) ^ (ba | aa) ^ ($ | _) | 0, W ^ (X | y) | 0, (M | O) & Q | M & O | 0, (N | P) & R | N & P | 0) | 0;
+  W = y;
+  C = Rb(V | 0, U | 0, Z | 0, Y | 0) | 0;
+  D = y;
+  K = Rb(X | 0, W | 0, V | 0, U | 0) | 0;
+  L = y;
+  a = a + 8 | 0;
+ } while (a >>> 0 < 80);
+ ra = Rb(K | 0, L | 0, d | 0, e | 0) | 0;
+ qa = b;
+ c[qa >> 2] = ra;
+ c[qa + 4 >> 2] = y;
+ qa = Rb(M | 0, N | 0, g | 0, h | 0) | 0;
+ ra = f;
+ c[ra >> 2] = qa;
+ c[ra + 4 >> 2] = y;
+ ra = Rb(O | 0, P | 0, j | 0, k | 0) | 0;
+ qa = i;
+ c[qa >> 2] = ra;
+ c[qa + 4 >> 2] = y;
+ qa = Rb(Q | 0, R | 0, n | 0, o | 0) | 0;
+ ra = m;
+ c[ra >> 2] = qa;
+ c[ra + 4 >> 2] = y;
+ ra = Rb(C | 0, D | 0, q | 0, r | 0) | 0;
+ qa = p;
+ c[qa >> 2] = ra;
+ c[qa + 4 >> 2] = y;
+ qa = Rb(F | 0, H | 0, t | 0, u | 0) | 0;
+ ra = s;
+ c[ra >> 2] = qa;
+ c[ra + 4 >> 2] = y;
+ ra = Rb(E | 0, G | 0, w | 0, x | 0) | 0;
+ qa = v;
+ c[qa >> 2] = ra;
+ c[qa + 4 >> 2] = y;
+ qa = Rb(I | 0, J | 0, A | 0, B | 0) | 0;
+ ra = z;
+ c[ra >> 2] = qa;
+ c[ra + 4 >> 2] = y;
+ l = T;
+ return;
+}
+
+function za(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0;
+ l = Ob(0, c[b >> 2] | 0, 32) | 0;
+ e = y;
+ e = Nb(l | 0, e | 0, l | 0, e | 0) | 0;
+ l = a;
+ c[l >> 2] = e;
+ c[l + 4 >> 2] = y;
+ l = Ob(0, c[b >> 2] | 0, 31) | 0;
+ e = y;
+ o = b + 8 | 0;
+ m = Ob(0, c[o >> 2] | 0, 32) | 0;
+ e = Nb(m | 0, y | 0, l | 0, e | 0) | 0;
+ l = a + 8 | 0;
+ c[l >> 2] = e;
+ c[l + 4 >> 2] = y;
+ l = Ob(0, c[o >> 2] | 0, 32) | 0;
+ e = y;
+ e = Nb(l | 0, e | 0, l | 0, e | 0) | 0;
+ l = y;
+ m = Ob(0, c[b >> 2] | 0, 32) | 0;
+ g = y;
+ k = b + 16 | 0;
+ p = Ob(0, c[k >> 2] | 0, 32) | 0;
+ g = Nb(p | 0, y | 0, m | 0, g | 0) | 0;
+ l = Rb(g | 0, y | 0, e | 0, l | 0) | 0;
+ l = Qb(l | 0, y | 0, 1) | 0;
+ e = a + 16 | 0;
+ c[e >> 2] = l;
+ c[e + 4 >> 2] = y;
+ e = Ob(0, c[o >> 2] | 0, 32) | 0;
+ l = y;
+ g = Ob(0, c[k >> 2] | 0, 32) | 0;
+ l = Nb(g | 0, y | 0, e | 0, l | 0) | 0;
+ e = y;
+ g = Ob(0, c[b >> 2] | 0, 32) | 0;
+ m = y;
+ p = b + 24 | 0;
+ f = Ob(0, c[p >> 2] | 0, 32) | 0;
+ m = Nb(f | 0, y | 0, g | 0, m | 0) | 0;
+ e = Rb(m | 0, y | 0, l | 0, e | 0) | 0;
+ e = Qb(e | 0, y | 0, 1) | 0;
+ l = a + 24 | 0;
+ c[l >> 2] = e;
+ c[l + 4 >> 2] = y;
+ l = Ob(0, c[k >> 2] | 0, 32) | 0;
+ e = y;
+ e = Nb(l | 0, e | 0, l | 0, e | 0) | 0;
+ l = y;
+ m = Ob(0, c[o >> 2] | 0, 30) | 0;
+ g = y;
+ f = Ob(0, c[p >> 2] | 0, 32) | 0;
+ g = Nb(f | 0, y | 0, m | 0, g | 0) | 0;
+ l = Rb(g | 0, y | 0, e | 0, l | 0) | 0;
+ e = y;
+ g = Ob(0, c[b >> 2] | 0, 31) | 0;
+ m = y;
+ f = b + 32 | 0;
+ j = Ob(0, c[f >> 2] | 0, 32) | 0;
+ m = Nb(j | 0, y | 0, g | 0, m | 0) | 0;
+ m = Rb(l | 0, e | 0, m | 0, y | 0) | 0;
+ e = a + 32 | 0;
+ c[e >> 2] = m;
+ c[e + 4 >> 2] = y;
+ e = Ob(0, c[k >> 2] | 0, 32) | 0;
+ m = y;
+ l = Ob(0, c[p >> 2] | 0, 32) | 0;
+ m = Nb(l | 0, y | 0, e | 0, m | 0) | 0;
+ e = y;
+ l = Ob(0, c[o >> 2] | 0, 32) | 0;
+ g = y;
+ j = Ob(0, c[f >> 2] | 0, 32) | 0;
+ g = Nb(j | 0, y | 0, l | 0, g | 0) | 0;
+ e = Rb(g | 0, y | 0, m | 0, e | 0) | 0;
+ m = y;
+ g = Ob(0, c[b >> 2] | 0, 32) | 0;
+ l = y;
+ j = b + 40 | 0;
+ i = Ob(0, c[j >> 2] | 0, 32) | 0;
+ l = Nb(i | 0, y | 0, g | 0, l | 0) | 0;
+ l = Rb(e | 0, m | 0, l | 0, y | 0) | 0;
+ l = Qb(l | 0, y | 0, 1) | 0;
+ m = a + 40 | 0;
+ c[m >> 2] = l;
+ c[m + 4 >> 2] = y;
+ m = Ob(0, c[p >> 2] | 0, 32) | 0;
+ l = y;
+ l = Nb(m | 0, l | 0, m | 0, l | 0) | 0;
+ m = y;
+ e = Ob(0, c[k >> 2] | 0, 32) | 0;
+ g = y;
+ i = Ob(0, c[f >> 2] | 0, 32) | 0;
+ g = Nb(i | 0, y | 0, e | 0, g | 0) | 0;
+ m = Rb(g | 0, y | 0, l | 0, m | 0) | 0;
+ l = y;
+ g = Ob(0, c[b >> 2] | 0, 32) | 0;
+ e = y;
+ i = b + 48 | 0;
+ h = Ob(0, c[i >> 2] | 0, 32) | 0;
+ e = Nb(h | 0, y | 0, g | 0, e | 0) | 0;
+ e = Rb(m | 0, l | 0, e | 0, y | 0) | 0;
+ l = y;
+ m = Ob(0, c[o >> 2] | 0, 31) | 0;
+ g = y;
+ h = Ob(0, c[j >> 2] | 0, 32) | 0;
+ g = Nb(h | 0, y | 0, m | 0, g | 0) | 0;
+ g = Rb(e | 0, l | 0, g | 0, y | 0) | 0;
+ g = Qb(g | 0, y | 0, 1) | 0;
+ l = a + 48 | 0;
+ c[l >> 2] = g;
+ c[l + 4 >> 2] = y;
+ l = Ob(0, c[p >> 2] | 0, 32) | 0;
+ g = y;
+ e = Ob(0, c[f >> 2] | 0, 32) | 0;
+ g = Nb(e | 0, y | 0, l | 0, g | 0) | 0;
+ l = y;
+ e = Ob(0, c[k >> 2] | 0, 32) | 0;
+ m = y;
+ h = Ob(0, c[j >> 2] | 0, 32) | 0;
+ m = Nb(h | 0, y | 0, e | 0, m | 0) | 0;
+ l = Rb(m | 0, y | 0, g | 0, l | 0) | 0;
+ g = y;
+ m = Ob(0, c[o >> 2] | 0, 32) | 0;
+ e = y;
+ h = Ob(0, c[i >> 2] | 0, 32) | 0;
+ e = Nb(h | 0, y | 0, m | 0, e | 0) | 0;
+ e = Rb(l | 0, g | 0, e | 0, y | 0) | 0;
+ g = y;
+ l = Ob(0, c[b >> 2] | 0, 32) | 0;
+ m = y;
+ h = b + 56 | 0;
+ q = Ob(0, c[h >> 2] | 0, 32) | 0;
+ m = Nb(q | 0, y | 0, l | 0, m | 0) | 0;
+ m = Rb(e | 0, g | 0, m | 0, y | 0) | 0;
+ m = Qb(m | 0, y | 0, 1) | 0;
+ g = a + 56 | 0;
+ c[g >> 2] = m;
+ c[g + 4 >> 2] = y;
+ g = Ob(0, c[f >> 2] | 0, 32) | 0;
+ m = y;
+ m = Nb(g | 0, m | 0, g | 0, m | 0) | 0;
+ g = y;
+ e = Ob(0, c[k >> 2] | 0, 32) | 0;
+ l = y;
+ q = Ob(0, c[i >> 2] | 0, 32) | 0;
+ l = Nb(q | 0, y | 0, e | 0, l | 0) | 0;
+ e = y;
+ q = Ob(0, c[b >> 2] | 0, 32) | 0;
+ n = y;
+ d = b + 64 | 0;
+ s = Ob(0, c[d >> 2] | 0, 32) | 0;
+ n = Nb(s | 0, y | 0, q | 0, n | 0) | 0;
+ e = Rb(n | 0, y | 0, l | 0, e | 0) | 0;
+ l = y;
+ n = Ob(0, c[o >> 2] | 0, 32) | 0;
+ q = y;
+ s = Ob(0, c[h >> 2] | 0, 32) | 0;
+ q = Nb(s | 0, y | 0, n | 0, q | 0) | 0;
+ n = y;
+ s = Ob(0, c[p >> 2] | 0, 32) | 0;
+ r = y;
+ t = Ob(0, c[j >> 2] | 0, 32) | 0;
+ r = Nb(t | 0, y | 0, s | 0, r | 0) | 0;
+ n = Rb(r | 0, y | 0, q | 0, n | 0) | 0;
+ n = Qb(n | 0, y | 0, 1) | 0;
+ n = Rb(e | 0, l | 0, n | 0, y | 0) | 0;
+ n = Qb(n | 0, y | 0, 1) | 0;
+ g = Rb(n | 0, y | 0, m | 0, g | 0) | 0;
+ m = a + 64 | 0;
+ c[m >> 2] = g;
+ c[m + 4 >> 2] = y;
+ m = Ob(0, c[f >> 2] | 0, 32) | 0;
+ g = y;
+ n = Ob(0, c[j >> 2] | 0, 32) | 0;
+ g = Nb(n | 0, y | 0, m | 0, g | 0) | 0;
+ m = y;
+ n = Ob(0, c[p >> 2] | 0, 32) | 0;
+ l = y;
+ e = Ob(0, c[i >> 2] | 0, 32) | 0;
+ l = Nb(e | 0, y | 0, n | 0, l | 0) | 0;
+ m = Rb(l | 0, y | 0, g | 0, m | 0) | 0;
+ g = y;
+ l = Ob(0, c[k >> 2] | 0, 32) | 0;
+ n = y;
+ e = Ob(0, c[h >> 2] | 0, 32) | 0;
+ n = Nb(e | 0, y | 0, l | 0, n | 0) | 0;
+ n = Rb(m | 0, g | 0, n | 0, y | 0) | 0;
+ g = y;
+ m = Ob(0, c[o >> 2] | 0, 32) | 0;
+ l = y;
+ e = Ob(0, c[d >> 2] | 0, 32) | 0;
+ l = Nb(e | 0, y | 0, m | 0, l | 0) | 0;
+ l = Rb(n | 0, g | 0, l | 0, y | 0) | 0;
+ g = y;
+ n = Ob(0, c[b >> 2] | 0, 32) | 0;
+ m = y;
+ e = b + 72 | 0;
+ b = Ob(0, c[e >> 2] | 0, 32) | 0;
+ b = Nb(b | 0, y | 0, n | 0, m | 0) | 0;
+ b = Rb(l | 0, g | 0, b | 0, y | 0) | 0;
+ b = Qb(b | 0, y | 0, 1) | 0;
+ g = a + 72 | 0;
+ c[g >> 2] = b;
+ c[g + 4 >> 2] = y;
+ g = Ob(0, c[j >> 2] | 0, 32) | 0;
+ b = y;
+ b = Nb(g | 0, b | 0, g | 0, b | 0) | 0;
+ g = y;
+ l = Ob(0, c[f >> 2] | 0, 32) | 0;
+ m = y;
+ n = Ob(0, c[i >> 2] | 0, 32) | 0;
+ m = Nb(n | 0, y | 0, l | 0, m | 0) | 0;
+ g = Rb(m | 0, y | 0, b | 0, g | 0) | 0;
+ b = y;
+ m = Ob(0, c[k >> 2] | 0, 32) | 0;
+ l = y;
+ n = Ob(0, c[d >> 2] | 0, 32) | 0;
+ l = Nb(n | 0, y | 0, m | 0, l | 0) | 0;
+ l = Rb(g | 0, b | 0, l | 0, y | 0) | 0;
+ b = y;
+ g = Ob(0, c[p >> 2] | 0, 32) | 0;
+ m = y;
+ n = Ob(0, c[h >> 2] | 0, 32) | 0;
+ m = Nb(n | 0, y | 0, g | 0, m | 0) | 0;
+ g = y;
+ o = Ob(0, c[o >> 2] | 0, 32) | 0;
+ n = y;
+ q = Ob(0, c[e >> 2] | 0, 32) | 0;
+ n = Nb(q | 0, y | 0, o | 0, n | 0) | 0;
+ g = Rb(n | 0, y | 0, m | 0, g | 0) | 0;
+ g = Qb(g | 0, y | 0, 1) | 0;
+ g = Rb(l | 0, b | 0, g | 0, y | 0) | 0;
+ g = Qb(g | 0, y | 0, 1) | 0;
+ b = a + 80 | 0;
+ c[b >> 2] = g;
+ c[b + 4 >> 2] = y;
+ b = Ob(0, c[j >> 2] | 0, 32) | 0;
+ g = y;
+ l = Ob(0, c[i >> 2] | 0, 32) | 0;
+ g = Nb(l | 0, y | 0, b | 0, g | 0) | 0;
+ b = y;
+ l = Ob(0, c[f >> 2] | 0, 32) | 0;
+ m = y;
+ n = Ob(0, c[h >> 2] | 0, 32) | 0;
+ m = Nb(n | 0, y | 0, l | 0, m | 0) | 0;
+ b = Rb(m | 0, y | 0, g | 0, b | 0) | 0;
+ g = y;
+ m = Ob(0, c[p >> 2] | 0, 32) | 0;
+ l = y;
+ n = Ob(0, c[d >> 2] | 0, 32) | 0;
+ l = Nb(n | 0, y | 0, m | 0, l | 0) | 0;
+ l = Rb(b | 0, g | 0, l | 0, y | 0) | 0;
+ g = y;
+ b = Ob(0, c[k >> 2] | 0, 32) | 0;
+ k = y;
+ m = Ob(0, c[e >> 2] | 0, 32) | 0;
+ k = Nb(m | 0, y | 0, b | 0, k | 0) | 0;
+ k = Rb(l | 0, g | 0, k | 0, y | 0) | 0;
+ k = Qb(k | 0, y | 0, 1) | 0;
+ g = a + 88 | 0;
+ c[g >> 2] = k;
+ c[g + 4 >> 2] = y;
+ g = Ob(0, c[i >> 2] | 0, 32) | 0;
+ k = y;
+ k = Nb(g | 0, k | 0, g | 0, k | 0) | 0;
+ g = y;
+ l = Ob(0, c[f >> 2] | 0, 32) | 0;
+ b = y;
+ m = Ob(0, c[d >> 2] | 0, 32) | 0;
+ b = Nb(m | 0, y | 0, l | 0, b | 0) | 0;
+ l = y;
+ m = Ob(0, c[j >> 2] | 0, 32) | 0;
+ n = y;
+ o = Ob(0, c[h >> 2] | 0, 32) | 0;
+ n = Nb(o | 0, y | 0, m | 0, n | 0) | 0;
+ m = y;
+ p = Ob(0, c[p >> 2] | 0, 32) | 0;
+ o = y;
+ q = Ob(0, c[e >> 2] | 0, 32) | 0;
+ o = Nb(q | 0, y | 0, p | 0, o | 0) | 0;
+ m = Rb(o | 0, y | 0, n | 0, m | 0) | 0;
+ m = Qb(m | 0, y | 0, 1) | 0;
+ l = Rb(m | 0, y | 0, b | 0, l | 0) | 0;
+ l = Qb(l | 0, y | 0, 1) | 0;
+ g = Rb(l | 0, y | 0, k | 0, g | 0) | 0;
+ k = a + 96 | 0;
+ c[k >> 2] = g;
+ c[k + 4 >> 2] = y;
+ k = Ob(0, c[i >> 2] | 0, 32) | 0;
+ g = y;
+ l = Ob(0, c[h >> 2] | 0, 32) | 0;
+ g = Nb(l | 0, y | 0, k | 0, g | 0) | 0;
+ k = y;
+ l = Ob(0, c[j >> 2] | 0, 32) | 0;
+ b = y;
+ m = Ob(0, c[d >> 2] | 0, 32) | 0;
+ b = Nb(m | 0, y | 0, l | 0, b | 0) | 0;
+ k = Rb(b | 0, y | 0, g | 0, k | 0) | 0;
+ g = y;
+ f = Ob(0, c[f >> 2] | 0, 32) | 0;
+ b = y;
+ l = Ob(0, c[e >> 2] | 0, 32) | 0;
+ b = Nb(l | 0, y | 0, f | 0, b | 0) | 0;
+ b = Rb(k | 0, g | 0, b | 0, y | 0) | 0;
+ b = Qb(b | 0, y | 0, 1) | 0;
+ g = a + 104 | 0;
+ c[g >> 2] = b;
+ c[g + 4 >> 2] = y;
+ g = Ob(0, c[h >> 2] | 0, 32) | 0;
+ b = y;
+ b = Nb(g | 0, b | 0, g | 0, b | 0) | 0;
+ g = y;
+ k = Ob(0, c[i >> 2] | 0, 32) | 0;
+ f = y;
+ l = Ob(0, c[d >> 2] | 0, 32) | 0;
+ f = Nb(l | 0, y | 0, k | 0, f | 0) | 0;
+ g = Rb(f | 0, y | 0, b | 0, g | 0) | 0;
+ b = y;
+ j = Ob(0, c[j >> 2] | 0, 31) | 0;
+ f = y;
+ k = Ob(0, c[e >> 2] | 0, 32) | 0;
+ f = Nb(k | 0, y | 0, j | 0, f | 0) | 0;
+ f = Rb(g | 0, b | 0, f | 0, y | 0) | 0;
+ f = Qb(f | 0, y | 0, 1) | 0;
+ b = a + 112 | 0;
+ c[b >> 2] = f;
+ c[b + 4 >> 2] = y;
+ b = Ob(0, c[h >> 2] | 0, 32) | 0;
+ f = y;
+ g = Ob(0, c[d >> 2] | 0, 32) | 0;
+ f = Nb(g | 0, y | 0, b | 0, f | 0) | 0;
+ b = y;
+ i = Ob(0, c[i >> 2] | 0, 32) | 0;
+ g = y;
+ j = Ob(0, c[e >> 2] | 0, 32) | 0;
+ g = Nb(j | 0, y | 0, i | 0, g | 0) | 0;
+ b = Rb(g | 0, y | 0, f | 0, b | 0) | 0;
+ b = Qb(b | 0, y | 0, 1) | 0;
+ f = a + 120 | 0;
+ c[f >> 2] = b;
+ c[f + 4 >> 2] = y;
+ f = Ob(0, c[d >> 2] | 0, 32) | 0;
+ b = y;
+ b = Nb(f | 0, b | 0, f | 0, b | 0) | 0;
+ f = y;
+ h = Ob(0, c[h >> 2] | 0, 30) | 0;
+ g = y;
+ i = Ob(0, c[e >> 2] | 0, 32) | 0;
+ g = Nb(i | 0, y | 0, h | 0, g | 0) | 0;
+ f = Rb(g | 0, y | 0, b | 0, f | 0) | 0;
+ b = a + 128 | 0;
+ c[b >> 2] = f;
+ c[b + 4 >> 2] = y;
+ b = Ob(0, c[d >> 2] | 0, 31) | 0;
+ d = y;
+ f = Ob(0, c[e >> 2] | 0, 32) | 0;
+ d = Nb(f | 0, y | 0, b | 0, d | 0) | 0;
+ b = a + 136 | 0;
+ c[b >> 2] = d;
+ c[b + 4 >> 2] = y;
+ e = c[e >> 2] | 0;
+ b = Ob(0, e | 0, 32) | 0;
+ d = y;
+ e = Ob(0, e | 0, 31) | 0;
+ d = Nb(e | 0, y | 0, b | 0, d | 0) | 0;
+ b = a + 144 | 0;
+ c[b >> 2] = d;
+ c[b + 4 >> 2] = y;
+ return;
+}
+
+function Ta(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, z = 0, A = 0, B = 0, C = 0, D = 0, E = 0, F = 0, G = 0, H = 0, I = 0, J = 0, K = 0, L = 0, M = 0, N = 0, O = 0, P = 0, Q = 0, R = 0, S = 0, T = 0, U = 0, V = 0, W = 0, X = 0, Y = 0, Z = 0, _ = 0, $ = 0, aa = 0, ba = 0, ca = 0, da = 0, ea = 0, fa = 0, ga = 0, ha = 0, ia = 0, ja = 0, ka = 0, la = 0, ma = 0, na = 0, oa = 0, pa = 0, qa = 0, ra = 0, sa = 0, ta = 0, ua = 0, va = 0, wa = 0, xa = 0, ya = 0, za = 0, Aa = 0, Ba = 0, Ca = 0, Da = 0, Ea = 0, Fa = 0, Ga = 0, Ha = 0, Ia = 0, Ja = 0, Ka = 0, La = 0, Ma = 0, Na = 0, Oa = 0, Pa = 0, Qa = 0, Ra = 0, Sa = 0, Ta = 0, Ua = 0, Va = 0, Wa = 0, Xa = 0, Ya = 0, Za = 0, _a = 0, $a = 0, ab = 0, bb = 0, cb = 0, db = 0, eb = 0, fb = 0, gb = 0;
+ bb = c[b >> 2] | 0;
+ La = c[b + 4 >> 2] | 0;
+ t = c[b + 8 >> 2] | 0;
+ da = c[b + 12 >> 2] | 0;
+ u = c[b + 16 >> 2] | 0;
+ db = c[b + 20 >> 2] | 0;
+ j = c[b + 24 >> 2] | 0;
+ pa = c[b + 28 >> 2] | 0;
+ g = c[b + 32 >> 2] | 0;
+ q = c[b + 36 >> 2] | 0;
+ k = bb << 1;
+ r = La << 1;
+ Xa = t << 1;
+ w = da << 1;
+ Fa = u << 1;
+ p = db << 1;
+ oa = j << 1;
+ v = pa << 1;
+ Wa = db * 38 | 0;
+ Ja = j * 19 | 0;
+ fa = pa * 38 | 0;
+ X = g * 19 | 0;
+ gb = q * 38 | 0;
+ cb = ((bb | 0) < 0) << 31 >> 31;
+ cb = Nb(bb | 0, cb | 0, bb | 0, cb | 0) | 0;
+ bb = y;
+ l = ((k | 0) < 0) << 31 >> 31;
+ Ma = ((La | 0) < 0) << 31 >> 31;
+ Ua = Nb(k | 0, l | 0, La | 0, Ma | 0) | 0;
+ Ta = y;
+ o = ((t | 0) < 0) << 31 >> 31;
+ Oa = Nb(t | 0, o | 0, k | 0, l | 0) | 0;
+ Na = y;
+ ea = ((da | 0) < 0) << 31 >> 31;
+ Ea = Nb(da | 0, ea | 0, k | 0, l | 0) | 0;
+ Da = y;
+ e = ((u | 0) < 0) << 31 >> 31;
+ sa = Nb(u | 0, e | 0, k | 0, l | 0) | 0;
+ ra = y;
+ eb = ((db | 0) < 0) << 31 >> 31;
+ ia = Nb(db | 0, eb | 0, k | 0, l | 0) | 0;
+ ha = y;
+ s = ((j | 0) < 0) << 31 >> 31;
+ _ = Nb(j | 0, s | 0, k | 0, l | 0) | 0;
+ Z = y;
+ qa = ((pa | 0) < 0) << 31 >> 31;
+ Q = Nb(pa | 0, qa | 0, k | 0, l | 0) | 0;
+ P = y;
+ h = ((g | 0) < 0) << 31 >> 31;
+ G = Nb(g | 0, h | 0, k | 0, l | 0) | 0;
+ F = y;
+ b = ((q | 0) < 0) << 31 >> 31;
+ l = Nb(q | 0, b | 0, k | 0, l | 0) | 0;
+ k = y;
+ d = ((r | 0) < 0) << 31 >> 31;
+ Ma = Nb(r | 0, d | 0, La | 0, Ma | 0) | 0;
+ La = y;
+ Ca = Nb(r | 0, d | 0, t | 0, o | 0) | 0;
+ Ba = y;
+ f = ((w | 0) < 0) << 31 >> 31;
+ wa = Nb(w | 0, f | 0, r | 0, d | 0) | 0;
+ va = y;
+ ma = Nb(u | 0, e | 0, r | 0, d | 0) | 0;
+ la = y;
+ x = ((p | 0) < 0) << 31 >> 31;
+ aa = Nb(p | 0, x | 0, r | 0, d | 0) | 0;
+ $ = y;
+ S = Nb(j | 0, s | 0, r | 0, d | 0) | 0;
+ R = y;
+ i = ((v | 0) < 0) << 31 >> 31;
+ I = Nb(v | 0, i | 0, r | 0, d | 0) | 0;
+ H = y;
+ m = Nb(g | 0, h | 0, r | 0, d | 0) | 0;
+ n = y;
+ fb = ((gb | 0) < 0) << 31 >> 31;
+ d = Nb(gb | 0, fb | 0, r | 0, d | 0) | 0;
+ r = y;
+ ua = Nb(t | 0, o | 0, t | 0, o | 0) | 0;
+ ta = y;
+ Ya = ((Xa | 0) < 0) << 31 >> 31;
+ ka = Nb(Xa | 0, Ya | 0, da | 0, ea | 0) | 0;
+ ja = y;
+ ca = Nb(u | 0, e | 0, Xa | 0, Ya | 0) | 0;
+ ba = y;
+ W = Nb(db | 0, eb | 0, Xa | 0, Ya | 0) | 0;
+ V = y;
+ O = Nb(j | 0, s | 0, Xa | 0, Ya | 0) | 0;
+ N = y;
+ A = Nb(pa | 0, qa | 0, Xa | 0, Ya | 0) | 0;
+ z = y;
+ Y = ((X | 0) < 0) << 31 >> 31;
+ Ya = Nb(X | 0, Y | 0, Xa | 0, Ya | 0) | 0;
+ Xa = y;
+ o = Nb(gb | 0, fb | 0, t | 0, o | 0) | 0;
+ t = y;
+ ea = Nb(w | 0, f | 0, da | 0, ea | 0) | 0;
+ da = y;
+ U = Nb(w | 0, f | 0, u | 0, e | 0) | 0;
+ T = y;
+ K = Nb(p | 0, x | 0, w | 0, f | 0) | 0;
+ J = y;
+ E = Nb(j | 0, s | 0, w | 0, f | 0) | 0;
+ D = y;
+ ga = ((fa | 0) < 0) << 31 >> 31;
+ _a = Nb(fa | 0, ga | 0, w | 0, f | 0) | 0;
+ Za = y;
+ Qa = Nb(X | 0, Y | 0, w | 0, f | 0) | 0;
+ Pa = y;
+ f = Nb(gb | 0, fb | 0, w | 0, f | 0) | 0;
+ w = y;
+ M = Nb(u | 0, e | 0, u | 0, e | 0) | 0;
+ L = y;
+ Ga = ((Fa | 0) < 0) << 31 >> 31;
+ C = Nb(Fa | 0, Ga | 0, db | 0, eb | 0) | 0;
+ B = y;
+ Ka = ((Ja | 0) < 0) << 31 >> 31;
+ ab = Nb(Ja | 0, Ka | 0, Fa | 0, Ga | 0) | 0;
+ $a = y;
+ Sa = Nb(fa | 0, ga | 0, u | 0, e | 0) | 0;
+ Ra = y;
+ Ga = Nb(X | 0, Y | 0, Fa | 0, Ga | 0) | 0;
+ Fa = y;
+ e = Nb(gb | 0, fb | 0, u | 0, e | 0) | 0;
+ u = y;
+ eb = Nb(Wa | 0, ((Wa | 0) < 0) << 31 >> 31 | 0, db | 0, eb | 0) | 0;
+ db = y;
+ Wa = Nb(Ja | 0, Ka | 0, p | 0, x | 0) | 0;
+ Va = y;
+ Ia = Nb(fa | 0, ga | 0, p | 0, x | 0) | 0;
+ Ha = y;
+ ya = Nb(X | 0, Y | 0, p | 0, x | 0) | 0;
+ xa = y;
+ x = Nb(gb | 0, fb | 0, p | 0, x | 0) | 0;
+ p = y;
+ Ka = Nb(Ja | 0, Ka | 0, j | 0, s | 0) | 0;
+ Ja = y;
+ Aa = Nb(fa | 0, ga | 0, j | 0, s | 0) | 0;
+ za = y;
+ oa = Nb(X | 0, Y | 0, oa | 0, ((oa | 0) < 0) << 31 >> 31 | 0) | 0;
+ na = y;
+ s = Nb(gb | 0, fb | 0, j | 0, s | 0) | 0;
+ j = y;
+ qa = Nb(fa | 0, ga | 0, pa | 0, qa | 0) | 0;
+ pa = y;
+ ga = Nb(X | 0, Y | 0, v | 0, i | 0) | 0;
+ fa = y;
+ i = Nb(gb | 0, fb | 0, v | 0, i | 0) | 0;
+ v = y;
+ Y = Nb(X | 0, Y | 0, g | 0, h | 0) | 0;
+ X = y;
+ h = Nb(gb | 0, fb | 0, g | 0, h | 0) | 0;
+ g = y;
+ b = Nb(gb | 0, fb | 0, q | 0, b | 0) | 0;
+ q = y;
+ bb = Rb(eb | 0, db | 0, cb | 0, bb | 0) | 0;
+ $a = Rb(bb | 0, y | 0, ab | 0, $a | 0) | 0;
+ Za = Rb($a | 0, y | 0, _a | 0, Za | 0) | 0;
+ Xa = Rb(Za | 0, y | 0, Ya | 0, Xa | 0) | 0;
+ r = Rb(Xa | 0, y | 0, d | 0, r | 0) | 0;
+ d = y;
+ Ta = Rb(Wa | 0, Va | 0, Ua | 0, Ta | 0) | 0;
+ Ra = Rb(Ta | 0, y | 0, Sa | 0, Ra | 0) | 0;
+ Pa = Rb(Ra | 0, y | 0, Qa | 0, Pa | 0) | 0;
+ t = Rb(Pa | 0, y | 0, o | 0, t | 0) | 0;
+ o = y;
+ La = Rb(Oa | 0, Na | 0, Ma | 0, La | 0) | 0;
+ Ja = Rb(La | 0, y | 0, Ka | 0, Ja | 0) | 0;
+ Ha = Rb(Ja | 0, y | 0, Ia | 0, Ha | 0) | 0;
+ Fa = Rb(Ha | 0, y | 0, Ga | 0, Fa | 0) | 0;
+ w = Rb(Fa | 0, y | 0, f | 0, w | 0) | 0;
+ f = y;
+ Ba = Rb(Ea | 0, Da | 0, Ca | 0, Ba | 0) | 0;
+ za = Rb(Ba | 0, y | 0, Aa | 0, za | 0) | 0;
+ xa = Rb(za | 0, y | 0, ya | 0, xa | 0) | 0;
+ u = Rb(xa | 0, y | 0, e | 0, u | 0) | 0;
+ e = y;
+ ta = Rb(wa | 0, va | 0, ua | 0, ta | 0) | 0;
+ ra = Rb(ta | 0, y | 0, sa | 0, ra | 0) | 0;
+ pa = Rb(ra | 0, y | 0, qa | 0, pa | 0) | 0;
+ na = Rb(pa | 0, y | 0, oa | 0, na | 0) | 0;
+ p = Rb(na | 0, y | 0, x | 0, p | 0) | 0;
+ x = y;
+ ja = Rb(ma | 0, la | 0, ka | 0, ja | 0) | 0;
+ ha = Rb(ja | 0, y | 0, ia | 0, ha | 0) | 0;
+ fa = Rb(ha | 0, y | 0, ga | 0, fa | 0) | 0;
+ j = Rb(fa | 0, y | 0, s | 0, j | 0) | 0;
+ s = y;
+ ba = Rb(ea | 0, da | 0, ca | 0, ba | 0) | 0;
+ $ = Rb(ba | 0, y | 0, aa | 0, $ | 0) | 0;
+ Z = Rb($ | 0, y | 0, _ | 0, Z | 0) | 0;
+ X = Rb(Z | 0, y | 0, Y | 0, X | 0) | 0;
+ v = Rb(X | 0, y | 0, i | 0, v | 0) | 0;
+ i = y;
+ T = Rb(W | 0, V | 0, U | 0, T | 0) | 0;
+ R = Rb(T | 0, y | 0, S | 0, R | 0) | 0;
+ P = Rb(R | 0, y | 0, Q | 0, P | 0) | 0;
+ g = Rb(P | 0, y | 0, h | 0, g | 0) | 0;
+ h = y;
+ L = Rb(O | 0, N | 0, M | 0, L | 0) | 0;
+ J = Rb(L | 0, y | 0, K | 0, J | 0) | 0;
+ H = Rb(J | 0, y | 0, I | 0, H | 0) | 0;
+ F = Rb(H | 0, y | 0, G | 0, F | 0) | 0;
+ q = Rb(F | 0, y | 0, b | 0, q | 0) | 0;
+ b = y;
+ B = Rb(E | 0, D | 0, C | 0, B | 0) | 0;
+ z = Rb(B | 0, y | 0, A | 0, z | 0) | 0;
+ n = Rb(z | 0, y | 0, m | 0, n | 0) | 0;
+ k = Rb(n | 0, y | 0, l | 0, k | 0) | 0;
+ l = y;
+ d = Qb(r | 0, d | 0, 1) | 0;
+ r = y;
+ o = Qb(t | 0, o | 0, 1) | 0;
+ t = y;
+ f = Qb(w | 0, f | 0, 1) | 0;
+ w = y;
+ e = Qb(u | 0, e | 0, 1) | 0;
+ u = y;
+ x = Qb(p | 0, x | 0, 1) | 0;
+ p = y;
+ s = Qb(j | 0, s | 0, 1) | 0;
+ j = y;
+ i = Qb(v | 0, i | 0, 1) | 0;
+ v = y;
+ h = Qb(g | 0, h | 0, 1) | 0;
+ g = y;
+ b = Qb(q | 0, b | 0, 1) | 0;
+ q = y;
+ l = Qb(k | 0, l | 0, 1) | 0;
+ k = y;
+ n = Rb(d | 0, r | 0, 33554432, 0) | 0;
+ m = y;
+ z = Ob(n | 0, m | 0, 26) | 0;
+ t = Rb(z | 0, y | 0, o | 0, t | 0) | 0;
+ o = y;
+ m = Sb(d | 0, r | 0, n & -67108864 | 0, m | 0) | 0;
+ n = y;
+ r = Rb(x | 0, p | 0, 33554432, 0) | 0;
+ d = y;
+ z = Ob(r | 0, d | 0, 26) | 0;
+ j = Rb(z | 0, y | 0, s | 0, j | 0) | 0;
+ s = y;
+ d = Sb(x | 0, p | 0, r & -67108864 | 0, d | 0) | 0;
+ r = y;
+ p = Rb(t | 0, o | 0, 16777216, 0) | 0;
+ x = Ob(p | 0, y | 0, 25) | 0;
+ w = Rb(x | 0, y | 0, f | 0, w | 0) | 0;
+ f = y;
+ p = Sb(t | 0, o | 0, p & -33554432 | 0, 0) | 0;
+ o = y;
+ t = Rb(j | 0, s | 0, 16777216, 0) | 0;
+ x = Ob(t | 0, y | 0, 25) | 0;
+ v = Rb(x | 0, y | 0, i | 0, v | 0) | 0;
+ i = y;
+ t = Sb(j | 0, s | 0, t & -33554432 | 0, 0) | 0;
+ s = y;
+ j = Rb(w | 0, f | 0, 33554432, 0) | 0;
+ x = Ob(j | 0, y | 0, 26) | 0;
+ u = Rb(x | 0, y | 0, e | 0, u | 0) | 0;
+ e = y;
+ j = Sb(w | 0, f | 0, j & -67108864 | 0, 0) | 0;
+ f = Rb(v | 0, i | 0, 33554432, 0) | 0;
+ w = Ob(f | 0, y | 0, 26) | 0;
+ g = Rb(w | 0, y | 0, h | 0, g | 0) | 0;
+ h = y;
+ f = Sb(v | 0, i | 0, f & -67108864 | 0, 0) | 0;
+ i = Rb(u | 0, e | 0, 16777216, 0) | 0;
+ v = Ob(i | 0, y | 0, 25) | 0;
+ r = Rb(v | 0, y | 0, d | 0, r | 0) | 0;
+ d = y;
+ i = Sb(u | 0, e | 0, i & -33554432 | 0, 0) | 0;
+ e = Rb(g | 0, h | 0, 16777216, 0) | 0;
+ u = Ob(e | 0, y | 0, 25) | 0;
+ q = Rb(u | 0, y | 0, b | 0, q | 0) | 0;
+ b = y;
+ e = Sb(g | 0, h | 0, e & -33554432 | 0, 0) | 0;
+ h = Rb(r | 0, d | 0, 33554432, 0) | 0;
+ g = Pb(h | 0, y | 0, 26) | 0;
+ g = Rb(t | 0, s | 0, g | 0, y | 0) | 0;
+ h = Sb(r | 0, d | 0, h & -67108864 | 0, 0) | 0;
+ d = Rb(q | 0, b | 0, 33554432, 0) | 0;
+ r = Ob(d | 0, y | 0, 26) | 0;
+ k = Rb(r | 0, y | 0, l | 0, k | 0) | 0;
+ l = y;
+ d = Sb(q | 0, b | 0, d & -67108864 | 0, 0) | 0;
+ b = Rb(k | 0, l | 0, 16777216, 0) | 0;
+ q = Ob(b | 0, y | 0, 25) | 0;
+ q = Nb(q | 0, y | 0, 19, 0) | 0;
+ n = Rb(q | 0, y | 0, m | 0, n | 0) | 0;
+ m = y;
+ b = Sb(k | 0, l | 0, b & -33554432 | 0, 0) | 0;
+ l = Rb(n | 0, m | 0, 33554432, 0) | 0;
+ k = Pb(l | 0, y | 0, 26) | 0;
+ k = Rb(p | 0, o | 0, k | 0, y | 0) | 0;
+ l = Sb(n | 0, m | 0, l & -67108864 | 0, 0) | 0;
+ c[a >> 2] = l;
+ c[a + 4 >> 2] = k;
+ c[a + 8 >> 2] = j;
+ c[a + 12 >> 2] = i;
+ c[a + 16 >> 2] = h;
+ c[a + 20 >> 2] = g;
+ c[a + 24 >> 2] = f;
+ c[a + 28 >> 2] = e;
+ c[a + 32 >> 2] = d;
+ c[a + 36 >> 2] = b;
+ return;
+}
+
+function Ua(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, z = 0, A = 0, B = 0, C = 0, D = 0, E = 0, F = 0, G = 0, H = 0, I = 0, J = 0, K = 0, L = 0, M = 0, N = 0, O = 0, P = 0, Q = 0, R = 0, S = 0, T = 0, U = 0, V = 0, W = 0, X = 0, Y = 0, Z = 0, _ = 0, $ = 0, aa = 0, ba = 0, ca = 0, da = 0, ea = 0, fa = 0, ga = 0, ha = 0, ia = 0, ja = 0, ka = 0, la = 0, ma = 0, na = 0, oa = 0, pa = 0, qa = 0, ra = 0, sa = 0, ta = 0, ua = 0, va = 0, wa = 0, xa = 0, ya = 0, za = 0, Aa = 0, Ba = 0, Ca = 0, Da = 0, Ea = 0, Fa = 0, Ga = 0, Ha = 0, Ia = 0, Ja = 0, Ka = 0, La = 0, Ma = 0, Na = 0, Oa = 0, Pa = 0, Qa = 0, Ra = 0, Sa = 0, Ta = 0, Ua = 0, Va = 0, Wa = 0, Xa = 0, Ya = 0, Za = 0, _a = 0, $a = 0, ab = 0, bb = 0, cb = 0, db = 0, eb = 0, fb = 0, gb = 0;
+ bb = c[b >> 2] | 0;
+ va = c[b + 4 >> 2] | 0;
+ k = c[b + 8 >> 2] | 0;
+ ma = c[b + 12 >> 2] | 0;
+ g = c[b + 16 >> 2] | 0;
+ db = c[b + 20 >> 2] | 0;
+ h = c[b + 24 >> 2] | 0;
+ o = c[b + 28 >> 2] | 0;
+ P = c[b + 32 >> 2] | 0;
+ D = c[b + 36 >> 2] | 0;
+ r = bb << 1;
+ d = va << 1;
+ Xa = k << 1;
+ i = ma << 1;
+ oa = g << 1;
+ f = db << 1;
+ m = h << 1;
+ e = o << 1;
+ Ma = db * 38 | 0;
+ sa = h * 19 | 0;
+ xa = o * 38 | 0;
+ ea = P * 19 | 0;
+ gb = D * 38 | 0;
+ cb = ((bb | 0) < 0) << 31 >> 31;
+ cb = Nb(bb | 0, cb | 0, bb | 0, cb | 0) | 0;
+ bb = y;
+ s = ((r | 0) < 0) << 31 >> 31;
+ ua = ((va | 0) < 0) << 31 >> 31;
+ Ka = Nb(r | 0, s | 0, va | 0, ua | 0) | 0;
+ Ja = y;
+ j = ((k | 0) < 0) << 31 >> 31;
+ Wa = Nb(k | 0, j | 0, r | 0, s | 0) | 0;
+ Va = y;
+ na = ((ma | 0) < 0) << 31 >> 31;
+ Ua = Nb(ma | 0, na | 0, r | 0, s | 0) | 0;
+ Ta = y;
+ Z = ((g | 0) < 0) << 31 >> 31;
+ Oa = Nb(g | 0, Z | 0, r | 0, s | 0) | 0;
+ Na = y;
+ eb = ((db | 0) < 0) << 31 >> 31;
+ Aa = Nb(db | 0, eb | 0, r | 0, s | 0) | 0;
+ za = y;
+ wa = ((h | 0) < 0) << 31 >> 31;
+ ha = Nb(h | 0, wa | 0, r | 0, s | 0) | 0;
+ ga = y;
+ C = ((o | 0) < 0) << 31 >> 31;
+ S = Nb(o | 0, C | 0, r | 0, s | 0) | 0;
+ R = y;
+ Q = ((P | 0) < 0) << 31 >> 31;
+ G = Nb(P | 0, Q | 0, r | 0, s | 0) | 0;
+ F = y;
+ E = ((D | 0) < 0) << 31 >> 31;
+ s = Nb(D | 0, E | 0, r | 0, s | 0) | 0;
+ r = y;
+ l = ((d | 0) < 0) << 31 >> 31;
+ ua = Nb(d | 0, l | 0, va | 0, ua | 0) | 0;
+ va = y;
+ ca = Nb(d | 0, l | 0, k | 0, j | 0) | 0;
+ da = y;
+ q = ((i | 0) < 0) << 31 >> 31;
+ Sa = Nb(i | 0, q | 0, d | 0, l | 0) | 0;
+ Ra = y;
+ Ea = Nb(g | 0, Z | 0, d | 0, l | 0) | 0;
+ Da = y;
+ p = ((f | 0) < 0) << 31 >> 31;
+ ja = Nb(f | 0, p | 0, d | 0, l | 0) | 0;
+ ia = y;
+ U = Nb(h | 0, wa | 0, d | 0, l | 0) | 0;
+ T = y;
+ b = ((e | 0) < 0) << 31 >> 31;
+ I = Nb(e | 0, b | 0, d | 0, l | 0) | 0;
+ H = y;
+ u = Nb(P | 0, Q | 0, d | 0, l | 0) | 0;
+ t = y;
+ fb = ((gb | 0) < 0) << 31 >> 31;
+ l = Nb(gb | 0, fb | 0, d | 0, l | 0) | 0;
+ d = y;
+ Qa = Nb(k | 0, j | 0, k | 0, j | 0) | 0;
+ Pa = y;
+ Ya = ((Xa | 0) < 0) << 31 >> 31;
+ Ca = Nb(Xa | 0, Ya | 0, ma | 0, na | 0) | 0;
+ Ba = y;
+ la = Nb(g | 0, Z | 0, Xa | 0, Ya | 0) | 0;
+ ka = y;
+ Y = Nb(db | 0, eb | 0, Xa | 0, Ya | 0) | 0;
+ X = y;
+ O = Nb(h | 0, wa | 0, Xa | 0, Ya | 0) | 0;
+ N = y;
+ w = Nb(o | 0, C | 0, Xa | 0, Ya | 0) | 0;
+ v = y;
+ fa = ((ea | 0) < 0) << 31 >> 31;
+ Ya = Nb(ea | 0, fa | 0, Xa | 0, Ya | 0) | 0;
+ Xa = y;
+ j = Nb(gb | 0, fb | 0, k | 0, j | 0) | 0;
+ k = y;
+ na = Nb(i | 0, q | 0, ma | 0, na | 0) | 0;
+ ma = y;
+ W = Nb(i | 0, q | 0, g | 0, Z | 0) | 0;
+ V = y;
+ K = Nb(f | 0, p | 0, i | 0, q | 0) | 0;
+ J = y;
+ B = Nb(h | 0, wa | 0, i | 0, q | 0) | 0;
+ A = y;
+ ya = ((xa | 0) < 0) << 31 >> 31;
+ _a = Nb(xa | 0, ya | 0, i | 0, q | 0) | 0;
+ Za = y;
+ Ga = Nb(ea | 0, fa | 0, i | 0, q | 0) | 0;
+ Fa = y;
+ q = Nb(gb | 0, fb | 0, i | 0, q | 0) | 0;
+ i = y;
+ M = Nb(g | 0, Z | 0, g | 0, Z | 0) | 0;
+ L = y;
+ pa = ((oa | 0) < 0) << 31 >> 31;
+ z = Nb(oa | 0, pa | 0, db | 0, eb | 0) | 0;
+ x = y;
+ ta = ((sa | 0) < 0) << 31 >> 31;
+ ab = Nb(sa | 0, ta | 0, oa | 0, pa | 0) | 0;
+ $a = y;
+ Ia = Nb(xa | 0, ya | 0, g | 0, Z | 0) | 0;
+ Ha = y;
+ pa = Nb(ea | 0, fa | 0, oa | 0, pa | 0) | 0;
+ oa = y;
+ Z = Nb(gb | 0, fb | 0, g | 0, Z | 0) | 0;
+ g = y;
+ eb = Nb(Ma | 0, ((Ma | 0) < 0) << 31 >> 31 | 0, db | 0, eb | 0) | 0;
+ db = y;
+ Ma = Nb(sa | 0, ta | 0, f | 0, p | 0) | 0;
+ La = y;
+ ra = Nb(xa | 0, ya | 0, f | 0, p | 0) | 0;
+ qa = y;
+ $ = Nb(ea | 0, fa | 0, f | 0, p | 0) | 0;
+ _ = y;
+ p = Nb(gb | 0, fb | 0, f | 0, p | 0) | 0;
+ f = y;
+ ta = Nb(sa | 0, ta | 0, h | 0, wa | 0) | 0;
+ sa = y;
+ ba = Nb(xa | 0, ya | 0, h | 0, wa | 0) | 0;
+ aa = y;
+ m = Nb(ea | 0, fa | 0, m | 0, ((m | 0) < 0) << 31 >> 31 | 0) | 0;
+ n = y;
+ wa = Nb(gb | 0, fb | 0, h | 0, wa | 0) | 0;
+ h = y;
+ C = Nb(xa | 0, ya | 0, o | 0, C | 0) | 0;
+ o = y;
+ ya = Nb(ea | 0, fa | 0, e | 0, b | 0) | 0;
+ xa = y;
+ b = Nb(gb | 0, fb | 0, e | 0, b | 0) | 0;
+ e = y;
+ fa = Nb(ea | 0, fa | 0, P | 0, Q | 0) | 0;
+ ea = y;
+ Q = Nb(gb | 0, fb | 0, P | 0, Q | 0) | 0;
+ P = y;
+ E = Nb(gb | 0, fb | 0, D | 0, E | 0) | 0;
+ D = y;
+ bb = Rb(eb | 0, db | 0, cb | 0, bb | 0) | 0;
+ $a = Rb(bb | 0, y | 0, ab | 0, $a | 0) | 0;
+ Za = Rb($a | 0, y | 0, _a | 0, Za | 0) | 0;
+ Xa = Rb(Za | 0, y | 0, Ya | 0, Xa | 0) | 0;
+ d = Rb(Xa | 0, y | 0, l | 0, d | 0) | 0;
+ l = y;
+ va = Rb(Wa | 0, Va | 0, ua | 0, va | 0) | 0;
+ ua = y;
+ da = Rb(Ua | 0, Ta | 0, ca | 0, da | 0) | 0;
+ ca = y;
+ Pa = Rb(Sa | 0, Ra | 0, Qa | 0, Pa | 0) | 0;
+ Na = Rb(Pa | 0, y | 0, Oa | 0, Na | 0) | 0;
+ o = Rb(Na | 0, y | 0, C | 0, o | 0) | 0;
+ n = Rb(o | 0, y | 0, m | 0, n | 0) | 0;
+ f = Rb(n | 0, y | 0, p | 0, f | 0) | 0;
+ p = y;
+ n = Rb(d | 0, l | 0, 33554432, 0) | 0;
+ m = y;
+ o = Ob(n | 0, m | 0, 26) | 0;
+ C = y;
+ Ja = Rb(Ma | 0, La | 0, Ka | 0, Ja | 0) | 0;
+ Ha = Rb(Ja | 0, y | 0, Ia | 0, Ha | 0) | 0;
+ Fa = Rb(Ha | 0, y | 0, Ga | 0, Fa | 0) | 0;
+ k = Rb(Fa | 0, y | 0, j | 0, k | 0) | 0;
+ C = Rb(k | 0, y | 0, o | 0, C | 0) | 0;
+ o = y;
+ m = Sb(d | 0, l | 0, n & -67108864 | 0, m | 0) | 0;
+ n = y;
+ l = Rb(f | 0, p | 0, 33554432, 0) | 0;
+ d = y;
+ k = Ob(l | 0, d | 0, 26) | 0;
+ j = y;
+ Ba = Rb(Ea | 0, Da | 0, Ca | 0, Ba | 0) | 0;
+ za = Rb(Ba | 0, y | 0, Aa | 0, za | 0) | 0;
+ xa = Rb(za | 0, y | 0, ya | 0, xa | 0) | 0;
+ h = Rb(xa | 0, y | 0, wa | 0, h | 0) | 0;
+ j = Rb(h | 0, y | 0, k | 0, j | 0) | 0;
+ k = y;
+ d = Sb(f | 0, p | 0, l & -67108864 | 0, d | 0) | 0;
+ l = y;
+ p = Rb(C | 0, o | 0, 16777216, 0) | 0;
+ f = Ob(p | 0, y | 0, 25) | 0;
+ h = y;
+ sa = Rb(va | 0, ua | 0, ta | 0, sa | 0) | 0;
+ qa = Rb(sa | 0, y | 0, ra | 0, qa | 0) | 0;
+ oa = Rb(qa | 0, y | 0, pa | 0, oa | 0) | 0;
+ i = Rb(oa | 0, y | 0, q | 0, i | 0) | 0;
+ h = Rb(i | 0, y | 0, f | 0, h | 0) | 0;
+ f = y;
+ p = Sb(C | 0, o | 0, p & -33554432 | 0, 0) | 0;
+ o = y;
+ C = Rb(j | 0, k | 0, 16777216, 0) | 0;
+ i = Ob(C | 0, y | 0, 25) | 0;
+ q = y;
+ ka = Rb(na | 0, ma | 0, la | 0, ka | 0) | 0;
+ ia = Rb(ka | 0, y | 0, ja | 0, ia | 0) | 0;
+ ga = Rb(ia | 0, y | 0, ha | 0, ga | 0) | 0;
+ ea = Rb(ga | 0, y | 0, fa | 0, ea | 0) | 0;
+ e = Rb(ea | 0, y | 0, b | 0, e | 0) | 0;
+ q = Rb(e | 0, y | 0, i | 0, q | 0) | 0;
+ i = y;
+ C = Sb(j | 0, k | 0, C & -33554432 | 0, 0) | 0;
+ k = y;
+ j = Rb(h | 0, f | 0, 33554432, 0) | 0;
+ e = Ob(j | 0, y | 0, 26) | 0;
+ b = y;
+ aa = Rb(da | 0, ca | 0, ba | 0, aa | 0) | 0;
+ _ = Rb(aa | 0, y | 0, $ | 0, _ | 0) | 0;
+ g = Rb(_ | 0, y | 0, Z | 0, g | 0) | 0;
+ b = Rb(g | 0, y | 0, e | 0, b | 0) | 0;
+ e = y;
+ j = Sb(h | 0, f | 0, j & -67108864 | 0, 0) | 0;
+ f = Rb(q | 0, i | 0, 33554432, 0) | 0;
+ h = Ob(f | 0, y | 0, 26) | 0;
+ g = y;
+ V = Rb(Y | 0, X | 0, W | 0, V | 0) | 0;
+ T = Rb(V | 0, y | 0, U | 0, T | 0) | 0;
+ R = Rb(T | 0, y | 0, S | 0, R | 0) | 0;
+ P = Rb(R | 0, y | 0, Q | 0, P | 0) | 0;
+ g = Rb(P | 0, y | 0, h | 0, g | 0) | 0;
+ h = y;
+ f = Sb(q | 0, i | 0, f & -67108864 | 0, 0) | 0;
+ i = Rb(b | 0, e | 0, 16777216, 0) | 0;
+ q = Ob(i | 0, y | 0, 25) | 0;
+ l = Rb(q | 0, y | 0, d | 0, l | 0) | 0;
+ d = y;
+ i = Sb(b | 0, e | 0, i & -33554432 | 0, 0) | 0;
+ e = Rb(g | 0, h | 0, 16777216, 0) | 0;
+ b = Ob(e | 0, y | 0, 25) | 0;
+ q = y;
+ L = Rb(O | 0, N | 0, M | 0, L | 0) | 0;
+ J = Rb(L | 0, y | 0, K | 0, J | 0) | 0;
+ H = Rb(J | 0, y | 0, I | 0, H | 0) | 0;
+ F = Rb(H | 0, y | 0, G | 0, F | 0) | 0;
+ D = Rb(F | 0, y | 0, E | 0, D | 0) | 0;
+ q = Rb(D | 0, y | 0, b | 0, q | 0) | 0;
+ b = y;
+ e = Sb(g | 0, h | 0, e & -33554432 | 0, 0) | 0;
+ h = Rb(l | 0, d | 0, 33554432, 0) | 0;
+ g = Pb(h | 0, y | 0, 26) | 0;
+ g = Rb(C | 0, k | 0, g | 0, y | 0) | 0;
+ h = Sb(l | 0, d | 0, h & -67108864 | 0, 0) | 0;
+ d = Rb(q | 0, b | 0, 33554432, 0) | 0;
+ l = Ob(d | 0, y | 0, 26) | 0;
+ k = y;
+ x = Rb(B | 0, A | 0, z | 0, x | 0) | 0;
+ v = Rb(x | 0, y | 0, w | 0, v | 0) | 0;
+ t = Rb(v | 0, y | 0, u | 0, t | 0) | 0;
+ r = Rb(t | 0, y | 0, s | 0, r | 0) | 0;
+ k = Rb(r | 0, y | 0, l | 0, k | 0) | 0;
+ l = y;
+ d = Sb(q | 0, b | 0, d & -67108864 | 0, 0) | 0;
+ b = Rb(k | 0, l | 0, 16777216, 0) | 0;
+ q = Ob(b | 0, y | 0, 25) | 0;
+ q = Nb(q | 0, y | 0, 19, 0) | 0;
+ n = Rb(q | 0, y | 0, m | 0, n | 0) | 0;
+ m = y;
+ b = Sb(k | 0, l | 0, b & -33554432 | 0, 0) | 0;
+ l = Rb(n | 0, m | 0, 33554432, 0) | 0;
+ k = Pb(l | 0, y | 0, 26) | 0;
+ k = Rb(p | 0, o | 0, k | 0, y | 0) | 0;
+ l = Sb(n | 0, m | 0, l & -67108864 | 0, 0) | 0;
+ c[a >> 2] = l;
+ c[a + 4 >> 2] = k;
+ c[a + 8 >> 2] = j;
+ c[a + 12 >> 2] = i;
+ c[a + 16 >> 2] = h;
+ c[a + 20 >> 2] = g;
+ c[a + 24 >> 2] = f;
+ c[a + 28 >> 2] = e;
+ c[a + 32 >> 2] = d;
+ c[a + 36 >> 2] = b;
+ return;
+}
+
+function Jb(a) {
+ a = a | 0;
+ var b = 0, d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0;
+ if (!a) return;
+ d = a + -8 | 0;
+ f = c[8148] | 0;
+ a = c[a + -4 >> 2] | 0;
+ b = a & -8;
+ j = d + b | 0;
+ do if (!(a & 1)) {
+  e = c[d >> 2] | 0;
+  if (!(a & 3)) return;
+  h = d + (0 - e) | 0;
+  g = e + b | 0;
+  if (h >>> 0 < f >>> 0) return;
+  if ((c[8149] | 0) == (h | 0)) {
+   a = j + 4 | 0;
+   b = c[a >> 2] | 0;
+   if ((b & 3 | 0) != 3) {
+    i = h;
+    b = g;
+    break;
+   }
+   c[8146] = g;
+   c[a >> 2] = b & -2;
+   c[h + 4 >> 2] = g | 1;
+   c[h + g >> 2] = g;
+   return;
+  }
+  d = e >>> 3;
+  if (e >>> 0 < 256) {
+   a = c[h + 8 >> 2] | 0;
+   b = c[h + 12 >> 2] | 0;
+   if ((b | 0) == (a | 0)) {
+    c[8144] = c[8144] & ~(1 << d);
+    i = h;
+    b = g;
+    break;
+   } else {
+    c[a + 12 >> 2] = b;
+    c[b + 8 >> 2] = a;
+    i = h;
+    b = g;
+    break;
+   }
+  }
+  f = c[h + 24 >> 2] | 0;
+  a = c[h + 12 >> 2] | 0;
+  do if ((a | 0) == (h | 0)) {
+   b = h + 16 | 0;
+   d = b + 4 | 0;
+   a = c[d >> 2] | 0;
+   if (!a) {
+    a = c[b >> 2] | 0;
+    if (!a) {
+     a = 0;
+     break;
+    }
+   } else b = d;
+   while (1) {
+    e = a + 20 | 0;
+    d = c[e >> 2] | 0;
+    if (!d) {
+     e = a + 16 | 0;
+     d = c[e >> 2] | 0;
+     if (!d) break; else {
+      a = d;
+      b = e;
+     }
+    } else {
+     a = d;
+     b = e;
+    }
+   }
+   c[b >> 2] = 0;
+  } else {
+   i = c[h + 8 >> 2] | 0;
+   c[i + 12 >> 2] = a;
+   c[a + 8 >> 2] = i;
+  } while (0);
+  if (!f) {
+   i = h;
+   b = g;
+  } else {
+   b = c[h + 28 >> 2] | 0;
+   d = 32880 + (b << 2) | 0;
+   if ((c[d >> 2] | 0) == (h | 0)) {
+    c[d >> 2] = a;
+    if (!a) {
+     c[8145] = c[8145] & ~(1 << b);
+     i = h;
+     b = g;
+     break;
+    }
+   } else {
+    i = f + 16 | 0;
+    c[((c[i >> 2] | 0) == (h | 0) ? i : f + 20 | 0) >> 2] = a;
+    if (!a) {
+     i = h;
+     b = g;
+     break;
+    }
+   }
+   c[a + 24 >> 2] = f;
+   b = h + 16 | 0;
+   d = c[b >> 2] | 0;
+   if (d | 0) {
+    c[a + 16 >> 2] = d;
+    c[d + 24 >> 2] = a;
+   }
+   b = c[b + 4 >> 2] | 0;
+   if (!b) {
+    i = h;
+    b = g;
+   } else {
+    c[a + 20 >> 2] = b;
+    c[b + 24 >> 2] = a;
+    i = h;
+    b = g;
+   }
+  }
+ } else {
+  i = d;
+  h = d;
+ } while (0);
+ if (h >>> 0 >= j >>> 0) return;
+ a = j + 4 | 0;
+ e = c[a >> 2] | 0;
+ if (!(e & 1)) return;
+ if (!(e & 2)) {
+  if ((c[8150] | 0) == (j | 0)) {
+   j = (c[8147] | 0) + b | 0;
+   c[8147] = j;
+   c[8150] = i;
+   c[i + 4 >> 2] = j | 1;
+   if ((i | 0) != (c[8149] | 0)) return;
+   c[8149] = 0;
+   c[8146] = 0;
+   return;
+  }
+  if ((c[8149] | 0) == (j | 0)) {
+   j = (c[8146] | 0) + b | 0;
+   c[8146] = j;
+   c[8149] = h;
+   c[i + 4 >> 2] = j | 1;
+   c[h + j >> 2] = j;
+   return;
+  }
+  f = (e & -8) + b | 0;
+  d = e >>> 3;
+  do if (e >>> 0 < 256) {
+   b = c[j + 8 >> 2] | 0;
+   a = c[j + 12 >> 2] | 0;
+   if ((a | 0) == (b | 0)) {
+    c[8144] = c[8144] & ~(1 << d);
+    break;
+   } else {
+    c[b + 12 >> 2] = a;
+    c[a + 8 >> 2] = b;
+    break;
+   }
+  } else {
+   g = c[j + 24 >> 2] | 0;
+   a = c[j + 12 >> 2] | 0;
+   do if ((a | 0) == (j | 0)) {
+    b = j + 16 | 0;
+    d = b + 4 | 0;
+    a = c[d >> 2] | 0;
+    if (!a) {
+     a = c[b >> 2] | 0;
+     if (!a) {
+      d = 0;
+      break;
+     }
+    } else b = d;
+    while (1) {
+     e = a + 20 | 0;
+     d = c[e >> 2] | 0;
+     if (!d) {
+      e = a + 16 | 0;
+      d = c[e >> 2] | 0;
+      if (!d) break; else {
+       a = d;
+       b = e;
+      }
+     } else {
+      a = d;
+      b = e;
+     }
+    }
+    c[b >> 2] = 0;
+    d = a;
+   } else {
+    d = c[j + 8 >> 2] | 0;
+    c[d + 12 >> 2] = a;
+    c[a + 8 >> 2] = d;
+    d = a;
+   } while (0);
+   if (g | 0) {
+    a = c[j + 28 >> 2] | 0;
+    b = 32880 + (a << 2) | 0;
+    if ((c[b >> 2] | 0) == (j | 0)) {
+     c[b >> 2] = d;
+     if (!d) {
+      c[8145] = c[8145] & ~(1 << a);
+      break;
+     }
+    } else {
+     e = g + 16 | 0;
+     c[((c[e >> 2] | 0) == (j | 0) ? e : g + 20 | 0) >> 2] = d;
+     if (!d) break;
+    }
+    c[d + 24 >> 2] = g;
+    a = j + 16 | 0;
+    b = c[a >> 2] | 0;
+    if (b | 0) {
+     c[d + 16 >> 2] = b;
+     c[b + 24 >> 2] = d;
+    }
+    a = c[a + 4 >> 2] | 0;
+    if (a | 0) {
+     c[d + 20 >> 2] = a;
+     c[a + 24 >> 2] = d;
+    }
+   }
+  } while (0);
+  c[i + 4 >> 2] = f | 1;
+  c[h + f >> 2] = f;
+  if ((i | 0) == (c[8149] | 0)) {
+   c[8146] = f;
+   return;
+  }
+ } else {
+  c[a >> 2] = e & -2;
+  c[i + 4 >> 2] = b | 1;
+  c[h + b >> 2] = b;
+  f = b;
+ }
+ a = f >>> 3;
+ if (f >>> 0 < 256) {
+  d = 32616 + (a << 1 << 2) | 0;
+  b = c[8144] | 0;
+  a = 1 << a;
+  if (!(b & a)) {
+   c[8144] = b | a;
+   a = d;
+   b = d + 8 | 0;
+  } else {
+   b = d + 8 | 0;
+   a = c[b >> 2] | 0;
+  }
+  c[b >> 2] = i;
+  c[a + 12 >> 2] = i;
+  c[i + 8 >> 2] = a;
+  c[i + 12 >> 2] = d;
+  return;
+ }
+ a = f >>> 8;
+ if (!a) e = 0; else if (f >>> 0 > 16777215) e = 31; else {
+  h = (a + 1048320 | 0) >>> 16 & 8;
+  j = a << h;
+  g = (j + 520192 | 0) >>> 16 & 4;
+  j = j << g;
+  e = (j + 245760 | 0) >>> 16 & 2;
+  e = 14 - (g | h | e) + (j << e >>> 15) | 0;
+  e = f >>> (e + 7 | 0) & 1 | e << 1;
+ }
+ a = 32880 + (e << 2) | 0;
+ c[i + 28 >> 2] = e;
+ c[i + 20 >> 2] = 0;
+ c[i + 16 >> 2] = 0;
+ b = c[8145] | 0;
+ d = 1 << e;
+ a : do if (!(b & d)) {
+  c[8145] = b | d;
+  c[a >> 2] = i;
+  c[i + 24 >> 2] = a;
+  c[i + 12 >> 2] = i;
+  c[i + 8 >> 2] = i;
+ } else {
+  a = c[a >> 2] | 0;
+  b : do if ((c[a + 4 >> 2] & -8 | 0) != (f | 0)) {
+   e = f << ((e | 0) == 31 ? 0 : 25 - (e >>> 1) | 0);
+   while (1) {
+    d = a + 16 + (e >>> 31 << 2) | 0;
+    b = c[d >> 2] | 0;
+    if (!b) break;
+    if ((c[b + 4 >> 2] & -8 | 0) == (f | 0)) {
+     a = b;
+     break b;
+    } else {
+     e = e << 1;
+     a = b;
+    }
+   }
+   c[d >> 2] = i;
+   c[i + 24 >> 2] = a;
+   c[i + 12 >> 2] = i;
+   c[i + 8 >> 2] = i;
+   break a;
+  } while (0);
+  h = a + 8 | 0;
+  j = c[h >> 2] | 0;
+  c[j + 12 >> 2] = i;
+  c[h >> 2] = i;
+  c[i + 8 >> 2] = j;
+  c[i + 12 >> 2] = a;
+  c[i + 24 >> 2] = 0;
+ } while (0);
+ j = (c[8152] | 0) + -1 | 0;
+ c[8152] = j;
+ if (j | 0) return;
+ a = 33032;
+ while (1) {
+  a = c[a >> 2] | 0;
+  if (!a) break; else a = a + 8 | 0;
+ }
+ c[8152] = -1;
+ return;
+}
+
+function qa(b, d) {
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0;
+ x = c[d >> 2] | 0;
+ w = x >> 31 & x;
+ m = (w >> 26) + (c[d + 8 >> 2] | 0) | 0;
+ v = m >> 31 & m;
+ k = (v >> 25) + (c[d + 16 >> 2] | 0) | 0;
+ u = k >> 31 & k;
+ j = (u >> 26) + (c[d + 24 >> 2] | 0) | 0;
+ t = j >> 31 & j;
+ i = (t >> 25) + (c[d + 32 >> 2] | 0) | 0;
+ s = i >> 31 & i;
+ h = (s >> 26) + (c[d + 40 >> 2] | 0) | 0;
+ r = h >> 31 & h;
+ g = (r >> 25) + (c[d + 48 >> 2] | 0) | 0;
+ q = g >> 31 & g;
+ f = (q >> 26) + (c[d + 56 >> 2] | 0) | 0;
+ p = f >> 31 & f;
+ o = (p >> 25) + (c[d + 64 >> 2] | 0) | 0;
+ e = o >> 31 & o;
+ n = (e >> 26) + (c[d + 72 >> 2] | 0) | 0;
+ l = n >> 31 & n;
+ w = ((l >> 25) * 19 | 0) + (x - (w & -67108864)) | 0;
+ d = w >> 31 & w;
+ v = m - (v & -33554432) + (d >> 26) | 0;
+ m = v >> 31 & v;
+ u = k - (u & -67108864) + (m >> 25) | 0;
+ k = u >> 31 & u;
+ t = j - (t & -33554432) + (k >> 26) | 0;
+ j = t >> 31 & t;
+ s = i - (s & -67108864) + (j >> 25) | 0;
+ i = s >> 31 & s;
+ r = h - (r & -33554432) + (i >> 26) | 0;
+ h = r >> 31 & r;
+ q = g - (q & -67108864) + (h >> 25) | 0;
+ g = q >> 31 & q;
+ p = f - (p & -33554432) + (g >> 26) | 0;
+ f = p >> 31 & p;
+ e = o - (e & -67108864) + (f >> 25) | 0;
+ o = e >> 31 & e;
+ l = n - (l & -33554432) + (o >> 26) | 0;
+ n = l >> 31 & l;
+ d = ((n >> 25) * 19 | 0) + (w - (d & -67108864)) | 0;
+ w = d >> 31 & d;
+ d = d - (w & -67108864) | 0;
+ m = (w >> 26) + (v - (m & -33554432)) + (d >> 26) | 0;
+ k = u - (k & -67108864) + (m >> 25) | 0;
+ j = t - (j & -33554432) + (k >> 26) | 0;
+ i = s - (i & -67108864) + (j >> 25) | 0;
+ h = r - (h & -33554432) + (i >> 26) | 0;
+ g = q - (g & -67108864) + (h >> 25) | 0;
+ f = p - (f & -33554432) + (g >> 26) | 0;
+ o = e - (o & -67108864) + (f >> 25) | 0;
+ n = l - (n & -33554432) + (o >> 26) | 0;
+ d = (d & 67108863) + ((n >> 25) * 19 | 0) | 0;
+ m = (m & 33554431) + (d >> 26) | 0;
+ l = m & 33554431;
+ m = (k & 67108863) + (m >> 25) | 0;
+ k = m & 67108863;
+ m = (j & 33554431) + (m >> 26) | 0;
+ j = m & 33554431;
+ m = (i & 67108863) + (m >> 25) | 0;
+ i = m & 67108863;
+ m = (h & 33554431) + (m >> 26) | 0;
+ h = m & 33554431;
+ m = (g & 67108863) + (m >> 25) | 0;
+ g = m & 67108863;
+ m = (f & 33554431) + (m >> 26) | 0;
+ f = m & 33554431;
+ m = (o & 67108863) + (m >> 25) | 0;
+ o = m & 67108863;
+ m = (n & 33554431) + (m >> 26) | 0;
+ n = m & 33554431;
+ m = (d & 67108863) + ((m >> 25) * 19 | 0) | 0;
+ d = ra(m) | 0;
+ d = (sa(l, 33554431) | 0) & d;
+ d = (sa(k, 67108863) | 0) & d;
+ d = (sa(j, 33554431) | 0) & d;
+ d = (sa(i, 67108863) | 0) & d;
+ d = (sa(h, 33554431) | 0) & d;
+ d = (sa(g, 67108863) | 0) & d;
+ d = (sa(f, 33554431) | 0) & d;
+ d = (sa(o, 67108863) | 0) & d;
+ d = (sa(n, 33554431) | 0) & d;
+ m = m - (d & 67108845) | 0;
+ e = d & 67108863;
+ d = d & 33554431;
+ l = l - d | 0;
+ k = k - e | 0;
+ j = j - d | 0;
+ i = i - e | 0;
+ h = h - d | 0;
+ g = g - e | 0;
+ f = f - d | 0;
+ e = o - e | 0;
+ d = n - d | 0;
+ a[b >> 0] = m;
+ a[b + 1 >> 0] = m >>> 8;
+ a[b + 2 >> 0] = m >>> 16;
+ a[b + 3 >> 0] = m >>> 24 | l << 2;
+ a[b + 4 >> 0] = l >>> 6;
+ a[b + 5 >> 0] = l >>> 14;
+ a[b + 6 >> 0] = k << 3 | l >>> 22;
+ a[b + 7 >> 0] = k >>> 5;
+ a[b + 8 >> 0] = k >>> 13;
+ a[b + 9 >> 0] = j << 5 | k >>> 21;
+ a[b + 10 >> 0] = j >>> 3;
+ a[b + 11 >> 0] = j >>> 11;
+ a[b + 12 >> 0] = i << 6 | j >>> 19;
+ a[b + 13 >> 0] = i >>> 2;
+ a[b + 14 >> 0] = i >>> 10;
+ a[b + 15 >> 0] = i >>> 18;
+ a[b + 16 >> 0] = h;
+ a[b + 17 >> 0] = h >>> 8;
+ a[b + 18 >> 0] = h >>> 16;
+ a[b + 19 >> 0] = h >>> 24 | g << 1;
+ a[b + 20 >> 0] = g >>> 7;
+ a[b + 21 >> 0] = g >>> 15;
+ a[b + 22 >> 0] = f << 3 | g >>> 23;
+ a[b + 23 >> 0] = f >>> 5;
+ a[b + 24 >> 0] = f >>> 13;
+ a[b + 25 >> 0] = e << 4 | f >>> 21;
+ a[b + 26 >> 0] = e >>> 4;
+ a[b + 27 >> 0] = e >>> 12;
+ a[b + 28 >> 0] = d << 6 | e >>> 20;
+ a[b + 29 >> 0] = d >>> 2;
+ a[b + 30 >> 0] = d >>> 10;
+ a[b + 31 >> 0] = d >>> 18;
+ return;
+}
+
+function Za(b, c) {
+ b = b | 0;
+ c = c | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0;
+ e = 0;
+ do {
+  a[b + e >> 0] = (d[c + (e >>> 3) >> 0] | 0) >>> (e & 7) & 1;
+  e = e + 1 | 0;
+ } while ((e | 0) != 256);
+ k = 0;
+ do {
+  j = b + k | 0;
+  e = a[j >> 0] | 0;
+  i = k;
+  k = k + 1 | 0;
+  a : do if (e << 24 >> 24 != 0 & k >>> 0 < 256) {
+   g = b + k | 0;
+   c = a[g >> 0] | 0;
+   b : do if (c << 24 >> 24) {
+    f = e << 24 >> 24;
+    e = c << 24 >> 24 << 1;
+    c = e + f | 0;
+    if ((c | 0) < 16) {
+     a[j >> 0] = c;
+     a[g >> 0] = 0;
+     break;
+    }
+    e = f - e | 0;
+    if ((e | 0) <= -16) break a;
+    a[j >> 0] = e;
+    e = k;
+    while (1) {
+     c = b + e | 0;
+     if (!(a[c >> 0] | 0)) break;
+     a[c >> 0] = 0;
+     if (e >>> 0 < 255) e = e + 1 | 0; else break b;
+    }
+    a[c >> 0] = 1;
+   } while (0);
+   e = i + 2 | 0;
+   if (e >>> 0 < 256) {
+    g = b + e | 0;
+    c = a[g >> 0] | 0;
+    c : do if (c << 24 >> 24) {
+     h = a[j >> 0] | 0;
+     c = c << 24 >> 24 << 2;
+     f = c + h | 0;
+     if ((f | 0) < 16) {
+      a[j >> 0] = f;
+      a[g >> 0] = 0;
+      break;
+     }
+     c = h - c | 0;
+     if ((c | 0) <= -16) break a;
+     a[j >> 0] = c;
+     while (1) {
+      c = b + e | 0;
+      if (!(a[c >> 0] | 0)) break;
+      a[c >> 0] = 0;
+      if (e >>> 0 < 255) e = e + 1 | 0; else break c;
+     }
+     a[c >> 0] = 1;
+    } while (0);
+    e = i + 3 | 0;
+    if (e >>> 0 < 256) {
+     g = b + e | 0;
+     c = a[g >> 0] | 0;
+     d : do if (c << 24 >> 24) {
+      h = a[j >> 0] | 0;
+      c = c << 24 >> 24 << 3;
+      f = c + h | 0;
+      if ((f | 0) < 16) {
+       a[j >> 0] = f;
+       a[g >> 0] = 0;
+       break;
+      }
+      c = h - c | 0;
+      if ((c | 0) <= -16) break a;
+      a[j >> 0] = c;
+      while (1) {
+       c = b + e | 0;
+       if (!(a[c >> 0] | 0)) break;
+       a[c >> 0] = 0;
+       if (e >>> 0 < 255) e = e + 1 | 0; else break d;
+      }
+      a[c >> 0] = 1;
+     } while (0);
+     e = i + 4 | 0;
+     if (e >>> 0 < 256) {
+      g = b + e | 0;
+      c = a[g >> 0] | 0;
+      e : do if (c << 24 >> 24) {
+       h = a[j >> 0] | 0;
+       c = c << 24 >> 24 << 4;
+       f = c + h | 0;
+       if ((f | 0) < 16) {
+        a[j >> 0] = f;
+        a[g >> 0] = 0;
+        break;
+       }
+       c = h - c | 0;
+       if ((c | 0) <= -16) break a;
+       a[j >> 0] = c;
+       while (1) {
+        c = b + e | 0;
+        if (!(a[c >> 0] | 0)) break;
+        a[c >> 0] = 0;
+        if (e >>> 0 < 255) e = e + 1 | 0; else break e;
+       }
+       a[c >> 0] = 1;
+      } while (0);
+      e = i + 5 | 0;
+      if (e >>> 0 < 256) {
+       g = b + e | 0;
+       c = a[g >> 0] | 0;
+       f : do if (c << 24 >> 24) {
+        h = a[j >> 0] | 0;
+        c = c << 24 >> 24 << 5;
+        f = c + h | 0;
+        if ((f | 0) < 16) {
+         a[j >> 0] = f;
+         a[g >> 0] = 0;
+         break;
+        }
+        c = h - c | 0;
+        if ((c | 0) <= -16) break a;
+        a[j >> 0] = c;
+        while (1) {
+         c = b + e | 0;
+         if (!(a[c >> 0] | 0)) break;
+         a[c >> 0] = 0;
+         if (e >>> 0 < 255) e = e + 1 | 0; else break f;
+        }
+        a[c >> 0] = 1;
+       } while (0);
+       e = i + 6 | 0;
+       if (e >>> 0 < 256) {
+        g = b + e | 0;
+        c = a[g >> 0] | 0;
+        if (c << 24 >> 24) {
+         h = a[j >> 0] | 0;
+         c = c << 24 >> 24 << 6;
+         f = c + h | 0;
+         if ((f | 0) < 16) {
+          a[j >> 0] = f;
+          a[g >> 0] = 0;
+          break;
+         }
+         c = h - c | 0;
+         if ((c | 0) > -16) {
+          a[j >> 0] = c;
+          while (1) {
+           c = b + e | 0;
+           if (!(a[c >> 0] | 0)) break;
+           a[c >> 0] = 0;
+           if (e >>> 0 < 255) e = e + 1 | 0; else break a;
+          }
+          a[c >> 0] = 1;
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  } while (0);
+ } while ((k | 0) != 256);
+ return;
+}
+
+function lb(b, c) {
+ b = b | 0;
+ c = c | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, m = 0, n = 0;
+ k = l;
+ l = l + 464 | 0;
+ h = k;
+ i = k + 304 | 0;
+ g = k + 184 | 0;
+ j = k + 64 | 0;
+ f = a[c >> 0] | 0;
+ a[h >> 0] = f & 15;
+ a[h + 1 >> 0] = (f & 255) >>> 4;
+ f = a[c + 1 >> 0] | 0;
+ a[h + 2 >> 0] = f & 15;
+ a[h + 3 >> 0] = (f & 255) >>> 4;
+ f = a[c + 2 >> 0] | 0;
+ a[h + 4 >> 0] = f & 15;
+ a[h + 5 >> 0] = (f & 255) >>> 4;
+ f = a[c + 3 >> 0] | 0;
+ a[h + 6 >> 0] = f & 15;
+ a[h + 7 >> 0] = (f & 255) >>> 4;
+ f = a[c + 4 >> 0] | 0;
+ a[h + 8 >> 0] = f & 15;
+ a[h + 9 >> 0] = (f & 255) >>> 4;
+ f = a[c + 5 >> 0] | 0;
+ a[h + 10 >> 0] = f & 15;
+ a[h + 11 >> 0] = (f & 255) >>> 4;
+ f = a[c + 6 >> 0] | 0;
+ a[h + 12 >> 0] = f & 15;
+ a[h + 13 >> 0] = (f & 255) >>> 4;
+ f = a[c + 7 >> 0] | 0;
+ a[h + 14 >> 0] = f & 15;
+ a[h + 15 >> 0] = (f & 255) >>> 4;
+ f = a[c + 8 >> 0] | 0;
+ a[h + 16 >> 0] = f & 15;
+ a[h + 17 >> 0] = (f & 255) >>> 4;
+ f = a[c + 9 >> 0] | 0;
+ a[h + 18 >> 0] = f & 15;
+ a[h + 19 >> 0] = (f & 255) >>> 4;
+ f = a[c + 10 >> 0] | 0;
+ a[h + 20 >> 0] = f & 15;
+ a[h + 21 >> 0] = (f & 255) >>> 4;
+ f = a[c + 11 >> 0] | 0;
+ a[h + 22 >> 0] = f & 15;
+ a[h + 23 >> 0] = (f & 255) >>> 4;
+ f = a[c + 12 >> 0] | 0;
+ a[h + 24 >> 0] = f & 15;
+ a[h + 25 >> 0] = (f & 255) >>> 4;
+ f = a[c + 13 >> 0] | 0;
+ a[h + 26 >> 0] = f & 15;
+ a[h + 27 >> 0] = (f & 255) >>> 4;
+ f = a[c + 14 >> 0] | 0;
+ a[h + 28 >> 0] = f & 15;
+ a[h + 29 >> 0] = (f & 255) >>> 4;
+ f = a[c + 15 >> 0] | 0;
+ a[h + 30 >> 0] = f & 15;
+ a[h + 31 >> 0] = (f & 255) >>> 4;
+ f = a[c + 16 >> 0] | 0;
+ a[h + 32 >> 0] = f & 15;
+ a[h + 33 >> 0] = (f & 255) >>> 4;
+ f = a[c + 17 >> 0] | 0;
+ a[h + 34 >> 0] = f & 15;
+ a[h + 35 >> 0] = (f & 255) >>> 4;
+ f = a[c + 18 >> 0] | 0;
+ a[h + 36 >> 0] = f & 15;
+ a[h + 37 >> 0] = (f & 255) >>> 4;
+ f = a[c + 19 >> 0] | 0;
+ a[h + 38 >> 0] = f & 15;
+ a[h + 39 >> 0] = (f & 255) >>> 4;
+ f = a[c + 20 >> 0] | 0;
+ a[h + 40 >> 0] = f & 15;
+ a[h + 41 >> 0] = (f & 255) >>> 4;
+ f = a[c + 21 >> 0] | 0;
+ a[h + 42 >> 0] = f & 15;
+ a[h + 43 >> 0] = (f & 255) >>> 4;
+ f = a[c + 22 >> 0] | 0;
+ a[h + 44 >> 0] = f & 15;
+ a[h + 45 >> 0] = (f & 255) >>> 4;
+ f = a[c + 23 >> 0] | 0;
+ a[h + 46 >> 0] = f & 15;
+ a[h + 47 >> 0] = (f & 255) >>> 4;
+ f = a[c + 24 >> 0] | 0;
+ a[h + 48 >> 0] = f & 15;
+ a[h + 49 >> 0] = (f & 255) >>> 4;
+ f = a[c + 25 >> 0] | 0;
+ a[h + 50 >> 0] = f & 15;
+ a[h + 51 >> 0] = (f & 255) >>> 4;
+ f = a[c + 26 >> 0] | 0;
+ a[h + 52 >> 0] = f & 15;
+ a[h + 53 >> 0] = (f & 255) >>> 4;
+ f = a[c + 27 >> 0] | 0;
+ a[h + 54 >> 0] = f & 15;
+ a[h + 55 >> 0] = (f & 255) >>> 4;
+ f = a[c + 28 >> 0] | 0;
+ a[h + 56 >> 0] = f & 15;
+ a[h + 57 >> 0] = (f & 255) >>> 4;
+ f = a[c + 29 >> 0] | 0;
+ a[h + 58 >> 0] = f & 15;
+ a[h + 59 >> 0] = (f & 255) >>> 4;
+ f = a[c + 30 >> 0] | 0;
+ a[h + 60 >> 0] = f & 15;
+ a[h + 61 >> 0] = (f & 255) >>> 4;
+ c = a[c + 31 >> 0] | 0;
+ a[h + 62 >> 0] = c & 15;
+ f = h + 63 | 0;
+ a[f >> 0] = (c & 255) >>> 4;
+ c = 0;
+ e = 0;
+ do {
+  m = h + e | 0;
+  n = c + (d[m >> 0] | 0) | 0;
+  c = (n << 24) + 134217728 >> 28;
+  a[m >> 0] = n - (c << 4);
+  e = e + 1 | 0;
+ } while ((e | 0) != 63);
+ a[f >> 0] = c + (d[f >> 0] | 0);
+ fb(b);
+ c = 1;
+ do {
+  mb(j, c >>> 1, a[h + c >> 0] | 0);
+  $a(i, b, j);
+  cb(b, i);
+  c = c + 2 | 0;
+ } while (c >>> 0 < 64);
+ gb(i, b);
+ bb(g, i);
+ eb(i, g);
+ bb(g, i);
+ eb(i, g);
+ bb(g, i);
+ eb(i, g);
+ cb(b, i);
+ c = 0;
+ do {
+  mb(j, c >>> 1, a[h + c >> 0] | 0);
+  $a(i, b, j);
+  cb(b, i);
+  c = c + 2 | 0;
+ } while (c >>> 0 < 64);
+ l = k;
+ return;
+}
+
+function Ka(b, d) {
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, z = 0, A = 0, B = 0;
+ k = La(d) | 0;
+ w = y;
+ j = Ma(a[d + 4 >> 0] | 0, a[d + 5 >> 0] | 0, a[d + 6 >> 0] | 0) | 0;
+ j = Qb(j | 0, y | 0, 6) | 0;
+ A = y;
+ r = Ma(a[d + 7 >> 0] | 0, a[d + 8 >> 0] | 0, a[d + 9 >> 0] | 0) | 0;
+ r = Qb(r | 0, y | 0, 5) | 0;
+ i = y;
+ z = Ma(a[d + 10 >> 0] | 0, a[d + 11 >> 0] | 0, a[d + 12 >> 0] | 0) | 0;
+ z = Qb(z | 0, y | 0, 3) | 0;
+ x = y;
+ v = Ma(a[d + 13 >> 0] | 0, a[d + 14 >> 0] | 0, a[d + 15 >> 0] | 0) | 0;
+ v = Qb(v | 0, y | 0, 2) | 0;
+ g = y;
+ f = La(d + 16 | 0) | 0;
+ u = y;
+ o = Ma(a[d + 20 >> 0] | 0, a[d + 21 >> 0] | 0, a[d + 22 >> 0] | 0) | 0;
+ o = Qb(o | 0, y | 0, 7) | 0;
+ e = y;
+ t = Ma(a[d + 23 >> 0] | 0, a[d + 24 >> 0] | 0, a[d + 25 >> 0] | 0) | 0;
+ t = Qb(t | 0, y | 0, 5) | 0;
+ s = y;
+ m = Ma(a[d + 26 >> 0] | 0, a[d + 27 >> 0] | 0, a[d + 28 >> 0] | 0) | 0;
+ m = Qb(m | 0, y | 0, 4) | 0;
+ n = y;
+ q = Ma(a[d + 29 >> 0] | 0, a[d + 30 >> 0] | 0, a[d + 31 >> 0] | 0) | 0;
+ q = Qb(q | 0, y | 0, 2) | 0;
+ q = q & 33554428;
+ d = Rb(q | 0, 0, 16777216, 0) | 0;
+ B = Pb(d | 0, y | 0, 25) | 0;
+ B = Sb(0, 0, B | 0, y | 0) | 0;
+ w = Rb(B & 19 | 0, 0, k | 0, w | 0) | 0;
+ k = y;
+ B = Rb(j | 0, A | 0, 16777216, 0) | 0;
+ h = Ob(B | 0, y | 0, 25) | 0;
+ h = Rb(r | 0, i | 0, h | 0, y | 0) | 0;
+ i = y;
+ B = Sb(j | 0, A | 0, B & -33554432 | 0, 0) | 0;
+ A = y;
+ j = Rb(z | 0, x | 0, 16777216, 0) | 0;
+ r = Ob(j | 0, y | 0, 25) | 0;
+ r = Rb(v | 0, g | 0, r | 0, y | 0) | 0;
+ g = y;
+ v = Rb(f | 0, u | 0, 16777216, 0) | 0;
+ p = Ob(v | 0, y | 0, 25) | 0;
+ p = Rb(o | 0, e | 0, p | 0, y | 0) | 0;
+ e = y;
+ v = Sb(f | 0, u | 0, v & -33554432 | 0, 0) | 0;
+ u = y;
+ f = Rb(t | 0, s | 0, 16777216, 0) | 0;
+ o = Ob(f | 0, y | 0, 25) | 0;
+ o = Rb(m | 0, n | 0, o | 0, y | 0) | 0;
+ n = y;
+ m = Rb(w | 0, k | 0, 33554432, 0) | 0;
+ l = Pb(m | 0, y | 0, 26) | 0;
+ l = Rb(B | 0, A | 0, l | 0, y | 0) | 0;
+ m = Sb(w | 0, k | 0, m & -67108864 | 0, 0) | 0;
+ k = Rb(h | 0, i | 0, 33554432, 0) | 0;
+ w = Pb(k | 0, y | 0, 26) | 0;
+ w = Rb(z | 0, x | 0, w | 0, y | 0) | 0;
+ j = Sb(w | 0, y | 0, j & -33554432 | 0, 0) | 0;
+ k = Sb(h | 0, i | 0, k & -67108864 | 0, 0) | 0;
+ i = Rb(r | 0, g | 0, 33554432, 0) | 0;
+ h = Pb(i | 0, y | 0, 26) | 0;
+ h = Rb(v | 0, u | 0, h | 0, y | 0) | 0;
+ i = Sb(r | 0, g | 0, i & -67108864 | 0, 0) | 0;
+ g = Rb(p | 0, e | 0, 33554432, 0) | 0;
+ r = Pb(g | 0, y | 0, 26) | 0;
+ r = Rb(t | 0, s | 0, r | 0, y | 0) | 0;
+ f = Sb(r | 0, y | 0, f & -33554432 | 0, 0) | 0;
+ g = Sb(p | 0, e | 0, g & -67108864 | 0, 0) | 0;
+ e = Rb(o | 0, n | 0, 33554432, 0) | 0;
+ p = Pb(e | 0, y | 0, 26) | 0;
+ p = Rb(q | 0, 0, p | 0, y | 0) | 0;
+ d = Sb(p | 0, y | 0, d & 33554432 | 0, 0) | 0;
+ e = Sb(o | 0, n | 0, e & -67108864 | 0, 0) | 0;
+ c[b >> 2] = m;
+ c[b + 4 >> 2] = l;
+ c[b + 8 >> 2] = k;
+ c[b + 12 >> 2] = j;
+ c[b + 16 >> 2] = i;
+ c[b + 20 >> 2] = h;
+ c[b + 24 >> 2] = g;
+ c[b + 28 >> 2] = f;
+ c[b + 32 >> 2] = e;
+ c[b + 36 >> 2] = d;
+ return;
+}
+
+function ma(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0;
+ i = d[b >> 0] | 0;
+ j = Qb(d[b + 1 >> 0] | 0 | 0, 0, 8) | 0;
+ k = y;
+ g = Qb(d[b + 2 >> 0] | 0 | 0, 0, 16) | 0;
+ k = k | y;
+ h = b + 3 | 0;
+ e = Qb(d[h >> 0] | 0 | 0, 0, 24) | 0;
+ f = a;
+ c[f >> 2] = j | i | g | e & 50331648;
+ c[f + 4 >> 2] = k;
+ h = d[h >> 0] | 0;
+ f = Qb(d[b + 4 >> 0] | 0 | 0, 0, 8) | 0;
+ k = y;
+ e = Qb(d[b + 5 >> 0] | 0 | 0, 0, 16) | 0;
+ k = k | y;
+ g = b + 6 | 0;
+ i = Qb(d[g >> 0] | 0 | 0, 0, 24) | 0;
+ k = Pb(f | h | e | i | 0, k | y | 0, 2) | 0;
+ i = a + 8 | 0;
+ c[i >> 2] = k & 33554431;
+ c[i + 4 >> 2] = 0;
+ g = d[g >> 0] | 0;
+ i = Qb(d[b + 7 >> 0] | 0 | 0, 0, 8) | 0;
+ k = y;
+ e = Qb(d[b + 8 >> 0] | 0 | 0, 0, 16) | 0;
+ k = k | y;
+ h = b + 9 | 0;
+ f = Qb(d[h >> 0] | 0 | 0, 0, 24) | 0;
+ k = Pb(i | g | e | f | 0, k | y | 0, 3) | 0;
+ f = a + 16 | 0;
+ c[f >> 2] = k & 67108863;
+ c[f + 4 >> 2] = 0;
+ h = d[h >> 0] | 0;
+ f = Qb(d[b + 10 >> 0] | 0 | 0, 0, 8) | 0;
+ k = y;
+ e = Qb(d[b + 11 >> 0] | 0 | 0, 0, 16) | 0;
+ k = k | y;
+ g = b + 12 | 0;
+ i = Qb(d[g >> 0] | 0 | 0, 0, 24) | 0;
+ k = Pb(f | h | e | i | 0, k | y | 0, 5) | 0;
+ i = a + 24 | 0;
+ c[i >> 2] = k & 33554431;
+ c[i + 4 >> 2] = 0;
+ g = d[g >> 0] | 0;
+ i = Qb(d[b + 13 >> 0] | 0 | 0, 0, 8) | 0;
+ k = y;
+ e = Qb(d[b + 14 >> 0] | 0 | 0, 0, 16) | 0;
+ k = k | y;
+ h = Qb(d[b + 15 >> 0] | 0 | 0, 0, 24) | 0;
+ k = Pb(i | g | e | h | 0, k | y | 0, 6) | 0;
+ h = a + 32 | 0;
+ c[h >> 2] = k & 67108863;
+ c[h + 4 >> 2] = 0;
+ h = d[b + 16 >> 0] | 0;
+ k = Qb(d[b + 17 >> 0] | 0 | 0, 0, 8) | 0;
+ e = y;
+ g = Qb(d[b + 18 >> 0] | 0 | 0, 0, 16) | 0;
+ e = e | y;
+ i = b + 19 | 0;
+ f = Qb(d[i >> 0] | 0 | 0, 0, 24) | 0;
+ j = a + 40 | 0;
+ c[j >> 2] = k | h | g | f & 16777216;
+ c[j + 4 >> 2] = e;
+ i = d[i >> 0] | 0;
+ j = Qb(d[b + 20 >> 0] | 0 | 0, 0, 8) | 0;
+ e = y;
+ f = Qb(d[b + 21 >> 0] | 0 | 0, 0, 16) | 0;
+ e = e | y;
+ g = b + 22 | 0;
+ h = Qb(d[g >> 0] | 0 | 0, 0, 24) | 0;
+ e = Pb(j | i | f | h | 0, e | y | 0, 1) | 0;
+ h = a + 48 | 0;
+ c[h >> 2] = e & 67108863;
+ c[h + 4 >> 2] = 0;
+ g = d[g >> 0] | 0;
+ h = Qb(d[b + 23 >> 0] | 0 | 0, 0, 8) | 0;
+ e = y;
+ f = Qb(d[b + 24 >> 0] | 0 | 0, 0, 16) | 0;
+ e = e | y;
+ i = b + 25 | 0;
+ j = Qb(d[i >> 0] | 0 | 0, 0, 24) | 0;
+ e = Pb(h | g | f | j | 0, e | y | 0, 3) | 0;
+ j = a + 56 | 0;
+ c[j >> 2] = e & 33554431;
+ c[j + 4 >> 2] = 0;
+ i = d[i >> 0] | 0;
+ j = Qb(d[b + 26 >> 0] | 0 | 0, 0, 8) | 0;
+ e = y;
+ f = Qb(d[b + 27 >> 0] | 0 | 0, 0, 16) | 0;
+ e = e | y;
+ g = b + 28 | 0;
+ h = Qb(d[g >> 0] | 0 | 0, 0, 24) | 0;
+ e = Pb(j | i | f | h | 0, e | y | 0, 4) | 0;
+ h = a + 64 | 0;
+ c[h >> 2] = e & 67108863;
+ c[h + 4 >> 2] = 0;
+ g = d[g >> 0] | 0;
+ h = Qb(d[b + 29 >> 0] | 0 | 0, 0, 8) | 0;
+ e = y;
+ f = Qb(d[b + 30 >> 0] | 0 | 0, 0, 16) | 0;
+ e = e | y;
+ b = Qb(d[b + 31 >> 0] | 0 | 0, 0, 24) | 0;
+ e = Pb(h | g | f | b | 0, e | y | 0, 6) | 0;
+ b = a + 72 | 0;
+ c[b >> 2] = e & 33554431;
+ c[b + 4 >> 2] = 0;
+ return;
+}
+
+function va(a) {
+ a = a | 0;
+ var b = 0, d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0;
+ h = a;
+ d = c[h >> 2] | 0;
+ h = c[h + 4 >> 2] | 0;
+ f = wa(d, h) | 0;
+ i = y;
+ k = Qb(f | 0, i | 0, 26) | 0;
+ k = Sb(d | 0, h | 0, k | 0, y | 0) | 0;
+ h = y;
+ d = a + 8 | 0;
+ m = d;
+ i = Rb(c[m >> 2] | 0, c[m + 4 >> 2] | 0, f | 0, i | 0) | 0;
+ f = y;
+ m = xa(i, f) | 0;
+ b = y;
+ g = Qb(m | 0, b | 0, 25) | 0;
+ g = Sb(i | 0, f | 0, g | 0, y | 0) | 0;
+ f = y;
+ i = a + 16 | 0;
+ e = i;
+ b = Rb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, m | 0, b | 0) | 0;
+ m = y;
+ e = wa(b, m) | 0;
+ j = y;
+ l = Qb(e | 0, j | 0, 26) | 0;
+ l = Sb(b | 0, m | 0, l | 0, y | 0) | 0;
+ c[i >> 2] = l;
+ c[i + 4 >> 2] = y;
+ i = a + 24 | 0;
+ l = i;
+ j = Rb(c[l >> 2] | 0, c[l + 4 >> 2] | 0, e | 0, j | 0) | 0;
+ e = y;
+ l = xa(j, e) | 0;
+ m = y;
+ b = Qb(l | 0, m | 0, 25) | 0;
+ b = Sb(j | 0, e | 0, b | 0, y | 0) | 0;
+ c[i >> 2] = b;
+ c[i + 4 >> 2] = y;
+ i = a + 32 | 0;
+ b = i;
+ m = Rb(c[b >> 2] | 0, c[b + 4 >> 2] | 0, l | 0, m | 0) | 0;
+ l = y;
+ b = wa(m, l) | 0;
+ e = y;
+ j = Qb(b | 0, e | 0, 26) | 0;
+ j = Sb(m | 0, l | 0, j | 0, y | 0) | 0;
+ c[i >> 2] = j;
+ c[i + 4 >> 2] = y;
+ i = a + 40 | 0;
+ j = i;
+ e = Rb(c[j >> 2] | 0, c[j + 4 >> 2] | 0, b | 0, e | 0) | 0;
+ b = y;
+ j = xa(e, b) | 0;
+ l = y;
+ m = Qb(j | 0, l | 0, 25) | 0;
+ m = Sb(e | 0, b | 0, m | 0, y | 0) | 0;
+ c[i >> 2] = m;
+ c[i + 4 >> 2] = y;
+ i = a + 48 | 0;
+ m = i;
+ l = Rb(c[m >> 2] | 0, c[m + 4 >> 2] | 0, j | 0, l | 0) | 0;
+ j = y;
+ m = wa(l, j) | 0;
+ b = y;
+ e = Qb(m | 0, b | 0, 26) | 0;
+ e = Sb(l | 0, j | 0, e | 0, y | 0) | 0;
+ c[i >> 2] = e;
+ c[i + 4 >> 2] = y;
+ i = a + 56 | 0;
+ e = i;
+ b = Rb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, m | 0, b | 0) | 0;
+ m = y;
+ e = xa(b, m) | 0;
+ j = y;
+ l = Qb(e | 0, j | 0, 25) | 0;
+ l = Sb(b | 0, m | 0, l | 0, y | 0) | 0;
+ c[i >> 2] = l;
+ c[i + 4 >> 2] = y;
+ i = a + 64 | 0;
+ l = i;
+ j = Rb(c[l >> 2] | 0, c[l + 4 >> 2] | 0, e | 0, j | 0) | 0;
+ e = y;
+ l = wa(j, e) | 0;
+ m = y;
+ b = Qb(l | 0, m | 0, 26) | 0;
+ b = Sb(j | 0, e | 0, b | 0, y | 0) | 0;
+ c[i >> 2] = b;
+ c[i + 4 >> 2] = y;
+ i = a + 72 | 0;
+ b = i;
+ m = Rb(c[b >> 2] | 0, c[b + 4 >> 2] | 0, l | 0, m | 0) | 0;
+ l = y;
+ b = xa(m, l) | 0;
+ e = y;
+ j = Qb(b | 0, e | 0, 25) | 0;
+ j = Sb(m | 0, l | 0, j | 0, y | 0) | 0;
+ c[i >> 2] = j;
+ c[i + 4 >> 2] = y;
+ i = Nb(b | 0, e | 0, 18, 0) | 0;
+ j = y;
+ e = Rb(k | 0, h | 0, b | 0, e | 0) | 0;
+ j = Rb(e | 0, y | 0, i | 0, j | 0) | 0;
+ i = y;
+ e = a + 80 | 0;
+ c[e >> 2] = 0;
+ c[e + 4 >> 2] = 0;
+ e = wa(j, i) | 0;
+ b = y;
+ h = Qb(e | 0, b | 0, 26) | 0;
+ h = Sb(j | 0, i | 0, h | 0, y | 0) | 0;
+ c[a >> 2] = h;
+ c[a + 4 >> 2] = y;
+ b = Rb(g | 0, f | 0, e | 0, b | 0) | 0;
+ a = d;
+ c[a >> 2] = b;
+ c[a + 4 >> 2] = y;
+ return;
+}
+
+function ua(a) {
+ a = a | 0;
+ var b = 0, d = 0, e = 0, f = 0, g = 0, h = 0, i = 0;
+ e = a + 144 | 0;
+ i = c[e >> 2] | 0;
+ e = c[e + 4 >> 2] | 0;
+ g = a + 64 | 0;
+ h = g;
+ f = c[h >> 2] | 0;
+ h = c[h + 4 >> 2] | 0;
+ b = Nb(i | 0, e | 0, 18, 0) | 0;
+ d = y;
+ e = Rb(f | 0, h | 0, i | 0, e | 0) | 0;
+ d = Rb(e | 0, y | 0, b | 0, d | 0) | 0;
+ c[g >> 2] = d;
+ c[g + 4 >> 2] = y;
+ g = a + 136 | 0;
+ d = c[g >> 2] | 0;
+ g = c[g + 4 >> 2] | 0;
+ b = a + 56 | 0;
+ e = b;
+ i = c[e >> 2] | 0;
+ e = c[e + 4 >> 2] | 0;
+ h = Nb(d | 0, g | 0, 18, 0) | 0;
+ f = y;
+ g = Rb(i | 0, e | 0, d | 0, g | 0) | 0;
+ f = Rb(g | 0, y | 0, h | 0, f | 0) | 0;
+ c[b >> 2] = f;
+ c[b + 4 >> 2] = y;
+ b = a + 128 | 0;
+ f = c[b >> 2] | 0;
+ b = c[b + 4 >> 2] | 0;
+ h = a + 48 | 0;
+ g = h;
+ d = c[g >> 2] | 0;
+ g = c[g + 4 >> 2] | 0;
+ e = Nb(f | 0, b | 0, 18, 0) | 0;
+ i = y;
+ b = Rb(d | 0, g | 0, f | 0, b | 0) | 0;
+ i = Rb(b | 0, y | 0, e | 0, i | 0) | 0;
+ c[h >> 2] = i;
+ c[h + 4 >> 2] = y;
+ h = a + 120 | 0;
+ i = c[h >> 2] | 0;
+ h = c[h + 4 >> 2] | 0;
+ e = a + 40 | 0;
+ b = e;
+ f = c[b >> 2] | 0;
+ b = c[b + 4 >> 2] | 0;
+ g = Nb(i | 0, h | 0, 18, 0) | 0;
+ d = y;
+ h = Rb(f | 0, b | 0, i | 0, h | 0) | 0;
+ d = Rb(h | 0, y | 0, g | 0, d | 0) | 0;
+ c[e >> 2] = d;
+ c[e + 4 >> 2] = y;
+ e = a + 112 | 0;
+ d = c[e >> 2] | 0;
+ e = c[e + 4 >> 2] | 0;
+ g = a + 32 | 0;
+ h = g;
+ i = c[h >> 2] | 0;
+ h = c[h + 4 >> 2] | 0;
+ b = Nb(d | 0, e | 0, 18, 0) | 0;
+ f = y;
+ e = Rb(i | 0, h | 0, d | 0, e | 0) | 0;
+ f = Rb(e | 0, y | 0, b | 0, f | 0) | 0;
+ c[g >> 2] = f;
+ c[g + 4 >> 2] = y;
+ g = a + 104 | 0;
+ f = c[g >> 2] | 0;
+ g = c[g + 4 >> 2] | 0;
+ b = a + 24 | 0;
+ e = b;
+ d = c[e >> 2] | 0;
+ e = c[e + 4 >> 2] | 0;
+ h = Nb(f | 0, g | 0, 18, 0) | 0;
+ i = y;
+ g = Rb(d | 0, e | 0, f | 0, g | 0) | 0;
+ i = Rb(g | 0, y | 0, h | 0, i | 0) | 0;
+ c[b >> 2] = i;
+ c[b + 4 >> 2] = y;
+ b = a + 96 | 0;
+ i = c[b >> 2] | 0;
+ b = c[b + 4 >> 2] | 0;
+ h = a + 16 | 0;
+ g = h;
+ f = c[g >> 2] | 0;
+ g = c[g + 4 >> 2] | 0;
+ e = Nb(i | 0, b | 0, 18, 0) | 0;
+ d = y;
+ b = Rb(f | 0, g | 0, i | 0, b | 0) | 0;
+ d = Rb(b | 0, y | 0, e | 0, d | 0) | 0;
+ c[h >> 2] = d;
+ c[h + 4 >> 2] = y;
+ h = a + 88 | 0;
+ d = c[h >> 2] | 0;
+ h = c[h + 4 >> 2] | 0;
+ e = a + 8 | 0;
+ b = e;
+ i = c[b >> 2] | 0;
+ b = c[b + 4 >> 2] | 0;
+ g = Nb(d | 0, h | 0, 18, 0) | 0;
+ f = y;
+ h = Rb(i | 0, b | 0, d | 0, h | 0) | 0;
+ f = Rb(h | 0, y | 0, g | 0, f | 0) | 0;
+ c[e >> 2] = f;
+ c[e + 4 >> 2] = y;
+ e = a + 80 | 0;
+ f = c[e >> 2] | 0;
+ e = c[e + 4 >> 2] | 0;
+ g = a;
+ h = c[g >> 2] | 0;
+ g = c[g + 4 >> 2] | 0;
+ d = Nb(f | 0, e | 0, 18, 0) | 0;
+ b = y;
+ e = Rb(h | 0, g | 0, f | 0, e | 0) | 0;
+ b = Rb(e | 0, y | 0, d | 0, b | 0) | 0;
+ c[a >> 2] = b;
+ c[a + 4 >> 2] = y;
+ return;
+}
+
+function Aa(a, b, d, e) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ e = e | 0;
+ var f = 0, g = 0, h = 0, i = 0;
+ d = 0 - d | 0;
+ h = a;
+ f = c[h >> 2] | 0;
+ g = b;
+ g = (c[g >> 2] ^ f) & d;
+ f = g ^ f;
+ h = a;
+ c[h >> 2] = f;
+ c[h + 4 >> 2] = ((f | 0) < 0) << 31 >> 31;
+ g = g ^ c[b >> 2];
+ h = b;
+ c[h >> 2] = g;
+ c[h + 4 >> 2] = ((g | 0) < 0) << 31 >> 31;
+ h = a + 8 | 0;
+ g = h;
+ f = c[g >> 2] | 0;
+ e = b + 8 | 0;
+ i = e;
+ i = (c[i >> 2] ^ f) & d;
+ f = i ^ f;
+ c[h >> 2] = f;
+ c[h + 4 >> 2] = ((f | 0) < 0) << 31 >> 31;
+ i = i ^ c[e >> 2];
+ c[e >> 2] = i;
+ c[e + 4 >> 2] = ((i | 0) < 0) << 31 >> 31;
+ e = a + 16 | 0;
+ i = e;
+ h = c[i >> 2] | 0;
+ f = b + 16 | 0;
+ g = f;
+ g = (c[g >> 2] ^ h) & d;
+ h = g ^ h;
+ c[e >> 2] = h;
+ c[e + 4 >> 2] = ((h | 0) < 0) << 31 >> 31;
+ g = g ^ c[f >> 2];
+ c[f >> 2] = g;
+ c[f + 4 >> 2] = ((g | 0) < 0) << 31 >> 31;
+ f = a + 24 | 0;
+ g = f;
+ e = c[g >> 2] | 0;
+ h = b + 24 | 0;
+ i = h;
+ i = (c[i >> 2] ^ e) & d;
+ e = i ^ e;
+ c[f >> 2] = e;
+ c[f + 4 >> 2] = ((e | 0) < 0) << 31 >> 31;
+ i = i ^ c[h >> 2];
+ c[h >> 2] = i;
+ c[h + 4 >> 2] = ((i | 0) < 0) << 31 >> 31;
+ h = a + 32 | 0;
+ i = h;
+ f = c[i >> 2] | 0;
+ e = b + 32 | 0;
+ g = e;
+ g = (c[g >> 2] ^ f) & d;
+ f = g ^ f;
+ c[h >> 2] = f;
+ c[h + 4 >> 2] = ((f | 0) < 0) << 31 >> 31;
+ g = g ^ c[e >> 2];
+ c[e >> 2] = g;
+ c[e + 4 >> 2] = ((g | 0) < 0) << 31 >> 31;
+ e = a + 40 | 0;
+ g = e;
+ h = c[g >> 2] | 0;
+ f = b + 40 | 0;
+ i = f;
+ i = (c[i >> 2] ^ h) & d;
+ h = i ^ h;
+ c[e >> 2] = h;
+ c[e + 4 >> 2] = ((h | 0) < 0) << 31 >> 31;
+ i = i ^ c[f >> 2];
+ c[f >> 2] = i;
+ c[f + 4 >> 2] = ((i | 0) < 0) << 31 >> 31;
+ f = a + 48 | 0;
+ i = f;
+ e = c[i >> 2] | 0;
+ h = b + 48 | 0;
+ g = h;
+ g = (c[g >> 2] ^ e) & d;
+ e = g ^ e;
+ c[f >> 2] = e;
+ c[f + 4 >> 2] = ((e | 0) < 0) << 31 >> 31;
+ g = g ^ c[h >> 2];
+ c[h >> 2] = g;
+ c[h + 4 >> 2] = ((g | 0) < 0) << 31 >> 31;
+ h = a + 56 | 0;
+ g = h;
+ f = c[g >> 2] | 0;
+ e = b + 56 | 0;
+ i = e;
+ i = (c[i >> 2] ^ f) & d;
+ f = i ^ f;
+ c[h >> 2] = f;
+ c[h + 4 >> 2] = ((f | 0) < 0) << 31 >> 31;
+ i = i ^ c[e >> 2];
+ c[e >> 2] = i;
+ c[e + 4 >> 2] = ((i | 0) < 0) << 31 >> 31;
+ e = a + 64 | 0;
+ i = e;
+ h = c[i >> 2] | 0;
+ f = b + 64 | 0;
+ g = f;
+ g = (c[g >> 2] ^ h) & d;
+ h = g ^ h;
+ c[e >> 2] = h;
+ c[e + 4 >> 2] = ((h | 0) < 0) << 31 >> 31;
+ g = g ^ c[f >> 2];
+ c[f >> 2] = g;
+ c[f + 4 >> 2] = ((g | 0) < 0) << 31 >> 31;
+ f = a + 72 | 0;
+ g = f;
+ a = c[g >> 2] | 0;
+ e = b + 72 | 0;
+ b = e;
+ d = (c[b >> 2] ^ a) & d;
+ a = d ^ a;
+ b = f;
+ c[b >> 2] = a;
+ c[b + 4 >> 2] = ((a | 0) < 0) << 31 >> 31;
+ d = d ^ c[e >> 2];
+ c[e >> 2] = d;
+ c[e + 4 >> 2] = ((d | 0) < 0) << 31 >> 31;
+ return;
+}
+
+function oa(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, m = 0, n = 0;
+ h = l;
+ l = l + 800 | 0;
+ n = h + 720 | 0;
+ m = h + 640 | 0;
+ e = h + 560 | 0;
+ k = h + 480 | 0;
+ i = h + 400 | 0;
+ j = h + 320 | 0;
+ f = h + 240 | 0;
+ g = h + 160 | 0;
+ c = h + 80 | 0;
+ d = h;
+ ya(n, b);
+ ya(d, n);
+ ya(c, d);
+ pa(m, c, b);
+ pa(e, m, n);
+ ya(c, e);
+ pa(k, c, m);
+ ya(c, k);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ pa(i, c, k);
+ ya(c, i);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ pa(j, d, i);
+ ya(c, j);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ pa(c, d, j);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ pa(f, c, i);
+ ya(c, f);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ pa(g, d, f);
+ ya(d, g);
+ ya(c, d);
+ b = 2;
+ do {
+  ya(d, c);
+  ya(c, d);
+  b = b + 2 | 0;
+ } while (b >>> 0 < 100);
+ pa(d, c, g);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ pa(c, d, f);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ ya(c, d);
+ ya(d, c);
+ pa(a, d, e);
+ l = h;
+ return;
+}
+
+function na(a, b, e, f) {
+ a = a | 0;
+ b = b | 0;
+ e = e | 0;
+ f = f | 0;
+ var g = 0, h = 0, i = 0, j = 0, k = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0;
+ s = l;
+ l = l + 1280 | 0;
+ m = s + 1120 | 0;
+ n = s + 960 | 0;
+ o = s + 800 | 0;
+ p = s + 640 | 0;
+ q = s + 480 | 0;
+ r = s + 320 | 0;
+ j = s + 160 | 0;
+ k = s;
+ Vb(n | 0, 0, 152) | 0;
+ g = n;
+ c[g >> 2] = 1;
+ c[g + 4 >> 2] = 0;
+ Vb(o | 0, 0, 152) | 0;
+ g = o;
+ c[g >> 2] = 1;
+ c[g + 4 >> 2] = 0;
+ Vb(p | 0, 0, 152) | 0;
+ Vb(q | 0, 0, 152) | 0;
+ Vb(r | 0, 0, 152) | 0;
+ g = r;
+ c[g >> 2] = 1;
+ c[g + 4 >> 2] = 0;
+ Vb(j | 0, 0, 152) | 0;
+ Vb(k | 0, 0, 152) | 0;
+ g = k;
+ c[g >> 2] = 1;
+ c[g + 4 >> 2] = 0;
+ g = m + 80 | 0;
+ i = g + 72 | 0;
+ do {
+  c[g >> 2] = 0;
+  g = g + 4 | 0;
+ } while ((g | 0) < (i | 0));
+ g = m;
+ h = f;
+ i = g + 80 | 0;
+ do {
+  c[g >> 2] = c[h >> 2];
+  g = g + 4 | 0;
+  h = h + 4 | 0;
+ } while ((g | 0) < (i | 0));
+ g = 0;
+ do {
+  i = d[e + (31 - g) >> 0] | 0;
+  h = i >>> 7;
+  Aa(o, m, h, 0);
+  Aa(p, n, h, 0);
+  Ba(j, k, q, r, o, p, m, n, f);
+  Aa(j, q, h, 0);
+  Aa(k, r, h, 0);
+  h = i >>> 6 & 1;
+  Aa(j, q, h, 0);
+  Aa(k, r, h, 0);
+  Ba(o, p, m, n, j, k, q, r, f);
+  Aa(o, m, h, 0);
+  Aa(p, n, h, 0);
+  h = i >>> 5 & 1;
+  Aa(o, m, h, 0);
+  Aa(p, n, h, 0);
+  Ba(j, k, q, r, o, p, m, n, f);
+  Aa(j, q, h, 0);
+  Aa(k, r, h, 0);
+  h = i >>> 4 & 1;
+  Aa(j, q, h, 0);
+  Aa(k, r, h, 0);
+  Ba(o, p, m, n, j, k, q, r, f);
+  Aa(o, m, h, 0);
+  Aa(p, n, h, 0);
+  h = i >>> 3 & 1;
+  Aa(o, m, h, 0);
+  Aa(p, n, h, 0);
+  Ba(j, k, q, r, o, p, m, n, f);
+  Aa(j, q, h, 0);
+  Aa(k, r, h, 0);
+  h = i >>> 2 & 1;
+  Aa(j, q, h, 0);
+  Aa(k, r, h, 0);
+  Ba(o, p, m, n, j, k, q, r, f);
+  Aa(o, m, h, 0);
+  Aa(p, n, h, 0);
+  h = i >>> 1 & 1;
+  Aa(o, m, h, 0);
+  Aa(p, n, h, 0);
+  Ba(j, k, q, r, o, p, m, n, f);
+  Aa(j, q, h, 0);
+  Aa(k, r, h, 0);
+  i = i & 1;
+  Aa(j, q, i, 0);
+  Aa(k, r, i, 0);
+  Ba(o, p, m, n, j, k, q, r, f);
+  Aa(o, m, i, 0);
+  Aa(p, n, i, 0);
+  g = g + 1 | 0;
+ } while ((g | 0) != 32);
+ g = a;
+ h = o;
+ i = g + 80 | 0;
+ do {
+  c[g >> 2] = c[h >> 2];
+  g = g + 4 | 0;
+  h = h + 4 | 0;
+ } while ((g | 0) < (i | 0));
+ g = b;
+ h = p;
+ i = g + 80 | 0;
+ do {
+  c[g >> 2] = c[h >> 2];
+  g = g + 4 | 0;
+  h = h + 4 | 0;
+ } while ((g | 0) < (i | 0));
+ l = s;
+ return;
+}
+
+function Na(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, d = 0, e = 0, f = 0, g = 0;
+ g = l;
+ l = l + 192 | 0;
+ c = g + 144 | 0;
+ d = g + 96 | 0;
+ e = g + 48 | 0;
+ f = g;
+ Ua(c, b);
+ Ua(d, c);
+ Ua(d, d);
+ Qa(d, b, d);
+ Qa(c, c, d);
+ Ua(e, c);
+ Qa(d, d, e);
+ Ua(e, d);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(d, e, d);
+ Ua(e, d);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(e, e, d);
+ Ua(f, e);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Qa(e, f, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(d, e, d);
+ Ua(e, d);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(e, e, d);
+ Ua(f, e);
+ b = 1;
+ do {
+  Ua(f, f);
+  b = b + 1 | 0;
+ } while ((b | 0) != 100);
+ Qa(e, f, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(d, e, d);
+ Ua(d, d);
+ Ua(d, d);
+ Ua(d, d);
+ Ua(d, d);
+ Ua(d, d);
+ Qa(a, d, c);
+ l = g;
+ return;
+}
+
+function Sa(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, d = 0, e = 0, f = 0, g = 0;
+ g = l;
+ l = l + 144 | 0;
+ d = g + 96 | 0;
+ e = g + 48 | 0;
+ f = g;
+ Ua(d, b);
+ Ua(e, d);
+ Ua(e, e);
+ Qa(e, b, e);
+ Qa(d, d, e);
+ Ua(d, d);
+ Qa(d, e, d);
+ Ua(e, d);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(d, e, d);
+ Ua(e, d);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(e, e, d);
+ Ua(f, e);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Ua(f, f);
+ Qa(e, f, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(d, e, d);
+ Ua(e, d);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(e, e, d);
+ Ua(f, e);
+ c = 1;
+ do {
+  Ua(f, f);
+  c = c + 1 | 0;
+ } while ((c | 0) != 100);
+ Qa(e, f, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Ua(e, e);
+ Qa(d, e, d);
+ Ua(d, d);
+ Ua(d, d);
+ Qa(a, d, b);
+ l = g;
+ return;
+}
+
+function Wa(b, d) {
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0;
+ t = c[d >> 2] | 0;
+ s = c[d + 4 >> 2] | 0;
+ q = c[d + 8 >> 2] | 0;
+ o = c[d + 12 >> 2] | 0;
+ m = c[d + 16 >> 2] | 0;
+ l = c[d + 20 >> 2] | 0;
+ k = c[d + 24 >> 2] | 0;
+ i = c[d + 28 >> 2] | 0;
+ g = c[d + 32 >> 2] | 0;
+ e = c[d + 36 >> 2] | 0;
+ t = (((((((((((((e * 19 | 0) + 16777216 >> 25) + t >> 26) + s >> 25) + q >> 26) + o >> 25) + m >> 26) + l >> 25) + k >> 26) + i >> 25) + g >> 26) + e >> 25) * 19 | 0) + t | 0;
+ s = (t >> 26) + s | 0;
+ q = (s >> 25) + q | 0;
+ r = s & 33554431;
+ o = (q >> 26) + o | 0;
+ p = q & 67108863;
+ m = (o >> 25) + m | 0;
+ n = o & 33554431;
+ l = (m >> 26) + l | 0;
+ k = (l >> 25) + k | 0;
+ i = (k >> 26) + i | 0;
+ j = k & 67108863;
+ g = (i >> 25) + g | 0;
+ h = i & 33554431;
+ e = (g >> 26) + e | 0;
+ f = g & 67108863;
+ d = e & 33554431;
+ a[b >> 0] = t;
+ a[b + 1 >> 0] = t >>> 8;
+ a[b + 2 >> 0] = t >>> 16;
+ a[b + 3 >> 0] = r << 2 | t >>> 24 & 3;
+ a[b + 4 >> 0] = s >>> 6;
+ a[b + 5 >> 0] = s >>> 14;
+ a[b + 6 >> 0] = p << 3 | r >>> 22;
+ a[b + 7 >> 0] = q >>> 5;
+ a[b + 8 >> 0] = q >>> 13;
+ a[b + 9 >> 0] = n << 5 | p >>> 21;
+ a[b + 10 >> 0] = o >>> 3;
+ a[b + 11 >> 0] = o >>> 11;
+ a[b + 12 >> 0] = m << 6 | n >>> 19;
+ a[b + 13 >> 0] = m >>> 2;
+ a[b + 14 >> 0] = m >>> 10;
+ a[b + 15 >> 0] = m >>> 18;
+ a[b + 16 >> 0] = l;
+ a[b + 17 >> 0] = l >>> 8;
+ a[b + 18 >> 0] = l >>> 16;
+ a[b + 19 >> 0] = j << 1 | l >>> 24 & 1;
+ a[b + 20 >> 0] = k >>> 7;
+ a[b + 21 >> 0] = k >>> 15;
+ a[b + 22 >> 0] = h << 3 | j >>> 23;
+ a[b + 23 >> 0] = i >>> 5;
+ a[b + 24 >> 0] = i >>> 13;
+ a[b + 25 >> 0] = f << 4 | h >>> 21;
+ a[b + 26 >> 0] = g >>> 4;
+ a[b + 27 >> 0] = g >>> 12;
+ a[b + 28 >> 0] = d << 6 | f >>> 20;
+ a[b + 29 >> 0] = e >>> 2;
+ a[b + 30 >> 0] = e >>> 10;
+ a[b + 31 >> 0] = d >>> 18;
+ return;
+}
+
+function Ca(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0, f = 0;
+ e = a;
+ d = b;
+ e = Rb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ d = a;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 8 | 0;
+ e = d;
+ f = b + 8 | 0;
+ e = Rb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 16 | 0;
+ e = d;
+ f = b + 16 | 0;
+ e = Rb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 24 | 0;
+ e = d;
+ f = b + 24 | 0;
+ e = Rb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 32 | 0;
+ e = d;
+ f = b + 32 | 0;
+ e = Rb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 40 | 0;
+ e = d;
+ f = b + 40 | 0;
+ e = Rb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 48 | 0;
+ e = d;
+ f = b + 48 | 0;
+ e = Rb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 56 | 0;
+ e = d;
+ f = b + 56 | 0;
+ e = Rb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 64 | 0;
+ e = d;
+ f = b + 64 | 0;
+ e = Rb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = a + 72 | 0;
+ a = d;
+ b = b + 72 | 0;
+ a = Rb(c[b >> 2] | 0, c[b + 4 >> 2] | 0, c[a >> 2] | 0, c[a + 4 >> 2] | 0) | 0;
+ b = d;
+ c[b >> 2] = a;
+ c[b + 4 >> 2] = y;
+ return;
+}
+
+function Da(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0, f = 0;
+ e = b;
+ f = a;
+ f = Sb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, c[f >> 2] | 0, c[f + 4 >> 2] | 0) | 0;
+ e = a;
+ c[e >> 2] = f;
+ c[e + 4 >> 2] = y;
+ e = b + 8 | 0;
+ f = a + 8 | 0;
+ d = f;
+ d = Sb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, c[d >> 2] | 0, c[d + 4 >> 2] | 0) | 0;
+ c[f >> 2] = d;
+ c[f + 4 >> 2] = y;
+ f = b + 16 | 0;
+ d = a + 16 | 0;
+ e = d;
+ e = Sb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = b + 24 | 0;
+ e = a + 24 | 0;
+ f = e;
+ f = Sb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, c[f >> 2] | 0, c[f + 4 >> 2] | 0) | 0;
+ c[e >> 2] = f;
+ c[e + 4 >> 2] = y;
+ e = b + 32 | 0;
+ f = a + 32 | 0;
+ d = f;
+ d = Sb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, c[d >> 2] | 0, c[d + 4 >> 2] | 0) | 0;
+ c[f >> 2] = d;
+ c[f + 4 >> 2] = y;
+ f = b + 40 | 0;
+ d = a + 40 | 0;
+ e = d;
+ e = Sb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = b + 48 | 0;
+ e = a + 48 | 0;
+ f = e;
+ f = Sb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, c[f >> 2] | 0, c[f + 4 >> 2] | 0) | 0;
+ c[e >> 2] = f;
+ c[e + 4 >> 2] = y;
+ e = b + 56 | 0;
+ f = a + 56 | 0;
+ d = f;
+ d = Sb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, c[d >> 2] | 0, c[d + 4 >> 2] | 0) | 0;
+ c[f >> 2] = d;
+ c[f + 4 >> 2] = y;
+ f = b + 64 | 0;
+ d = a + 64 | 0;
+ e = d;
+ e = Sb(c[f >> 2] | 0, c[f + 4 >> 2] | 0, c[e >> 2] | 0, c[e + 4 >> 2] | 0) | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = b + 72 | 0;
+ b = a + 72 | 0;
+ a = b;
+ a = Sb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, c[a >> 2] | 0, c[a + 4 >> 2] | 0) | 0;
+ c[b >> 2] = a;
+ c[b + 4 >> 2] = y;
+ return;
+}
+
+function Ya(b, c, d, e) {
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ e = e | 0;
+ var f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, m = 0, n = 0;
+ m = l;
+ l = l + 2272 | 0;
+ g = m + 1536 | 0;
+ h = m + 1280 | 0;
+ i = m;
+ j = m + 2112 | 0;
+ k = m + 1952 | 0;
+ n = m + 1792 | 0;
+ Za(g, c);
+ Za(h, e);
+ ib(i, d);
+ gb(j, d);
+ cb(n, j);
+ Xa(j, n, i);
+ cb(k, j);
+ c = i + 160 | 0;
+ ib(c, k);
+ Xa(j, n, c);
+ cb(k, j);
+ c = i + 320 | 0;
+ ib(c, k);
+ Xa(j, n, c);
+ cb(k, j);
+ c = i + 480 | 0;
+ ib(c, k);
+ Xa(j, n, c);
+ cb(k, j);
+ c = i + 640 | 0;
+ ib(c, k);
+ Xa(j, n, c);
+ cb(k, j);
+ c = i + 800 | 0;
+ ib(c, k);
+ Xa(j, n, c);
+ cb(k, j);
+ c = i + 960 | 0;
+ ib(c, k);
+ Xa(j, n, c);
+ cb(k, j);
+ ib(i + 1120 | 0, k);
+ db(b);
+ c = 255;
+ while (1) {
+  if (a[g + c >> 0] | 0) break;
+  if (a[h + c >> 0] | 0) break;
+  if (!c) {
+   f = 16;
+   break;
+  } else c = c + -1 | 0;
+ }
+ if ((f | 0) == 16) {
+  l = m;
+  return;
+ }
+ if ((c | 0) <= -1) {
+  l = m;
+  return;
+ }
+ while (1) {
+  eb(j, b);
+  d = a[g + c >> 0] | 0;
+  if (d << 24 >> 24 > 0) {
+   cb(k, j);
+   Xa(j, k, i + (((d & 255) >>> 1 & 255) * 160 | 0) | 0);
+  } else if (d << 24 >> 24 < 0) {
+   cb(k, j);
+   qb(j, k, i + ((((d << 24 >> 24) / -2 | 0) << 24 >> 24) * 160 | 0) | 0);
+  }
+  d = a[h + c >> 0] | 0;
+  if (d << 24 >> 24 > 0) {
+   cb(k, j);
+   $a(j, k, 16 + (((d & 255) >>> 1 & 255) * 120 | 0) | 0);
+  } else if (d << 24 >> 24 < 0) {
+   cb(k, j);
+   ab(j, k, 16 + ((((d << 24 >> 24) / -2 | 0) << 24 >> 24) * 120 | 0) | 0);
+  }
+  bb(b, j);
+  if ((c | 0) > 0) c = c + -1 | 0; else break;
+ }
+ l = m;
+ return;
+}
+
+function sb(b, e, f, g, h, i) {
+ b = b | 0;
+ e = e | 0;
+ f = f | 0;
+ g = g | 0;
+ h = h | 0;
+ i = i | 0;
+ var j = 0, k = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0;
+ t = l;
+ l = l + 480 | 0;
+ n = t + 160 | 0;
+ o = t + 128 | 0;
+ p = t + 96 | 0;
+ q = t + 32 | 0;
+ j = t;
+ k = t + 312 | 0;
+ m = t + 192 | 0;
+ if (!(h >>> 0 < 0 | (h | 0) == 0 & g >>> 0 < 64)) if ((d[f + 63 >> 0] | 0) <= 31) if (!(_a(k, i) | 0)) {
+  s = n;
+  r = s + 32 | 0;
+  do {
+   a[s >> 0] = a[i >> 0] | 0;
+   s = s + 1 | 0;
+   i = i + 1 | 0;
+  } while ((s | 0) < (r | 0));
+  s = o;
+  i = f;
+  r = s + 32 | 0;
+  do {
+   a[s >> 0] = a[i >> 0] | 0;
+   s = s + 1 | 0;
+   i = i + 1 | 0;
+  } while ((s | 0) < (r | 0));
+  s = p;
+  i = f + 32 | 0;
+  r = s + 32 | 0;
+  do {
+   a[s >> 0] = a[i >> 0] | 0;
+   s = s + 1 | 0;
+   i = i + 1 | 0;
+  } while ((s | 0) < (r | 0));
+  Ub(b | 0, f | 0, g | 0) | 0;
+  s = b + 32 | 0;
+  i = n;
+  r = s + 32 | 0;
+  do {
+   a[s >> 0] = a[i >> 0] | 0;
+   s = s + 1 | 0;
+   i = i + 1 | 0;
+  } while ((s | 0) < (r | 0));
+  ja(q, b, g, h) | 0;
+  wb(q);
+  Ya(m, q, k, p);
+  rb(j, m);
+  if (!(ga(j, o) | 0)) {
+   i = Rb(g | 0, h | 0, -64, -1) | 0;
+   j = y;
+   Ub(b | 0, b + 64 | 0, i | 0) | 0;
+   s = b + g + -64 | 0;
+   r = s + 64 | 0;
+   do {
+    a[s >> 0] = 0;
+    s = s + 1 | 0;
+   } while ((s | 0) < (r | 0));
+   s = e;
+   c[s >> 2] = i;
+   c[s + 4 >> 2] = j;
+   s = 0;
+   l = t;
+   return s | 0;
+  }
+ }
+ s = e;
+ c[s >> 2] = -1;
+ c[s + 4 >> 2] = -1;
+ Vb(b | 0, 0, g | 0) | 0;
+ s = -1;
+ l = t;
+ return s | 0;
+}
+
+function Ba(a, b, d, e, f, g, h, i, j) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ e = e | 0;
+ f = f | 0;
+ g = g | 0;
+ h = h | 0;
+ i = i | 0;
+ j = j | 0;
+ var k = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0;
+ v = l;
+ l = l + 1280 | 0;
+ t = v + 1200 | 0;
+ k = v + 1120 | 0;
+ m = v + 960 | 0;
+ n = v + 800 | 0;
+ o = v + 640 | 0;
+ p = v + 480 | 0;
+ q = v + 320 | 0;
+ r = v + 160 | 0;
+ s = v;
+ u = t;
+ w = f;
+ x = u + 80 | 0;
+ do {
+  c[u >> 2] = c[w >> 2];
+  u = u + 4 | 0;
+  w = w + 4 | 0;
+ } while ((u | 0) < (x | 0));
+ Ca(f, g);
+ Da(g, t);
+ u = k;
+ w = h;
+ x = u + 80 | 0;
+ do {
+  c[u >> 2] = c[w >> 2];
+  u = u + 4 | 0;
+  w = w + 4 | 0;
+ } while ((u | 0) < (x | 0));
+ Ca(h, i);
+ Da(i, k);
+ ta(p, h, g);
+ ta(q, f, i);
+ ua(p);
+ va(p);
+ ua(q);
+ va(q);
+ u = k;
+ w = p;
+ x = u + 80 | 0;
+ do {
+  c[u >> 2] = c[w >> 2];
+  u = u + 4 | 0;
+  w = w + 4 | 0;
+ } while ((u | 0) < (x | 0));
+ Ca(p, q);
+ Da(q, k);
+ ya(s, p);
+ ya(r, q);
+ ta(q, r, j);
+ ua(q);
+ va(q);
+ u = d;
+ w = s;
+ x = u + 80 | 0;
+ do {
+  c[u >> 2] = c[w >> 2];
+  u = u + 4 | 0;
+  w = w + 4 | 0;
+ } while ((u | 0) < (x | 0));
+ u = e;
+ w = q;
+ x = u + 80 | 0;
+ do {
+  c[u >> 2] = c[w >> 2];
+  u = u + 4 | 0;
+  w = w + 4 | 0;
+ } while ((u | 0) < (x | 0));
+ ya(n, f);
+ ya(o, g);
+ ta(a, n, o);
+ ua(a);
+ va(a);
+ Da(o, n);
+ u = m + 80 | 0;
+ x = u + 72 | 0;
+ do {
+  c[u >> 2] = 0;
+  u = u + 4 | 0;
+ } while ((u | 0) < (x | 0));
+ Ea(m, o);
+ va(m);
+ Ca(m, n);
+ ta(b, o, m);
+ ua(b);
+ va(b);
+ l = v;
+ return;
+}
+
+function Tb(b, d, e) {
+ b = b | 0;
+ d = d | 0;
+ e = e | 0;
+ var f = 0, g = 0, h = 0;
+ if ((e | 0) >= 8192) return X(b | 0, d | 0, e | 0) | 0;
+ h = b | 0;
+ g = b + e | 0;
+ if ((b & 3) == (d & 3)) {
+  while (b & 3) {
+   if (!e) return h | 0;
+   a[b >> 0] = a[d >> 0] | 0;
+   b = b + 1 | 0;
+   d = d + 1 | 0;
+   e = e - 1 | 0;
+  }
+  e = g & -4 | 0;
+  f = e - 64 | 0;
+  while ((b | 0) <= (f | 0)) {
+   c[b >> 2] = c[d >> 2];
+   c[b + 4 >> 2] = c[d + 4 >> 2];
+   c[b + 8 >> 2] = c[d + 8 >> 2];
+   c[b + 12 >> 2] = c[d + 12 >> 2];
+   c[b + 16 >> 2] = c[d + 16 >> 2];
+   c[b + 20 >> 2] = c[d + 20 >> 2];
+   c[b + 24 >> 2] = c[d + 24 >> 2];
+   c[b + 28 >> 2] = c[d + 28 >> 2];
+   c[b + 32 >> 2] = c[d + 32 >> 2];
+   c[b + 36 >> 2] = c[d + 36 >> 2];
+   c[b + 40 >> 2] = c[d + 40 >> 2];
+   c[b + 44 >> 2] = c[d + 44 >> 2];
+   c[b + 48 >> 2] = c[d + 48 >> 2];
+   c[b + 52 >> 2] = c[d + 52 >> 2];
+   c[b + 56 >> 2] = c[d + 56 >> 2];
+   c[b + 60 >> 2] = c[d + 60 >> 2];
+   b = b + 64 | 0;
+   d = d + 64 | 0;
+  }
+  while ((b | 0) < (e | 0)) {
+   c[b >> 2] = c[d >> 2];
+   b = b + 4 | 0;
+   d = d + 4 | 0;
+  }
+ } else {
+  e = g - 4 | 0;
+  while ((b | 0) < (e | 0)) {
+   a[b >> 0] = a[d >> 0] | 0;
+   a[b + 1 >> 0] = a[d + 1 >> 0] | 0;
+   a[b + 2 >> 0] = a[d + 2 >> 0] | 0;
+   a[b + 3 >> 0] = a[d + 3 >> 0] | 0;
+   b = b + 4 | 0;
+   d = d + 4 | 0;
+  }
+ }
+ while ((b | 0) < (g | 0)) {
+  a[b >> 0] = a[d >> 0] | 0;
+  b = b + 1 | 0;
+  d = d + 1 | 0;
+ }
+ return h | 0;
+}
+
+function Ea(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0;
+ e = b;
+ e = Nb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, 121665, 0) | 0;
+ d = a;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = b + 8 | 0;
+ d = Nb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, 121665, 0) | 0;
+ e = a + 8 | 0;
+ c[e >> 2] = d;
+ c[e + 4 >> 2] = y;
+ e = b + 16 | 0;
+ e = Nb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, 121665, 0) | 0;
+ d = a + 16 | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = b + 24 | 0;
+ d = Nb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, 121665, 0) | 0;
+ e = a + 24 | 0;
+ c[e >> 2] = d;
+ c[e + 4 >> 2] = y;
+ e = b + 32 | 0;
+ e = Nb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, 121665, 0) | 0;
+ d = a + 32 | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = b + 40 | 0;
+ d = Nb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, 121665, 0) | 0;
+ e = a + 40 | 0;
+ c[e >> 2] = d;
+ c[e + 4 >> 2] = y;
+ e = b + 48 | 0;
+ e = Nb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, 121665, 0) | 0;
+ d = a + 48 | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = b + 56 | 0;
+ d = Nb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, 121665, 0) | 0;
+ e = a + 56 | 0;
+ c[e >> 2] = d;
+ c[e + 4 >> 2] = y;
+ e = b + 64 | 0;
+ e = Nb(c[e >> 2] | 0, c[e + 4 >> 2] | 0, 121665, 0) | 0;
+ d = a + 64 | 0;
+ c[d >> 2] = e;
+ c[d + 4 >> 2] = y;
+ d = b + 72 | 0;
+ d = Nb(c[d >> 2] | 0, c[d + 4 >> 2] | 0, 121665, 0) | 0;
+ b = a + 72 | 0;
+ c[b >> 2] = d;
+ c[b + 4 >> 2] = y;
+ return;
+}
+
+function ga(b, c) {
+ b = b | 0;
+ c = c | 0;
+ return ((((a[c + 1 >> 0] ^ a[b + 1 >> 0] | a[c >> 0] ^ a[b >> 0] | a[c + 2 >> 0] ^ a[b + 2 >> 0] | a[c + 3 >> 0] ^ a[b + 3 >> 0] | a[c + 4 >> 0] ^ a[b + 4 >> 0] | a[c + 5 >> 0] ^ a[b + 5 >> 0] | a[c + 6 >> 0] ^ a[b + 6 >> 0] | a[c + 7 >> 0] ^ a[b + 7 >> 0] | a[c + 8 >> 0] ^ a[b + 8 >> 0] | a[c + 9 >> 0] ^ a[b + 9 >> 0] | a[c + 10 >> 0] ^ a[b + 10 >> 0] | a[c + 11 >> 0] ^ a[b + 11 >> 0] | a[c + 12 >> 0] ^ a[b + 12 >> 0] | a[c + 13 >> 0] ^ a[b + 13 >> 0] | a[c + 14 >> 0] ^ a[b + 14 >> 0] | a[c + 15 >> 0] ^ a[b + 15 >> 0] | a[c + 16 >> 0] ^ a[b + 16 >> 0] | a[c + 17 >> 0] ^ a[b + 17 >> 0] | a[c + 18 >> 0] ^ a[b + 18 >> 0] | a[c + 19 >> 0] ^ a[b + 19 >> 0] | a[c + 20 >> 0] ^ a[b + 20 >> 0] | a[c + 21 >> 0] ^ a[b + 21 >> 0] | a[c + 22 >> 0] ^ a[b + 22 >> 0] | a[c + 23 >> 0] ^ a[b + 23 >> 0] | a[c + 24 >> 0] ^ a[b + 24 >> 0] | a[c + 25 >> 0] ^ a[b + 25 >> 0] | a[c + 26 >> 0] ^ a[b + 26 >> 0] | a[c + 27 >> 0] ^ a[b + 27 >> 0] | a[c + 28 >> 0] ^ a[b + 28 >> 0] | a[c + 29 >> 0] ^ a[b + 29 >> 0] | a[c + 30 >> 0] ^ a[b + 30 >> 0] | a[c + 31 >> 0] ^ a[b + 31 >> 0]) & 255) + 511 | 0) >>> 8 & 1) + -1 | 0;
+}
+
+function Ia(a, b, d) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0, t = 0, u = 0, v = 0, w = 0, x = 0, y = 0, z = 0, A = 0, B = 0, C = 0, D = 0, E = 0, F = 0;
+ E = c[a >> 2] | 0;
+ B = a + 4 | 0;
+ C = c[B >> 2] | 0;
+ y = a + 8 | 0;
+ z = c[y >> 2] | 0;
+ v = a + 12 | 0;
+ w = c[v >> 2] | 0;
+ s = a + 16 | 0;
+ t = c[s >> 2] | 0;
+ p = a + 20 | 0;
+ q = c[p >> 2] | 0;
+ m = a + 24 | 0;
+ n = c[m >> 2] | 0;
+ j = a + 28 | 0;
+ k = c[j >> 2] | 0;
+ g = a + 32 | 0;
+ h = c[g >> 2] | 0;
+ e = a + 36 | 0;
+ f = c[e >> 2] | 0;
+ F = 0 - d | 0;
+ D = (c[b + 4 >> 2] ^ C) & F;
+ A = (c[b + 8 >> 2] ^ z) & F;
+ x = (c[b + 12 >> 2] ^ w) & F;
+ u = (c[b + 16 >> 2] ^ t) & F;
+ r = (c[b + 20 >> 2] ^ q) & F;
+ o = (c[b + 24 >> 2] ^ n) & F;
+ l = (c[b + 28 >> 2] ^ k) & F;
+ i = (c[b + 32 >> 2] ^ h) & F;
+ d = (c[b + 36 >> 2] ^ f) & F;
+ c[a >> 2] = (c[b >> 2] ^ E) & F ^ E;
+ c[B >> 2] = D ^ C;
+ c[y >> 2] = A ^ z;
+ c[v >> 2] = x ^ w;
+ c[s >> 2] = u ^ t;
+ c[p >> 2] = r ^ q;
+ c[m >> 2] = o ^ n;
+ c[j >> 2] = l ^ k;
+ c[g >> 2] = i ^ h;
+ c[e >> 2] = d ^ f;
+ return;
+}
+
+function Eb(b, d, e, f, g) {
+ b = b | 0;
+ d = d | 0;
+ e = e | 0;
+ f = f | 0;
+ g = g | 0;
+ var h = 0, i = 0, j = 0;
+ j = b + 192 | 0;
+ h = c[j >> 2] & 127;
+ i = 128 >>> e;
+ a[b + h >> 0] = 0 - i & d | i;
+ d = b + (h + 1) | 0;
+ if (h >>> 0 > 111) {
+  Vb(d | 0, 0, h ^ 127 | 0) | 0;
+  i = b + 128 | 0;
+  Bb(b, i);
+  d = b;
+  h = d + 112 | 0;
+  do {
+   c[d >> 2] = 0;
+   d = d + 4 | 0;
+  } while ((d | 0) < (h | 0));
+  d = i;
+  h = i;
+ } else {
+  Vb(d | 0, 0, 111 - h | 0) | 0;
+  h = b + 128 | 0;
+  d = h;
+ }
+ i = j;
+ i = Pb(c[i >> 2] | 0, c[i + 4 >> 2] | 0, 61) | 0;
+ Fb(b + 112 | 0, i, y);
+ j = Qb(c[j >> 2] | 0, c[j + 4 >> 2] | 0, 3) | 0;
+ j = Rb(j | 0, y | 0, e | 0, 0) | 0;
+ Fb(b + 120 | 0, j, y);
+ Bb(b, d);
+ if (!g) return;
+ d = 0;
+ do {
+  j = h + (d << 3) | 0;
+  Gb(f + (d << 3) | 0, c[j >> 2] | 0, c[j + 4 >> 2] | 0);
+  d = d + 1 | 0;
+ } while ((d | 0) != (g | 0));
+ return;
+}
+
+function ia(b, c, d, e) {
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ e = e | 0;
+ var f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0;
+ n = l;
+ l = l + 320 | 0;
+ s = n + 272 | 0;
+ p = n + 224 | 0;
+ q = n + 176 | 0;
+ o = n + 128 | 0;
+ r = n + 80 | 0;
+ f = n + 32 | 0;
+ g = n;
+ h = n + 312 | 0;
+ i = e + 64 | 0;
+ j = Z() | 0;
+ k = l;
+ l = l + ((1 * i | 0) + 15 & -16) | 0;
+ m = l;
+ l = l + ((1 * i | 0) + 15 & -16) | 0;
+ Ka(s, c);
+ Ga(r);
+ Va(p, s, r);
+ Ha(q, s, r);
+ Na(o, q);
+ Qa(f, p, o);
+ Wa(g, f);
+ f = b + 63 | 0;
+ c = a[f >> 0] | 0;
+ o = g + 31 | 0;
+ a[o >> 0] = a[o >> 0] | c & -128;
+ a[f >> 0] = c & 127;
+ f = k;
+ c = f + 64 | 0;
+ do {
+  a[f >> 0] = a[b >> 0] | 0;
+  f = f + 1 | 0;
+  b = b + 1 | 0;
+ } while ((f | 0) < (c | 0));
+ Tb(k + 64 | 0, d | 0, e | 0) | 0;
+ s = sb(m, h, k, i, 0, g) | 0;
+ Y(j | 0);
+ l = n;
+ return s | 0;
+}
+
+function Va(a, b, d) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0;
+ m = (c[b + 4 >> 2] | 0) - (c[d + 4 >> 2] | 0) | 0;
+ l = (c[b + 8 >> 2] | 0) - (c[d + 8 >> 2] | 0) | 0;
+ k = (c[b + 12 >> 2] | 0) - (c[d + 12 >> 2] | 0) | 0;
+ j = (c[b + 16 >> 2] | 0) - (c[d + 16 >> 2] | 0) | 0;
+ i = (c[b + 20 >> 2] | 0) - (c[d + 20 >> 2] | 0) | 0;
+ h = (c[b + 24 >> 2] | 0) - (c[d + 24 >> 2] | 0) | 0;
+ g = (c[b + 28 >> 2] | 0) - (c[d + 28 >> 2] | 0) | 0;
+ f = (c[b + 32 >> 2] | 0) - (c[d + 32 >> 2] | 0) | 0;
+ e = (c[b + 36 >> 2] | 0) - (c[d + 36 >> 2] | 0) | 0;
+ c[a >> 2] = (c[b >> 2] | 0) - (c[d >> 2] | 0);
+ c[a + 4 >> 2] = m;
+ c[a + 8 >> 2] = l;
+ c[a + 12 >> 2] = k;
+ c[a + 16 >> 2] = j;
+ c[a + 20 >> 2] = i;
+ c[a + 24 >> 2] = h;
+ c[a + 28 >> 2] = g;
+ c[a + 32 >> 2] = f;
+ c[a + 36 >> 2] = e;
+ return;
+}
+
+function Ha(a, b, d) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0, m = 0;
+ m = (c[d + 4 >> 2] | 0) + (c[b + 4 >> 2] | 0) | 0;
+ l = (c[d + 8 >> 2] | 0) + (c[b + 8 >> 2] | 0) | 0;
+ k = (c[d + 12 >> 2] | 0) + (c[b + 12 >> 2] | 0) | 0;
+ j = (c[d + 16 >> 2] | 0) + (c[b + 16 >> 2] | 0) | 0;
+ i = (c[d + 20 >> 2] | 0) + (c[b + 20 >> 2] | 0) | 0;
+ h = (c[d + 24 >> 2] | 0) + (c[b + 24 >> 2] | 0) | 0;
+ g = (c[d + 28 >> 2] | 0) + (c[b + 28 >> 2] | 0) | 0;
+ f = (c[d + 32 >> 2] | 0) + (c[b + 32 >> 2] | 0) | 0;
+ e = (c[d + 36 >> 2] | 0) + (c[b + 36 >> 2] | 0) | 0;
+ c[a >> 2] = (c[d >> 2] | 0) + (c[b >> 2] | 0);
+ c[a + 4 >> 2] = m;
+ c[a + 8 >> 2] = l;
+ c[a + 12 >> 2] = k;
+ c[a + 16 >> 2] = j;
+ c[a + 20 >> 2] = i;
+ c[a + 24 >> 2] = h;
+ c[a + 28 >> 2] = g;
+ c[a + 32 >> 2] = f;
+ c[a + 36 >> 2] = e;
+ return;
+}
+
+function Vb(b, d, e) {
+ b = b | 0;
+ d = d | 0;
+ e = e | 0;
+ var f = 0, g = 0, h = 0, i = 0;
+ h = b + e | 0;
+ d = d & 255;
+ if ((e | 0) >= 67) {
+  while (b & 3) {
+   a[b >> 0] = d;
+   b = b + 1 | 0;
+  }
+  f = h & -4 | 0;
+  g = f - 64 | 0;
+  i = d | d << 8 | d << 16 | d << 24;
+  while ((b | 0) <= (g | 0)) {
+   c[b >> 2] = i;
+   c[b + 4 >> 2] = i;
+   c[b + 8 >> 2] = i;
+   c[b + 12 >> 2] = i;
+   c[b + 16 >> 2] = i;
+   c[b + 20 >> 2] = i;
+   c[b + 24 >> 2] = i;
+   c[b + 28 >> 2] = i;
+   c[b + 32 >> 2] = i;
+   c[b + 36 >> 2] = i;
+   c[b + 40 >> 2] = i;
+   c[b + 44 >> 2] = i;
+   c[b + 48 >> 2] = i;
+   c[b + 52 >> 2] = i;
+   c[b + 56 >> 2] = i;
+   c[b + 60 >> 2] = i;
+   b = b + 64 | 0;
+  }
+  while ((b | 0) < (f | 0)) {
+   c[b >> 2] = i;
+   b = b + 4 | 0;
+  }
+ }
+ while ((b | 0) < (h | 0)) {
+  a[b >> 0] = d;
+  b = b + 1 | 0;
+ }
+ return h - e | 0;
+}
+
+function ka(b, d, e, f, g, h) {
+ b = b | 0;
+ d = d | 0;
+ e = e | 0;
+ f = f | 0;
+ g = g | 0;
+ h = h | 0;
+ var i = 0, j = 0, k = 0, m = 0, n = 0, o = 0, p = 0, q = 0, r = 0, s = 0;
+ q = l;
+ l = l + 320 | 0;
+ k = q + 128 | 0;
+ m = q + 64 | 0;
+ n = q;
+ o = q + 160 | 0;
+ p = k;
+ r = h + 32 | 0;
+ s = p + 32 | 0;
+ do {
+  a[p >> 0] = a[r >> 0] | 0;
+  p = p + 1 | 0;
+  r = r + 1 | 0;
+ } while ((p | 0) < (s | 0));
+ i = Rb(f | 0, g | 0, 64, 0) | 0;
+ j = y;
+ c[d >> 2] = i;
+ c[d + 4 >> 2] = j;
+ Ub(b + 64 | 0, e | 0, f | 0) | 0;
+ d = b + 32 | 0;
+ Ub(d | 0, h | 0, 32) | 0;
+ p = Rb(f | 0, g | 0, 32, 0) | 0;
+ ja(m, d, p, y) | 0;
+ p = d;
+ r = k;
+ s = p + 32 | 0;
+ do {
+  a[p >> 0] = a[r >> 0] | 0;
+  p = p + 1 | 0;
+  r = r + 1 | 0;
+ } while ((p | 0) < (s | 0));
+ wb(m);
+ lb(o, m);
+ hb(b, o);
+ ja(n, b, i, j) | 0;
+ wb(n);
+ tb(d, n, h, m);
+ l = q;
+ return 0;
+}
+
+function ha(b, d, e, f) {
+ b = b | 0;
+ d = d | 0;
+ e = e | 0;
+ f = f | 0;
+ var g = 0, h = 0, i = 0, j = 0, k = 0, m = 0, n = 0, o = 0, p = 0;
+ n = l;
+ l = l + 240 | 0;
+ g = n + 72 | 0;
+ h = n;
+ i = n + 64 | 0;
+ j = Z() | 0;
+ k = l;
+ l = l + ((1 * (f + 64 | 0) | 0) + 15 & -16) | 0;
+ m = i;
+ c[m >> 2] = 0;
+ c[m + 4 >> 2] = 0;
+ m = h;
+ o = d;
+ p = m + 32 | 0;
+ do {
+  a[m >> 0] = a[o >> 0] | 0;
+  m = m + 1 | 0;
+  o = o + 1 | 0;
+ } while ((m | 0) < (p | 0));
+ lb(g, d);
+ hb(h + 32 | 0, g);
+ d = a[h + 63 >> 0] & -128;
+ ka(k, i, e, f, 0, h) | 0;
+ m = b;
+ o = k;
+ p = m + 64 | 0;
+ do {
+  a[m >> 0] = a[o >> 0] | 0;
+  m = m + 1 | 0;
+  o = o + 1 | 0;
+ } while ((m | 0) < (p | 0));
+ p = b + 63 | 0;
+ a[p >> 0] = a[p >> 0] | d;
+ Y(j | 0);
+ l = n;
+ return;
+}
+
+function _a(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0;
+ h = l;
+ l = l + 240 | 0;
+ c = h + 192 | 0;
+ i = h + 144 | 0;
+ j = h + 96 | 0;
+ e = h + 48 | 0;
+ f = h;
+ g = a + 40 | 0;
+ Ka(g, b);
+ k = a + 80 | 0;
+ Ga(k);
+ Ua(c, g);
+ Qa(i, c, 976);
+ Va(c, c, k);
+ Ha(i, i, k);
+ Ua(j, i);
+ Qa(j, j, i);
+ Ua(a, j);
+ Qa(a, a, i);
+ Qa(a, a, c);
+ Sa(a, a);
+ Qa(a, a, j);
+ Qa(a, a, c);
+ Ua(e, a);
+ Qa(e, e, i);
+ Va(f, e, c);
+ do if (Pa(f) | 0) {
+  Ha(f, e, c);
+  if (!(Pa(f) | 0)) {
+   Qa(a, a, 1024);
+   break;
+  } else {
+   k = -1;
+   l = h;
+   return k | 0;
+  }
+ } while (0);
+ k = Oa(a) | 0;
+ if ((k | 0) == ((d[b + 31 >> 0] | 0) >>> 7 | 0)) Ra(a, a);
+ Qa(a + 120 | 0, a, g);
+ k = 0;
+ l = h;
+ return k | 0;
+}
+
+function mb(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ var d = 0, e = 0, f = 0;
+ d = l;
+ l = l + 128 | 0;
+ f = d;
+ e = nb(c) | 0;
+ c = c << 24 >> 24;
+ c = c - ((0 - (e & 255) & c) << 1) & 255;
+ kb(a);
+ pb(a, 1120 + (b * 960 | 0) | 0, ob(c, 1) | 0);
+ pb(a, 1120 + (b * 960 | 0) + 120 | 0, ob(c, 2) | 0);
+ pb(a, 1120 + (b * 960 | 0) + 240 | 0, ob(c, 3) | 0);
+ pb(a, 1120 + (b * 960 | 0) + 360 | 0, ob(c, 4) | 0);
+ pb(a, 1120 + (b * 960 | 0) + 480 | 0, ob(c, 5) | 0);
+ pb(a, 1120 + (b * 960 | 0) + 600 | 0, ob(c, 6) | 0);
+ pb(a, 1120 + (b * 960 | 0) + 720 | 0, ob(c, 7) | 0);
+ pb(a, 1120 + (b * 960 | 0) + 840 | 0, ob(c, 8) | 0);
+ Ja(f, a + 40 | 0);
+ Ja(f + 40 | 0, a);
+ Ra(f + 80 | 0, a + 80 | 0);
+ pb(a, f, e);
+ l = d;
+ return;
+}
+
+function Ra(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0;
+ l = 0 - (c[b + 4 >> 2] | 0) | 0;
+ k = 0 - (c[b + 8 >> 2] | 0) | 0;
+ j = 0 - (c[b + 12 >> 2] | 0) | 0;
+ i = 0 - (c[b + 16 >> 2] | 0) | 0;
+ h = 0 - (c[b + 20 >> 2] | 0) | 0;
+ g = 0 - (c[b + 24 >> 2] | 0) | 0;
+ f = 0 - (c[b + 28 >> 2] | 0) | 0;
+ e = 0 - (c[b + 32 >> 2] | 0) | 0;
+ d = 0 - (c[b + 36 >> 2] | 0) | 0;
+ c[a >> 2] = 0 - (c[b >> 2] | 0);
+ c[a + 4 >> 2] = l;
+ c[a + 8 >> 2] = k;
+ c[a + 12 >> 2] = j;
+ c[a + 16 >> 2] = i;
+ c[a + 20 >> 2] = h;
+ c[a + 24 >> 2] = g;
+ c[a + 28 >> 2] = f;
+ c[a + 32 >> 2] = e;
+ c[a + 36 >> 2] = d;
+ return;
+}
+
+function Ja(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, l = 0;
+ l = c[b + 4 >> 2] | 0;
+ k = c[b + 8 >> 2] | 0;
+ j = c[b + 12 >> 2] | 0;
+ i = c[b + 16 >> 2] | 0;
+ h = c[b + 20 >> 2] | 0;
+ g = c[b + 24 >> 2] | 0;
+ f = c[b + 28 >> 2] | 0;
+ e = c[b + 32 >> 2] | 0;
+ d = c[b + 36 >> 2] | 0;
+ c[a >> 2] = c[b >> 2];
+ c[a + 4 >> 2] = l;
+ c[a + 8 >> 2] = k;
+ c[a + 12 >> 2] = j;
+ c[a + 16 >> 2] = i;
+ c[a + 20 >> 2] = h;
+ c[a + 24 >> 2] = g;
+ c[a + 28 >> 2] = f;
+ c[a + 32 >> 2] = e;
+ c[a + 36 >> 2] = d;
+ return;
+}
+
+function Ab(a, b, d) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0;
+ h = a + 192 | 0;
+ if (!d) return;
+ g = a + 128 | 0;
+ e = c[h >> 2] & 127;
+ while (1) {
+  f = 128 - e | 0;
+  f = f >>> 0 > d >>> 0 ? d : f;
+  Tb(a + e | 0, b | 0, f | 0) | 0;
+  e = f + e | 0;
+  d = d - f | 0;
+  if ((e | 0) == 128) {
+   Bb(a, g);
+   e = 0;
+  }
+  j = h;
+  j = Rb(c[j >> 2] | 0, c[j + 4 >> 2] | 0, f | 0, 0) | 0;
+  i = h;
+  c[i >> 2] = j;
+  c[i + 4 >> 2] = y;
+  if (!d) break; else b = b + f | 0;
+ }
+ return;
+}
+
+function Cb(a) {
+ a = a | 0;
+ var b = 0, c = 0, e = 0, f = 0, g = 0, h = 0, i = 0;
+ g = Qb(d[a >> 0] | 0 | 0, 0, 56) | 0;
+ i = y;
+ h = Qb(d[a + 1 >> 0] | 0 | 0, 0, 48) | 0;
+ i = y | i;
+ f = Qb(d[a + 2 >> 0] | 0 | 0, 0, 40) | 0;
+ i = i | y | (d[a + 3 >> 0] | 0);
+ e = Qb(d[a + 4 >> 0] | 0 | 0, 0, 24) | 0;
+ i = i | y;
+ c = Qb(d[a + 5 >> 0] | 0 | 0, 0, 16) | 0;
+ i = i | y;
+ b = Qb(d[a + 6 >> 0] | 0 | 0, 0, 8) | 0;
+ y = i | y;
+ return h | g | f | e | c | b | (d[a + 7 >> 0] | 0) | 0;
+}
+
+function la(b, c, d) {
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ var e = 0, f = 0, g = 0, h = 0, i = 0, j = 0, k = 0, m = 0;
+ m = l;
+ l = l + 368 | 0;
+ f = m + 288 | 0;
+ g = m + 208 | 0;
+ h = m + 112 | 0;
+ i = m + 32 | 0;
+ j = m;
+ k = j;
+ e = k + 32 | 0;
+ do {
+  a[k >> 0] = a[c >> 0] | 0;
+  k = k + 1 | 0;
+  c = c + 1 | 0;
+ } while ((k | 0) < (e | 0));
+ ma(f, d);
+ na(g, h, j, f);
+ oa(i, h);
+ pa(h, g, i);
+ qa(b, h);
+ l = m;
+ return 0;
+}
+
+function Gb(b, c, d) {
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ var e = 0;
+ e = Pb(c | 0, d | 0, 56) | 0;
+ a[b >> 0] = e;
+ e = Pb(c | 0, d | 0, 48) | 0;
+ a[b + 1 >> 0] = e;
+ e = Pb(c | 0, d | 0, 40) | 0;
+ a[b + 2 >> 0] = e;
+ a[b + 3 >> 0] = d;
+ e = Pb(c | 0, d | 0, 24) | 0;
+ a[b + 4 >> 0] = e;
+ e = Pb(c | 0, d | 0, 16) | 0;
+ a[b + 5 >> 0] = e;
+ d = Pb(c | 0, d | 0, 8) | 0;
+ a[b + 6 >> 0] = d;
+ a[b + 7 >> 0] = c;
+ return;
+}
+
+function Fb(b, c, d) {
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ var e = 0;
+ e = Pb(c | 0, d | 0, 56) | 0;
+ a[b >> 0] = e;
+ e = Pb(c | 0, d | 0, 48) | 0;
+ a[b + 1 >> 0] = e;
+ e = Pb(c | 0, d | 0, 40) | 0;
+ a[b + 2 >> 0] = e;
+ a[b + 3 >> 0] = d;
+ e = Pb(c | 0, d | 0, 24) | 0;
+ a[b + 4 >> 0] = e;
+ e = Pb(c | 0, d | 0, 16) | 0;
+ a[b + 5 >> 0] = e;
+ d = Pb(c | 0, d | 0, 8) | 0;
+ a[b + 6 >> 0] = d;
+ a[b + 7 >> 0] = c;
+ return;
+}
+
+function qb(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0;
+ d = l;
+ l = l + 48 | 0;
+ f = d;
+ g = b + 40 | 0;
+ Ha(a, g, b);
+ h = a + 40 | 0;
+ Va(h, g, b);
+ g = a + 80 | 0;
+ Qa(g, a, c + 40 | 0);
+ Qa(h, h, c);
+ e = a + 120 | 0;
+ Qa(e, c + 120 | 0, b + 120 | 0);
+ Qa(a, b + 80 | 0, c + 80 | 0);
+ Ha(f, a, a);
+ Va(a, g, h);
+ Ha(h, g, h);
+ Va(g, f, e);
+ Ha(e, f, e);
+ l = d;
+ return;
+}
+
+function Xa(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0;
+ d = l;
+ l = l + 48 | 0;
+ f = d;
+ g = b + 40 | 0;
+ Ha(a, g, b);
+ h = a + 40 | 0;
+ Va(h, g, b);
+ g = a + 80 | 0;
+ Qa(g, a, c);
+ Qa(h, h, c + 40 | 0);
+ e = a + 120 | 0;
+ Qa(e, c + 120 | 0, b + 120 | 0);
+ Qa(a, b + 80 | 0, c + 80 | 0);
+ Ha(f, a, a);
+ Va(a, g, h);
+ Ha(h, g, h);
+ Ha(g, f, e);
+ Va(e, f, e);
+ l = d;
+ return;
+}
+
+function ab(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0;
+ d = l;
+ l = l + 48 | 0;
+ f = d;
+ g = b + 40 | 0;
+ Ha(a, g, b);
+ h = a + 40 | 0;
+ Va(h, g, b);
+ g = a + 80 | 0;
+ Qa(g, a, c + 40 | 0);
+ Qa(h, h, c);
+ e = a + 120 | 0;
+ Qa(e, c + 80 | 0, b + 120 | 0);
+ c = b + 80 | 0;
+ Ha(f, c, c);
+ Va(a, g, h);
+ Ha(h, g, h);
+ Va(g, f, e);
+ Ha(e, f, e);
+ l = d;
+ return;
+}
+
+function $a(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ var d = 0, e = 0, f = 0, g = 0, h = 0;
+ d = l;
+ l = l + 48 | 0;
+ f = d;
+ g = b + 40 | 0;
+ Ha(a, g, b);
+ h = a + 40 | 0;
+ Va(h, g, b);
+ g = a + 80 | 0;
+ Qa(g, a, c);
+ Qa(h, h, c + 40 | 0);
+ e = a + 120 | 0;
+ Qa(e, c + 80 | 0, b + 120 | 0);
+ c = b + 80 | 0;
+ Ha(f, c, c);
+ Va(a, g, h);
+ Ha(h, g, h);
+ Ha(g, f, e);
+ Va(e, f, e);
+ l = d;
+ return;
+}
+
+function Lb() {}
+function Mb(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, d = 0, e = 0, f = 0;
+ f = a & 65535;
+ e = b & 65535;
+ c = N(e, f) | 0;
+ d = a >>> 16;
+ a = (c >>> 16) + (N(e, d) | 0) | 0;
+ e = b >>> 16;
+ b = N(e, f) | 0;
+ return (y = (a >>> 16) + (N(e, d) | 0) + (((a & 65535) + b | 0) >>> 16) | 0, a + b << 16 | c & 65535 | 0) | 0;
+}
+
+function eb(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, d = 0, e = 0, f = 0, g = 0, h = 0;
+ c = l;
+ l = l + 48 | 0;
+ g = c;
+ Ua(a, b);
+ d = a + 80 | 0;
+ h = b + 40 | 0;
+ Ua(d, h);
+ e = a + 120 | 0;
+ Ta(e, b + 80 | 0);
+ f = a + 40 | 0;
+ Ha(f, b, h);
+ Ua(g, f);
+ Ha(f, d, a);
+ Va(d, d, a);
+ Va(a, g, f);
+ Va(e, e, d);
+ l = c;
+ return;
+}
+
+function Ub(b, c, d) {
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ var e = 0;
+ if ((c | 0) < (b | 0) & (b | 0) < (c + d | 0)) {
+  e = b;
+  c = c + d | 0;
+  b = b + d | 0;
+  while ((d | 0) > 0) {
+   b = b - 1 | 0;
+   c = c - 1 | 0;
+   d = d - 1 | 0;
+   a[b >> 0] = a[c >> 0] | 0;
+  }
+  b = e;
+ } else Tb(b, c, d) | 0;
+ return b | 0;
+}
+
+function rb(b, c) {
+ b = b | 0;
+ c = c | 0;
+ var e = 0, f = 0, g = 0, h = 0;
+ e = l;
+ l = l + 144 | 0;
+ h = e + 96 | 0;
+ f = e + 48 | 0;
+ g = e;
+ Na(h, c + 80 | 0);
+ Qa(f, c, h);
+ Qa(g, c + 40 | 0, h);
+ Wa(b, g);
+ f = (Oa(f) | 0) << 7;
+ c = b + 31 | 0;
+ a[c >> 0] = f ^ (d[c >> 0] | 0);
+ l = e;
+ return;
+}
+
+function hb(b, c) {
+ b = b | 0;
+ c = c | 0;
+ var e = 0, f = 0, g = 0, h = 0;
+ e = l;
+ l = l + 144 | 0;
+ h = e + 96 | 0;
+ f = e + 48 | 0;
+ g = e;
+ Na(h, c + 80 | 0);
+ Qa(f, c, h);
+ Qa(g, c + 40 | 0, h);
+ Wa(b, g);
+ f = (Oa(f) | 0) << 7;
+ c = b + 31 | 0;
+ a[c >> 0] = f ^ (d[c >> 0] | 0);
+ l = e;
+ return;
+}
+
+function Wb(a) {
+ a = a | 0;
+ var b = 0, d = 0;
+ d = c[i >> 2] | 0;
+ b = d + a | 0;
+ if ((a | 0) > 0 & (b | 0) < (d | 0) | (b | 0) < 0) {
+  V() | 0;
+  W(12);
+  return -1;
+ }
+ c[i >> 2] = b;
+ if ((b | 0) > (U() | 0)) if (!(T() | 0)) {
+  c[i >> 2] = d;
+  W(12);
+  return -1;
+ }
+ return d | 0;
+}
+
+function pa(a, b, d) {
+ a = a | 0;
+ b = b | 0;
+ d = d | 0;
+ var e = 0, f = 0;
+ e = l;
+ l = l + 160 | 0;
+ f = e;
+ ta(f, b, d);
+ ua(f);
+ va(f);
+ b = f;
+ d = a + 80 | 0;
+ do {
+  c[a >> 2] = c[b >> 2];
+  a = a + 4 | 0;
+  b = b + 4 | 0;
+ } while ((a | 0) < (d | 0));
+ l = e;
+ return;
+}
+
+function yb(a) {
+ a = a | 0;
+ var b = 0, c = 0, e = 0, f = 0;
+ c = d[a >> 0] | 0;
+ e = Qb(d[a + 1 >> 0] | 0 | 0, 0, 8) | 0;
+ f = y;
+ b = Qb(d[a + 2 >> 0] | 0 | 0, 0, 16) | 0;
+ f = f | y;
+ a = Qb(d[a + 3 >> 0] | 0 | 0, 0, 24) | 0;
+ y = f | y;
+ return e | c | b | a | 0;
+}
+
+function vb(a) {
+ a = a | 0;
+ var b = 0, c = 0, e = 0, f = 0;
+ c = d[a >> 0] | 0;
+ e = Qb(d[a + 1 >> 0] | 0 | 0, 0, 8) | 0;
+ f = y;
+ b = Qb(d[a + 2 >> 0] | 0 | 0, 0, 16) | 0;
+ f = f | y;
+ a = Qb(d[a + 3 >> 0] | 0 | 0, 0, 24) | 0;
+ y = f | y;
+ return e | c | b | a | 0;
+}
+
+function La(a) {
+ a = a | 0;
+ var b = 0, c = 0, e = 0, f = 0;
+ c = d[a >> 0] | 0;
+ e = Qb(d[a + 1 >> 0] | 0 | 0, 0, 8) | 0;
+ f = y;
+ b = Qb(d[a + 2 >> 0] | 0 | 0, 0, 16) | 0;
+ f = f | y;
+ a = Qb(d[a + 3 >> 0] | 0 | 0, 0, 24) | 0;
+ y = f | y;
+ return e | c | b | a | 0;
+}
+
+function ya(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var d = 0, e = 0;
+ e = l;
+ l = l + 160 | 0;
+ d = e;
+ za(d, b);
+ ua(d);
+ va(d);
+ b = d;
+ d = a + 80 | 0;
+ do {
+  c[a >> 2] = c[b >> 2];
+  a = a + 4 | 0;
+  b = b + 4 | 0;
+ } while ((a | 0) < (d | 0));
+ l = e;
+ return;
+}
+
+function zb(a) {
+ a = a | 0;
+ var b = 0, d = 0, e = 0;
+ b = a + 128 | 0;
+ d = 31840;
+ e = b + 64 | 0;
+ do {
+  c[b >> 2] = c[d >> 2];
+  b = b + 4 | 0;
+  d = d + 4 | 0;
+ } while ((b | 0) < (e | 0));
+ e = a + 192 | 0;
+ c[e >> 2] = 0;
+ c[e + 4 >> 2] = 0;
+ return;
+}
+
+function cb(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, d = 0, e = 0;
+ d = b + 120 | 0;
+ Qa(a, b, d);
+ c = b + 40 | 0;
+ e = b + 80 | 0;
+ Qa(a + 40 | 0, c, e);
+ Qa(a + 80 | 0, e, d);
+ Qa(a + 120 | 0, b, c);
+ return;
+}
+
+function Nb(a, b, c, d) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ var e = 0, f = 0;
+ e = a;
+ f = c;
+ c = Mb(e, f) | 0;
+ a = y;
+ return (y = (N(b, f) | 0) + (N(d, e) | 0) + a | a & 0, c | 0 | 0) | 0;
+}
+
+function Ob(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ if ((c | 0) < 32) {
+  y = b >> c;
+  return a >>> c | (b & (1 << c) - 1) << 32 - c;
+ }
+ y = (b | 0) < 0 ? -1 : 0;
+ return b >> c - 32 | 0;
+}
+
+function xb(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ var d = 0;
+ b = Qb(b & 255 | 0, 0, 8) | 0;
+ d = y;
+ c = Qb(c & 255 | 0, 0, 16) | 0;
+ y = d | y;
+ return b | a & 255 | c | 0;
+}
+
+function ub(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ var d = 0;
+ b = Qb(b & 255 | 0, 0, 8) | 0;
+ d = y;
+ c = Qb(c & 255 | 0, 0, 16) | 0;
+ y = d | y;
+ return b | a & 255 | c | 0;
+}
+
+function ib(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0;
+ c = b + 40 | 0;
+ Ha(a, c, b);
+ Va(a + 40 | 0, c, b);
+ Ja(a + 80 | 0, b + 80 | 0);
+ Qa(a + 120 | 0, b + 120 | 0, 1072);
+ return;
+}
+
+function Qb(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ if ((c | 0) < 32) {
+  y = b << c | (a & (1 << c) - 1 << 32 - c) >>> 32 - c;
+  return a << c;
+ }
+ y = a << c - 32;
+ return 0;
+}
+
+function Ma(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ var d = 0;
+ b = Qb(b & 255 | 0, 0, 8) | 0;
+ d = y;
+ c = Qb(c & 255 | 0, 0, 16) | 0;
+ y = d | y;
+ return b | a & 255 | c | 0;
+}
+
+function Pb(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ if ((c | 0) < 32) {
+  y = b >>> c;
+  return a >>> c | (b & (1 << c) - 1) << 32 - c;
+ }
+ y = 0;
+ return b >>> c - 32 | 0;
+}
+
+function bb(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, d = 0;
+ c = b + 120 | 0;
+ Qa(a, b, c);
+ d = b + 80 | 0;
+ Qa(a + 40 | 0, b + 40 | 0, d);
+ Qa(a + 80 | 0, d, c);
+ return;
+}
+
+function ja(a, b, c, d) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ var e = 0;
+ d = l;
+ l = l + 208 | 0;
+ e = d;
+ zb(e);
+ Ab(e, b, c);
+ Hb(e, a);
+ l = d;
+ return 0;
+}
+
+function Ga(a) {
+ a = a | 0;
+ var b = 0;
+ c[a >> 2] = 1;
+ a = a + 4 | 0;
+ b = a + 36 | 0;
+ do {
+  c[a >> 2] = 0;
+  a = a + 4 | 0;
+ } while ((a | 0) < (b | 0));
+ return;
+}
+
+function pb(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ c = c & 255;
+ Ia(a, b, c);
+ Ia(a + 40 | 0, b + 40 | 0, c);
+ Ia(a + 80 | 0, b + 80 | 0, c);
+ return;
+}
+
+function sa(a, b) {
+ a = a | 0;
+ b = b | 0;
+ b = ~a ^ b;
+ b = b << 16 & b;
+ b = b << 8 & b;
+ b = b << 4 & b;
+ b = b << 2 & b;
+ return (b << 1 & b) >> 31 | 0;
+}
+
+function Sb(a, b, c, d) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ d = b - d - (c >>> 0 > a >>> 0 | 0) >>> 0;
+ return (y = d, a - c >>> 0 | 0) | 0;
+}
+
+function Rb(a, b, c, d) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ d = d | 0;
+ c = a + c >>> 0;
+ return (y = b + d + (c >>> 0 < a >>> 0 | 0) >>> 0, c | 0) | 0;
+}
+
+function xa(a, b) {
+ a = a | 0;
+ b = b | 0;
+ b = Rb(b >> 31 >>> 7 | 0, 0, a | 0, b | 0) | 0;
+ b = Ob(b | 0, y | 0, 25) | 0;
+ return b | 0;
+}
+
+function wa(a, b) {
+ a = a | 0;
+ b = b | 0;
+ b = Rb(b >> 31 >>> 6 | 0, 0, a | 0, b | 0) | 0;
+ b = Ob(b | 0, y | 0, 26) | 0;
+ return b | 0;
+}
+
+function Pa(a) {
+ a = a | 0;
+ var b = 0, c = 0;
+ b = l;
+ l = l + 32 | 0;
+ c = b;
+ Wa(c, a);
+ a = ga(c, 32544) | 0;
+ l = b;
+ return a | 0;
+}
+
+function Fa(a) {
+ a = a | 0;
+ var b = 0;
+ b = a + 40 | 0;
+ do {
+  c[a >> 2] = 0;
+  a = a + 4 | 0;
+ } while ((a | 0) < (b | 0));
+ return;
+}
+
+function gb(a, b) {
+ a = a | 0;
+ b = b | 0;
+ var c = 0, d = 0;
+ c = l;
+ l = l + 128 | 0;
+ d = c;
+ jb(d, b);
+ eb(a, d);
+ l = c;
+ return;
+}
+
+function Oa(b) {
+ b = b | 0;
+ var c = 0, d = 0;
+ d = l;
+ l = l + 32 | 0;
+ c = d;
+ Wa(c, b);
+ l = d;
+ return a[c >> 0] & 1 | 0;
+}
+
+function jb(a, b) {
+ a = a | 0;
+ b = b | 0;
+ Ja(a, b);
+ Ja(a + 40 | 0, b + 40 | 0);
+ Ja(a + 80 | 0, b + 80 | 0);
+ return;
+}
+
+function fb(a) {
+ a = a | 0;
+ Fa(a);
+ Ga(a + 40 | 0);
+ Ga(a + 80 | 0);
+ Fa(a + 120 | 0);
+ return;
+}
+
+function ob(a, b) {
+ a = a | 0;
+ b = b | 0;
+ return (((b ^ a) & 255) + -1 | 0) >>> 31 & 255 | 0;
+}
+function $(a) {
+ a = a | 0;
+ var b = 0;
+ b = l;
+ l = l + a | 0;
+ l = l + 15 & -16;
+ return b | 0;
+}
+
+function Db(a, b, c) {
+ a = a | 0;
+ b = b | 0;
+ c = c | 0;
+ Eb(a, 0, 0, b, c);
+ return;
+}
+
+function kb(a) {
+ a = a | 0;
+ Ga(a);
+ Ga(a + 40 | 0);
+ Fa(a + 80 | 0);
+ return;
+}
+
+function db(a) {
+ a = a | 0;
+ Fa(a);
+ Ga(a + 40 | 0);
+ Ga(a + 80 | 0);
+ return;
+}
+
+function da(a, b) {
+ a = a | 0;
+ b = b | 0;
+ if (!n) {
+  n = a;
+  o = b;
+ }
+}
+
+function Hb(a, b) {
+ a = a | 0;
+ b = b | 0;
+ Db(a, b, 8);
+ zb(a);
+ return;
+}
+
+function ra(a) {
+ a = a | 0;
+ return ~(a + -67108845 >> 31) | 0;
+}
+
+function ca(a, b) {
+ a = a | 0;
+ b = b | 0;
+ l = a;
+ m = b;
+}
+
+function nb(a) {
+ a = a | 0;
+ return (a & 255) >>> 7 | 0;
+}
+
+function ea(a) {
+ a = a | 0;
+ y = a;
+}
+
+function ba(a) {
+ a = a | 0;
+ l = a;
+}
+
+function fa() {
+ return y | 0;
+}
+
+function aa() {
+ return l | 0;
+}
+
+function Kb() {
+ return 33072;
+}
 
 // EMSCRIPTEN_END_FUNCS
-var ha=[wc,Vb];var ia=[xc,Wb,Xb,ac];return{stackSave:ka,getTempRet0:pa,setThrew:na,_bitshift64Lshr:nc,_i64Subtract:kc,_bitshift64Shl:oc,_curve25519_verify:sa,_fflush:gc,_bitshift64Ashr:jc,_memset:mc,_sbrk:rc,_memcpy:sc,stackAlloc:ja,___muldi3:qc,_crypto_sign_ed25519_ref10_ge_scalarmult_base:vb,_curve25519_sign:ra,setTempRet0:oa,_i64Add:lc,dynCall_iiii:vc,dynCall_ii:uc,_emscripten_get_global_libc:Ub,_free:Tb,___errno_location:Zb,_curve25519_donna:va,runPostSets:ic,establishStackSpace:ma,_memmove:tc,_sph_sha512_init:Jb,stackRestore:la,_malloc:Sb}})
+
+ return {
+  ___errno_location: Kb,
+  ___muldi3: Nb,
+  _bitshift64Ashr: Ob,
+  _bitshift64Lshr: Pb,
+  _bitshift64Shl: Qb,
+  _crypto_sign_ed25519_ref10_ge_scalarmult_base: lb,
+  _curve25519_donna: la,
+  _curve25519_sign: ha,
+  _curve25519_verify: ia,
+  _free: Jb,
+  _i64Add: Rb,
+  _i64Subtract: Sb,
+  _malloc: Ib,
+  _memcpy: Tb,
+  _memmove: Ub,
+  _memset: Vb,
+  _sbrk: Wb,
+  _sph_sha512_init: zb,
+  establishStackSpace: ca,
+  getTempRet0: fa,
+  runPostSets: Lb,
+  setTempRet0: ea,
+  setThrew: da,
+  stackAlloc: $,
+  stackRestore: ba,
+  stackSave: aa
+ };
+})
 
 
 // EMSCRIPTEN_END_ASM
-(Module.asmGlobalArg,Module.asmLibraryArg,buffer);var stackSave=Module["stackSave"]=asm["stackSave"];var _curve25519_sign=Module["_curve25519_sign"]=asm["_curve25519_sign"];var getTempRet0=Module["getTempRet0"]=asm["getTempRet0"];var _bitshift64Lshr=Module["_bitshift64Lshr"]=asm["_bitshift64Lshr"];var _i64Subtract=Module["_i64Subtract"]=asm["_i64Subtract"];var _bitshift64Shl=Module["_bitshift64Shl"]=asm["_bitshift64Shl"];var _curve25519_verify=Module["_curve25519_verify"]=asm["_curve25519_verify"];var _fflush=Module["_fflush"]=asm["_fflush"];var _bitshift64Ashr=Module["_bitshift64Ashr"]=asm["_bitshift64Ashr"];var _memset=Module["_memset"]=asm["_memset"];var _sbrk=Module["_sbrk"]=asm["_sbrk"];var _memcpy=Module["_memcpy"]=asm["_memcpy"];var stackAlloc=Module["stackAlloc"]=asm["stackAlloc"];var ___muldi3=Module["___muldi3"]=asm["___muldi3"];var _crypto_sign_ed25519_ref10_ge_scalarmult_base=Module["_crypto_sign_ed25519_ref10_ge_scalarmult_base"]=asm["_crypto_sign_ed25519_ref10_ge_scalarmult_base"];var _curve25519_donna=Module["_curve25519_donna"]=asm["_curve25519_donna"];var setTempRet0=Module["setTempRet0"]=asm["setTempRet0"];var _i64Add=Module["_i64Add"]=asm["_i64Add"];var _emscripten_get_global_libc=Module["_emscripten_get_global_libc"]=asm["_emscripten_get_global_libc"];var ___errno_location=Module["___errno_location"]=asm["___errno_location"];var _free=Module["_free"]=asm["_free"];var runPostSets=Module["runPostSets"]=asm["runPostSets"];var setThrew=Module["setThrew"]=asm["setThrew"];var establishStackSpace=Module["establishStackSpace"]=asm["establishStackSpace"];var _memmove=Module["_memmove"]=asm["_memmove"];var _sph_sha512_init=Module["_sph_sha512_init"]=asm["_sph_sha512_init"];var stackRestore=Module["stackRestore"]=asm["stackRestore"];var _malloc=Module["_malloc"]=asm["_malloc"];var dynCall_ii=Module["dynCall_ii"]=asm["dynCall_ii"];var dynCall_iiii=Module["dynCall_iiii"]=asm["dynCall_iiii"];Runtime.stackAlloc=Module["stackAlloc"];Runtime.stackSave=Module["stackSave"];Runtime.stackRestore=Module["stackRestore"];Runtime.establishStackSpace=Module["establishStackSpace"];Runtime.setTempRet0=Module["setTempRet0"];Runtime.getTempRet0=Module["getTempRet0"];Module["asm"]=asm;function ExitStatus(status){this.name="ExitStatus";this.message="Program terminated with exit("+status+")";this.status=status}ExitStatus.prototype=new Error;ExitStatus.prototype.constructor=ExitStatus;var initialStackTop;var preloadStartTime=null;var calledMain=false;dependenciesFulfilled=function runCaller(){if(!Module["calledRun"])run();if(!Module["calledRun"])dependenciesFulfilled=runCaller};Module["callMain"]=Module.callMain=function callMain(args){args=args||[];ensureInitRuntime();var argc=args.length+1;function pad(){for(var i=0;i<4-1;i++){argv.push(0)}}var argv=[allocate(intArrayFromString(Module["thisProgram"]),"i8",ALLOC_NORMAL)];pad();for(var i=0;i<argc-1;i=i+1){argv.push(allocate(intArrayFromString(args[i]),"i8",ALLOC_NORMAL));pad()}argv.push(0);argv=allocate(argv,"i32",ALLOC_NORMAL);try{var ret=Module["_main"](argc,argv,0);exit(ret,true)}catch(e){if(e instanceof ExitStatus){return}else if(e=="SimulateInfiniteLoop"){Module["noExitRuntime"]=true;return}else{var toLog=e;if(e&&typeof e==="object"&&e.stack){toLog=[e,e.stack]}Module.printErr("exception thrown: "+toLog);Module["quit"](1,e)}}finally{calledMain=true}};function run(args){args=args||Module["arguments"];if(preloadStartTime===null)preloadStartTime=Date.now();if(runDependencies>0){return}preRun();if(runDependencies>0)return;if(Module["calledRun"])return;function doRun(){if(Module["calledRun"])return;Module["calledRun"]=true;if(ABORT)return;ensureInitRuntime();preMain();if(Module["onRuntimeInitialized"])Module["onRuntimeInitialized"]();if(Module["_main"]&&shouldRunNow)Module["callMain"](args);postRun()}if(Module["setStatus"]){Module["setStatus"]("Running...");setTimeout((function(){setTimeout((function(){Module["setStatus"]("")}),1);doRun()}),1)}else{doRun()}}Module["run"]=Module.run=run;function exit(status,implicit){if(implicit&&Module["noExitRuntime"]){return}if(Module["noExitRuntime"]){}else{ABORT=true;EXITSTATUS=status;STACKTOP=initialStackTop;exitRuntime();if(Module["onExit"])Module["onExit"](status)}if(ENVIRONMENT_IS_NODE){process["exit"](status)}Module["quit"](status,new ExitStatus(status))}Module["exit"]=Module.exit=exit;var abortDecorators=[];function abort(what){if(Module["onAbort"]){Module["onAbort"](what)}if(what!==undefined){Module.print(what);Module.printErr(what);what=JSON.stringify(what)}else{what=""}ABORT=true;EXITSTATUS=1;var extra="\nIf this abort() is unexpected, build with -s ASSERTIONS=1 which can give more information.";var output="abort("+what+") at "+stackTrace()+extra;if(abortDecorators){abortDecorators.forEach((function(decorator){output=decorator(output,what)}))}throw output}Module["abort"]=Module.abort=abort;if(Module["preInit"]){if(typeof Module["preInit"]=="function")Module["preInit"]=[Module["preInit"]];while(Module["preInit"].length>0){Module["preInit"].pop()()}}var shouldRunNow=true;if(Module["noInitialRun"]){shouldRunNow=false}run()
-
-
-
-
-
-// vim: ts=4:sw=4:expandtab
-/* global Module */
-
-(function() {
-    'use strict';
-
-    const ns = self.libsignal = self.libsignal || {};
-
-    // Insert some bytes into the emscripten memory and return a pointer
-    function _allocate(bytes) {
-        var address = Module._malloc(bytes.length);
-        Module.HEAPU8.set(bytes, address);
-
-        return address;
+(Module.asmGlobalArg, Module.asmLibraryArg, buffer);
+var ___errno_location = Module["___errno_location"] = asm["___errno_location"];
+var ___muldi3 = Module["___muldi3"] = asm["___muldi3"];
+var _bitshift64Ashr = Module["_bitshift64Ashr"] = asm["_bitshift64Ashr"];
+var _bitshift64Lshr = Module["_bitshift64Lshr"] = asm["_bitshift64Lshr"];
+var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
+var _crypto_sign_ed25519_ref10_ge_scalarmult_base = Module["_crypto_sign_ed25519_ref10_ge_scalarmult_base"] = asm["_crypto_sign_ed25519_ref10_ge_scalarmult_base"];
+var _curve25519_donna = Module["_curve25519_donna"] = asm["_curve25519_donna"];
+var _curve25519_sign = Module["_curve25519_sign"] = asm["_curve25519_sign"];
+var _curve25519_verify = Module["_curve25519_verify"] = asm["_curve25519_verify"];
+var _free = Module["_free"] = asm["_free"];
+var _i64Add = Module["_i64Add"] = asm["_i64Add"];
+var _i64Subtract = Module["_i64Subtract"] = asm["_i64Subtract"];
+var _malloc = Module["_malloc"] = asm["_malloc"];
+var _memcpy = Module["_memcpy"] = asm["_memcpy"];
+var _memmove = Module["_memmove"] = asm["_memmove"];
+var _memset = Module["_memset"] = asm["_memset"];
+var _sbrk = Module["_sbrk"] = asm["_sbrk"];
+var _sph_sha512_init = Module["_sph_sha512_init"] = asm["_sph_sha512_init"];
+var establishStackSpace = Module["establishStackSpace"] = asm["establishStackSpace"];
+var getTempRet0 = Module["getTempRet0"] = asm["getTempRet0"];
+var runPostSets = Module["runPostSets"] = asm["runPostSets"];
+var setTempRet0 = Module["setTempRet0"] = asm["setTempRet0"];
+var setThrew = Module["setThrew"] = asm["setThrew"];
+var stackAlloc = Module["stackAlloc"] = asm["stackAlloc"];
+var stackRestore = Module["stackRestore"] = asm["stackRestore"];
+var stackSave = Module["stackSave"] = asm["stackSave"];
+Module["asm"] = asm;
+if (memoryInitializer) {
+ if (!isDataURI(memoryInitializer)) {
+  memoryInitializer = locateFile(memoryInitializer);
+ }
+ if (ENVIRONMENT_IS_NODE || ENVIRONMENT_IS_SHELL) {
+  var data = Module["readBinary"](memoryInitializer);
+  HEAPU8.set(data, GLOBAL_BASE);
+ } else {
+  addRunDependency("memory initializer");
+  var applyMemoryInitializer = (function(data) {
+   if (data.byteLength) data = new Uint8Array(data);
+   HEAPU8.set(data, GLOBAL_BASE);
+   if (Module["memoryInitializerRequest"]) delete Module["memoryInitializerRequest"].response;
+   removeRunDependency("memory initializer");
+  });
+  function doBrowserLoad() {
+   Module["readAsync"](memoryInitializer, applyMemoryInitializer, (function() {
+    throw "could not load memory initializer " + memoryInitializer;
+   }));
+  }
+  var memoryInitializerBytes = tryParseAsDataURI(memoryInitializer);
+  if (memoryInitializerBytes) {
+   applyMemoryInitializer(memoryInitializerBytes.buffer);
+  } else if (Module["memoryInitializerRequest"]) {
+   function useRequest() {
+    var request = Module["memoryInitializerRequest"];
+    var response = request.response;
+    if (request.status !== 200 && request.status !== 0) {
+     var data = tryParseAsDataURI(Module["memoryInitializerRequestURL"]);
+     if (data) {
+      response = data.buffer;
+     } else {
+      console.warn("a problem seems to have happened with Module.memoryInitializerRequest, status: " + request.status + ", retrying " + memoryInitializer);
+      doBrowserLoad();
+      return;
+     }
     }
+    applyMemoryInitializer(response);
+   }
+   if (Module["memoryInitializerRequest"].response) {
+    setTimeout(useRequest, 0);
+   } else {
+    Module["memoryInitializerRequest"].addEventListener("load", useRequest);
+   }
+  } else {
+   doBrowserLoad();
+  }
+ }
+}
+function ExitStatus(status) {
+ this.name = "ExitStatus";
+ this.message = "Program terminated with exit(" + status + ")";
+ this.status = status;
+}
+ExitStatus.prototype = new Error;
+ExitStatus.prototype.constructor = ExitStatus;
+var initialStackTop;
+dependenciesFulfilled = function runCaller() {
+ if (!Module["calledRun"]) run();
+ if (!Module["calledRun"]) dependenciesFulfilled = runCaller;
+};
+function run(args) {
+ args = args || Module["arguments"];
+ if (runDependencies > 0) {
+  return;
+ }
+ preRun();
+ if (runDependencies > 0) return;
+ if (Module["calledRun"]) return;
+ function doRun() {
+  if (Module["calledRun"]) return;
+  Module["calledRun"] = true;
+  if (ABORT) return;
+  ensureInitRuntime();
+  preMain();
+  if (Module["onRuntimeInitialized"]) Module["onRuntimeInitialized"]();
+  postRun();
+ }
+ if (Module["setStatus"]) {
+  Module["setStatus"]("Running...");
+  setTimeout((function() {
+   setTimeout((function() {
+    Module["setStatus"]("");
+   }), 1);
+   doRun();
+  }), 1);
+ } else {
+  doRun();
+ }
+}
+Module["run"] = run;
+function abort(what) {
+ if (Module["onAbort"]) {
+  Module["onAbort"](what);
+ }
+ if (what !== undefined) {
+  out(what);
+  err(what);
+  what = JSON.stringify(what);
+ } else {
+  what = "";
+ }
+ ABORT = true;
+ EXITSTATUS = 1;
+ throw "abort(" + what + "). Build with -s ASSERTIONS=1 for more info.";
+}
+Module["abort"] = abort;
+if (Module["preInit"]) {
+ if (typeof Module["preInit"] == "function") Module["preInit"] = [ Module["preInit"] ];
+ while (Module["preInit"].length > 0) {
+  Module["preInit"].pop()();
+ }
+}
+Module["noExitRuntime"] = true;
+run();
 
-    function _readBytes(address, length, array) {
-        array.set(Module.HEAPU8.subarray(address, address + length));
-    }
 
-    var basepoint = new Uint8Array(32);
-    basepoint[0] = 9;
 
-    ns.curve25519 = {
-        keyPair: function(privKey) {
-            var priv = new Uint8Array(privKey);
-            priv[0]  &= 248;
-            priv[31] &= 127;
-            priv[31] |= 64;
 
-            // Where to store the result
-            var publicKey_ptr = Module._malloc(32);
-
-            // Get a pointer to the private key
-            var privateKey_ptr = _allocate(priv);
-
-            // The basepoint for generating public keys
-            var basepoint_ptr = _allocate(basepoint);
-
-            // The return value is just 0, the operation is done in place
-            Module._curve25519_donna(publicKey_ptr, privateKey_ptr, basepoint_ptr);
-
-            var res = new Uint8Array(32);
-            _readBytes(publicKey_ptr, 32, res);
-
-            Module._free(publicKey_ptr);
-            Module._free(privateKey_ptr);
-            Module._free(basepoint_ptr);
-
-            return {
-                pubKey: res.buffer,
-                privKey: priv.buffer
-            };
-        },
-
-        sharedSecret: function(pubKey, privKey) {
-            // Where to store the result
-            var sharedKey_ptr = Module._malloc(32);
-
-            // Get a pointer to our private key
-            var privateKey_ptr = _allocate(new Uint8Array(privKey));
-
-            // Get a pointer to their public key, the basepoint when you're
-            // generating a shared secret
-            var basepoint_ptr = _allocate(new Uint8Array(pubKey));
-
-            // Return value is 0 here too of course
-            Module._curve25519_donna(sharedKey_ptr, privateKey_ptr, basepoint_ptr);
-
-            var res = new Uint8Array(32);
-            _readBytes(sharedKey_ptr, 32, res);
-
-            Module._free(sharedKey_ptr);
-            Module._free(privateKey_ptr);
-            Module._free(basepoint_ptr);
-
-            return res.buffer;
-        },
-
-        sign: function(privKey, message) {
-            // Where to store the result
-            var signature_ptr = Module._malloc(64);
-
-            // Get a pointer to our private key
-            var privateKey_ptr = _allocate(new Uint8Array(privKey));
-
-            // Get a pointer to the message
-            var message_ptr = _allocate(new Uint8Array(message));
-
-            Module._curve25519_sign(signature_ptr, privateKey_ptr, message_ptr, message.byteLength);
-
-            var res = new Uint8Array(64);
-            _readBytes(signature_ptr, 64, res);
-
-            Module._free(signature_ptr);
-            Module._free(privateKey_ptr);
-            Module._free(message_ptr);
-
-            return res.buffer;
-        },
-
-        verify: function(pubKey, message, sig) {
-            // Get a pointer to their public key
-            var publicKey_ptr = _allocate(new Uint8Array(pubKey));
-
-            // Get a pointer to the signature
-            var signature_ptr = _allocate(new Uint8Array(sig));
-
-            // Get a pointer to the message
-            var message_ptr = _allocate(new Uint8Array(message));
-
-            var res = Module._curve25519_verify(signature_ptr,
-                                                publicKey_ptr,
-                                                message_ptr,
-                                                message.byteLength);
-
-            Module._free(publicKey_ptr);
-            Module._free(signature_ptr);
-            Module._free(message_ptr);
-
-            if (res !== 0) {
-                throw new Error("Invalid signature");
-            }
-        }
-    };
-})();
 
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
@@ -9908,6 +20244,133 @@ var ha=[wc,Vb];var ia=[xc,Wb,Xb,ac];return{stackSave:ka,getTempRet0:pa,setThrew:
 })();
 
 // vim: ts=4:sw=4:expandtab
+/* global Module */
+
+(function() {
+    'use strict';
+
+    const ns = self.libsignal = self.libsignal || {};
+
+    // Insert some bytes into the emscripten memory and return a pointer
+    function _allocate(bytes) {
+        var address = Module._malloc(bytes.length);
+        Module.HEAPU8.set(bytes, address);
+
+        return address;
+    }
+
+    function _readBytes(address, length, array) {
+        array.set(Module.HEAPU8.subarray(address, address + length));
+    }
+
+    var basepoint = new Uint8Array(32);
+    basepoint[0] = 9;
+
+    ns.curve25519 = {
+        keyPair: function(privKey) {
+            var priv = new Uint8Array(privKey);
+            priv[0]  &= 248;
+            priv[31] &= 127;
+            priv[31] |= 64;
+
+            // Where to store the result
+            var publicKey_ptr = Module._malloc(32);
+
+            // Get a pointer to the private key
+            var privateKey_ptr = _allocate(priv);
+
+            // The basepoint for generating public keys
+            var basepoint_ptr = _allocate(basepoint);
+
+            // The return value is just 0, the operation is done in place
+            Module._curve25519_donna(publicKey_ptr, privateKey_ptr, basepoint_ptr);
+
+            var res = new Uint8Array(32);
+            _readBytes(publicKey_ptr, 32, res);
+
+            Module._free(publicKey_ptr);
+            Module._free(privateKey_ptr);
+            Module._free(basepoint_ptr);
+
+            return {
+                pubKey: res.buffer,
+                privKey: priv.buffer
+            };
+        },
+
+        sharedSecret: function(pubKey, privKey) {
+            // Where to store the result
+            var sharedKey_ptr = Module._malloc(32);
+
+            // Get a pointer to our private key
+            var privateKey_ptr = _allocate(new Uint8Array(privKey));
+
+            // Get a pointer to their public key, the basepoint when you're
+            // generating a shared secret
+            var basepoint_ptr = _allocate(new Uint8Array(pubKey));
+
+            // Return value is 0 here too of course
+            Module._curve25519_donna(sharedKey_ptr, privateKey_ptr, basepoint_ptr);
+
+            var res = new Uint8Array(32);
+            _readBytes(sharedKey_ptr, 32, res);
+
+            Module._free(sharedKey_ptr);
+            Module._free(privateKey_ptr);
+            Module._free(basepoint_ptr);
+
+            return res.buffer;
+        },
+
+        sign: function(privKey, message) {
+            // Where to store the result
+            var signature_ptr = Module._malloc(64);
+
+            // Get a pointer to our private key
+            var privateKey_ptr = _allocate(new Uint8Array(privKey));
+
+            // Get a pointer to the message
+            var message_ptr = _allocate(new Uint8Array(message));
+
+            Module._curve25519_sign(signature_ptr, privateKey_ptr, message_ptr, message.byteLength);
+
+            var res = new Uint8Array(64);
+            _readBytes(signature_ptr, 64, res);
+
+            Module._free(signature_ptr);
+            Module._free(privateKey_ptr);
+            Module._free(message_ptr);
+
+            return res.buffer;
+        },
+
+        verify: function(pubKey, message, sig) {
+            // Get a pointer to their public key
+            var publicKey_ptr = _allocate(new Uint8Array(pubKey));
+
+            // Get a pointer to the signature
+            var signature_ptr = _allocate(new Uint8Array(sig));
+
+            // Get a pointer to the message
+            var message_ptr = _allocate(new Uint8Array(message));
+
+            var res = Module._curve25519_verify(signature_ptr,
+                                                publicKey_ptr,
+                                                message_ptr,
+                                                message.byteLength);
+
+            Module._free(publicKey_ptr);
+            Module._free(signature_ptr);
+            Module._free(message_ptr);
+
+            if (res !== 0) {
+                throw new Error("Invalid signature");
+            }
+        }
+    };
+})();
+
+// vim: ts=4:sw=4:expandtab
 
 (function() {
     'use strict';
@@ -9935,21 +20398,19 @@ var ha=[wc,Vb];var ia=[xc,Wb,Xb,ac];return{stackSave:ka,getTempRet0:pa,setThrew:
         }
     }
 
-    function processKeys(raw_keys) {
+    ns.createKeyPair = function(privKey) {
+        validatePrivKey(privKey);
+        const keys = libsignal.curve25519.keyPair(privKey);
         // prepend version byte
-        var origPub = new Uint8Array(raw_keys.pubKey);
-        var pub = new Uint8Array(33);
+        const origPub = new Uint8Array(keys.pubKey);
+        const pub = new Uint8Array(33);
         pub.set(origPub, 1);
         pub[0] = 5;
         return {
             pubKey: pub.buffer,
-            privKey: raw_keys.privKey
+            privKey: keys.privKey
         };
-    }
 
-    ns.createKeyPair = function(privKey) {
-        validatePrivKey(privKey);
-        return processKeys(libsignal.curve25519.keyPair(privKey));
     },
 
     ns.calculateAgreement = function(pubKey, privKey) {
@@ -9969,7 +20430,7 @@ var ha=[wc,Vb];var ia=[xc,Wb,Xb,ac];return{stackSave:ka,getTempRet0:pa,setThrew:
         return libsignal.curve25519.sign(privKey, message);
     };
 
-    ns.verifySignautre = function(pubKey, msg, sig) {
+    ns.verifySignature = function(pubKey, msg, sig) {
         pubKey = validatePubKeyFormat(pubKey);
         if (pubKey === undefined || pubKey.byteLength != 32) {
             throw new Error("Invalid public key");
@@ -9984,7 +20445,7 @@ var ha=[wc,Vb];var ia=[xc,Wb,Xb,ac];return{stackSave:ka,getTempRet0:pa,setThrew:
     };
 
     ns.generateKeyPair = function() {
-        var privKey = ns.crypto.getRandomBytes(32);
+        var privKey = libsignal.crypto.getRandomBytes(32);
         return ns.createKeyPair(privKey);
     };
 })();
@@ -10028,6 +20489,11 @@ var ha=[wc,Vb];var ia=[xc,Wb,Xb,ac];return{stackSave:ka,getTempRet0:pa,setThrew:
 
     ns.deriveSecrets = async function(input, salt, info, chunks) {
         // Specific implementation of RFC 5869 that only returns the first 3 32-byte chunks
+        if (!(input instanceof ArrayBuffer) ||
+            !(salt instanceof ArrayBuffer) ||
+            !(info instanceof ArrayBuffer)) {
+            throw new TypeError('ArrayBuffer types required');
+        }
         chunks = chunks || 3;
         console.assert(chunks >= 1 && chunks <= 3);
         const PRK = await ns.calculateMAC(salt, input);
@@ -10070,46 +20536,49 @@ var ha=[wc,Vb];var ia=[xc,Wb,Xb,ac];return{stackSave:ka,getTempRet0:pa,setThrew:
  * vim: ts=4:sw=4
  */
 
-var util = (function() {
+(function() {
     'use strict';
 
+    self.libsignal = self.libsignal || {};
+    const ns = self.libsignal.util = {};
+    
     var StaticArrayBufferProto = new ArrayBuffer().__proto__;
 
-    return {
-        toString: function(thing) {
-            if (typeof thing == 'string') {
+    ns.toString = function(thing) {
+        if (typeof thing == 'string') {
+            return thing;
+        }
+        return new dcodeIO.ByteBuffer.wrap(thing).toString('binary');
+    };
+
+    ns.toArrayBuffer = function(thing) {
+        if (thing === undefined) {
+            return undefined;
+        }
+        if (thing === Object(thing)) {
+            if (thing.__proto__ == StaticArrayBufferProto) {
                 return thing;
             }
-            return new dcodeIO.ByteBuffer.wrap(thing).toString('binary');
-        },
-        toArrayBuffer: function(thing) {
-            if (thing === undefined) {
-                return undefined;
-            }
-            if (thing === Object(thing)) {
-                if (thing.__proto__ == StaticArrayBufferProto) {
-                    return thing;
-                }
-            }
-
-            if (typeof thing !== "string") {
-                throw new Error("Tried to convert a non-string of type " + typeof thing + " to an array buffer");
-            }
-            return new dcodeIO.ByteBuffer.wrap(thing, 'binary').toArrayBuffer();
-        },
-        isEqual: function(a, b) {
-            // TODO: Special-case arraybuffers, etc
-            if (a === undefined || b === undefined) {
-                return false;
-            }
-            a = util.toString(a);
-            b = util.toString(b);
-            var maxLength = Math.max(a.length, b.length);
-            if (maxLength < 5) {
-                throw new Error("a/b compare too short");
-            }
-            return a.substring(0, Math.min(maxLength, a.length)) == b.substring(0, Math.min(maxLength, b.length));
         }
+
+        if (typeof thing !== "string") {
+            throw new Error("Tried to convert a non-string of type " + typeof thing + " to an array buffer");
+        }
+        return new dcodeIO.ByteBuffer.wrap(thing, 'binary').toArrayBuffer();
+    };
+
+    ns.isEqual = function(a, b) {
+        // TODO: Special-case arraybuffers, etc
+        if (a === undefined || b === undefined) {
+            return false;
+        }
+        a = ns.toString(a);
+        b = ns.toString(b);
+        var maxLength = Math.max(a.length, b.length);
+        if (maxLength < 5) {
+            throw new Error("a/b compare too short");
+        }
+        return a.substring(0, Math.min(maxLength, a.length)) == b.substring(0, Math.min(maxLength, b.length));
     };
 })();
 
@@ -10251,7 +20720,7 @@ self.libsignal.protoText = function() {
         if (typeof thing == "string" || typeof thing == "number" || typeof thing == "boolean") {
             return thing;
         } else if (isStringable(thing)) {
-            return util.toString(thing);
+            return ns.util.toString(thing);
         } else if (thing instanceof Array) {
             var array = [];
             for (var i = 0; i < thing.length; i++) {
@@ -10315,7 +20784,7 @@ self.libsignal.protoText = function() {
 
     ns.SessionRecord = class SessionRecord {
 
-        consturctor() {
+        constructor() {
             this.sessions = {};
             this.version = SESSION_RECORD_VERSION;
         }
@@ -10347,7 +20816,7 @@ self.libsignal.protoText = function() {
         }
 
         getSessionByBaseKey(baseKey) {
-            const session = this.sessions[util.toString(baseKey)];
+            const session = this.sessions[ns.util.toString(baseKey)];
             if (session && session.indexInfo.baseKeyType === ns.BaseKeyType.OURS) {
                 console.warn("Tried to lookup a session using our basekey");
                 return undefined;
@@ -10357,7 +20826,7 @@ self.libsignal.protoText = function() {
 
         getSessionByRemoteEphemeralKey(remoteEphemeralKey) {
             this.detectDuplicateOpenSessions();
-            var searchKey = util.toString(remoteEphemeralKey);
+            var searchKey = ns.util.toString(remoteEphemeralKey);
             var openSession;
             for (var key in this.sessions) {
                 if (this.sessions[key].indexInfo.closed == -1) {
@@ -10400,7 +20869,7 @@ self.libsignal.protoText = function() {
 
         updateSessionState(session) {
             this.removeOldChains(session);
-            this.sessions[util.toString(session.indexInfo.baseKey)] = session;
+            this.sessions[ns.util.toString(session.indexInfo.baseKey)] = session;
             this.removeOldSessions();
         }
 
@@ -10448,7 +20917,7 @@ self.libsignal.protoText = function() {
                         index = i;
                     }
                 }
-                delete session[util.toString(oldest.ephemeralKey)];
+                delete session[ns.util.toString(oldest.ephemeralKey)];
                 session.oldRatchetList.splice(index, 1);
             }
         }
@@ -10465,7 +20934,7 @@ self.libsignal.protoText = function() {
                         oldestSession = session;
                     }
                 }
-                delete this.sessions[util.toString(oldestBaseKey)];
+                delete this.sessions[ns.util.toString(oldestBaseKey)];
             }
         }
 
@@ -10535,10 +21004,9 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                 if (!trusted) {
                     throw new ns.UntrustedIdentityKeyError({addr, identityKey: device.identityKey});
                 }
-                await ns.crypto.Ed25519Verify(device.identityKey,
-                                                    device.signedPreKey.publicKey,
-                                                    device.signedPreKey.signature);
-                const baseKey = await ns.crypto.createKeyPair();
+                ns.curve.verifySignature(device.identityKey, device.signedPreKey.publicKey,
+                                         device.signedPreKey.signature);
+                const baseKey = ns.curve.generateKeyPair();
                 let devicePreKey;
                 if (device.preKey) {
                     devicePreKey = device.preKey.publicKey;
@@ -10632,11 +21100,11 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                 sharedSecret[i] = 0xff;
             }
             const ourIdentityKey = await this.storage.getIdentityKeyPair();
-            const ecRes = await Promise.all([
-                ns.crypto.ECDHE(theirSignedPubKey, ourIdentityKey.privKey),
-                ns.crypto.ECDHE(theirIdentityPubKey, ourSignedKey.privKey),
-                ns.crypto.ECDHE(theirSignedPubKey, ourSignedKey.privKey)
-            ]);
+            const ecRes = [
+                ns.curve.calculateAgreement(theirSignedPubKey, ourIdentityKey.privKey),
+                ns.curve.calculateAgreement(theirIdentityPubKey, ourSignedKey.privKey),
+                ns.curve.calculateAgreement(theirSignedPubKey, ourSignedKey.privKey)
+            ];
             if (isInitiator) {
                 sharedSecret.set(new Uint8Array(ecRes[0]), 32);
                 sharedSecret.set(new Uint8Array(ecRes[1]), 32 * 2);
@@ -10646,11 +21114,12 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
             }
             sharedSecret.set(new Uint8Array(ecRes[2]), 32 * 3);
             if (ourEphemeralKey !== undefined && theirEphemeralPubKey !== undefined) {
-                const ecRes4 = await ns.crypto.ECDHE(theirEphemeralPubKey,
+                const ecRes4 = ns.curve.calculateAgreement(theirEphemeralPubKey,
                                                            ourEphemeralKey.privKey);
                 sharedSecret.set(new Uint8Array(ecRes4), 32 * 4);
             }
-            const masterKey = await ns.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32), "WhisperText");
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32),
+                                                            ns.util.toArrayBuffer("WhisperText"));
             const session = {
                 registrationId: registrationId,
                 currentRatchet: {
@@ -10669,7 +21138,7 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
             if (isInitiator) {
                 session.indexInfo.baseKey = ourEphemeralKey.pubKey;
                 session.indexInfo.baseKeyType = ns.BaseKeyType.OURS;
-                const ourSendingEphemeralKey = await ns.crypto.createKeyPair();
+                const ourSendingEphemeralKey = ns.curve.generateKeyPair();
                 session.currentRatchet.ephemeralKeyPair = ourSendingEphemeralKey;
                 await this.calculateSendingRatchet(session, theirSignedPubKey);
             } else {
@@ -10682,11 +21151,12 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
 
         async calculateSendingRatchet(session, remoteKey) {
             const ratchet = session.currentRatchet;
-            const sharedSecret = await ns.crypto.ECDHE(remoteKey,
-                util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
-            const masterKey = await ns.deriveSecrets(sharedSecret,
-                util.toArrayBuffer(ratchet.rootKey), "WhisperRatchet");
-            session[util.toString(ratchet.ephemeralKeyPair.pubKey)] = {
+            const sharedSecret = ns.curve.calculateAgreement(remoteKey,
+                ns.util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret,
+                                                            ns.util.toArrayBuffer(ratchet.rootKey),
+                                                            ns.util.toArrayBuffer("WhisperRatchet"));
+            session[ns.util.toString(ratchet.ephemeralKeyPair.pubKey)] = {
                 messageKeys: {},
                 chainKey: {
                     counter: -1,
@@ -10734,7 +21204,7 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                 if (!session) {
                     throw new ns.SessionError("No session to encrypt message for " + addr);
                 }
-                const remoteIdentityKey = util.toArrayBuffer(session.indexInfo.remoteIdentityKey);
+                const remoteIdentityKey = ns.util.toArrayBuffer(session.indexInfo.remoteIdentityKey);
                 const trusted = await this.storage.isTrustedIdentity(this.remoteAddress.getName(),
                                                                      remoteIdentityKey);
                 if (!trusted) {
@@ -10742,14 +21212,14 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                 }
                 await this.storage.saveIdentity(addr, session.indexInfo.remoteIdentityKey);
                 const msg = new ns.protobuf.WhisperMessage();
-                msg.ephemeralKey = util.toArrayBuffer(session.currentRatchet.ephemeralKeyPair.pubKey);
-                const chain = session[util.toString(msg.ephemeralKey)];
+                msg.ephemeralKey = ns.util.toArrayBuffer(session.currentRatchet.ephemeralKeyPair.pubKey);
+                const chain = session[ns.util.toString(msg.ephemeralKey)];
                 if (chain.chainType === ns.ChainType.RECEIVING) {
                     throw new ns.SessionError("Tried to encrypt on a receiving chain");
                 }
                 await this.fillMessageKeys(chain, chain.chainKey.counter + 1);
-                const keys = await ns.deriveSecrets(util.toArrayBuffer(chain.messageKeys[chain.chainKey.counter]),
-                                                    new ArrayBuffer(32), "WhisperMessageKeys");
+                const keys = await ns.crypto.deriveSecrets(ns.util.toArrayBuffer(chain.messageKeys[chain.chainKey.counter]),
+                                                           new ArrayBuffer(32), ns.util.toArrayBuffer("WhisperMessageKeys"));
                 delete chain.messageKeys[chain.chainKey.counter];
                 msg.counter = chain.chainKey.counter;
                 msg.previousCounter = session.currentRatchet.previousCounter;
@@ -10757,7 +21227,7 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                 msg.ciphertext = ciphertext;
                 const encodedMsg = msg.toArrayBuffer();
                 const macInput = new Uint8Array(encodedMsg.byteLength + 33 * 2 + 1);
-                macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)));
+                macInput.set(new Uint8Array(ns.util.toArrayBuffer(ourIdentityKey.pubKey)));
                 macInput.set(new Uint8Array(remoteIdentityKey), 33);
                 macInput[33 * 2] = (3 << 4) | 3;
                 macInput.set(new Uint8Array(encodedMsg), 33*2 + 1);
@@ -10773,18 +21243,18 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                 if (session.pendingPreKey !== undefined) {
                     type = 3;  // prekey bundle
                     const preKeyMsg = new ns.protobuf.PreKeyWhisperMessage();
-                    preKeyMsg.identityKey = util.toArrayBuffer(ourIdentityKey.pubKey);
+                    preKeyMsg.identityKey = ns.util.toArrayBuffer(ourIdentityKey.pubKey);
                     preKeyMsg.registrationId = await this.storage.getLocalRegistrationId();
-                    preKeyMsg.baseKey = util.toArrayBuffer(session.pendingPreKey.baseKey);
+                    preKeyMsg.baseKey = ns.util.toArrayBuffer(session.pendingPreKey.baseKey);
                     if (session.pendingPreKey.preKeyId) {
                         preKeyMsg.preKeyId = session.pendingPreKey.preKeyId;
                     }
                     preKeyMsg.signedPreKeyId = session.pendingPreKey.signedKeyId;
                     preKeyMsg.message = result;
-                    body = String.fromCharCode((3 << 4) | 3) + util.toString(preKeyMsg.encode());
+                    body = String.fromCharCode((3 << 4) | 3) + ns.util.toString(preKeyMsg.encode());
                 } else {
                     type = 1;  // normal
-                    body = util.toString(result);
+                    body = ns.util.toString(result);
                 }
                 return {
                     type,
@@ -10831,7 +21301,7 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                     record.promoteState(result.session);
                 }
                 const trusted = await this.storage.isTrustedIdentity(this.remoteAddress.getName(),
-                    util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey));
+                    ns.util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey));
                 if (!trusted) {
                     throw new Error('Identity key changed');
                 }
@@ -10891,7 +21361,7 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                 console.warn('decrypting message for closed session');
             }
             await this.maybeStepRatchet(session, remoteEphemeralKey, message.previousCounter);
-            const chain = session[util.toString(message.ephemeralKey)];
+            const chain = session[ns.util.toString(message.ephemeralKey)];
             if (chain.chainType === ns.ChainType.SENDING) {
                 throw new Error("Tried to decrypt on a sending chain");
             }
@@ -10903,12 +21373,12 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
                 throw e;
             }
             delete chain.messageKeys[message.counter];
-            const keys = await ns.deriveSecrets(util.toArrayBuffer(messageKey), new ArrayBuffer(32),
-                                                "WhisperMessageKeys");
+            const keys = await ns.crypto.deriveSecrets(ns.util.toArrayBuffer(messageKey), new ArrayBuffer(32),
+                                                       ns.util.toArrayBuffer("WhisperMessageKeys"));
             const ourIdentityKey = await this.storage.getIdentityKeyPair();
             const macInput = new Uint8Array(messageProto.byteLength + 33*2 + 1);
-            macInput.set(new Uint8Array(util.toArrayBuffer(session.indexInfo.remoteIdentityKey)));
-            macInput.set(new Uint8Array(util.toArrayBuffer(ourIdentityKey.pubKey)), 33);
+            macInput.set(new Uint8Array(ns.util.toArrayBuffer(session.indexInfo.remoteIdentityKey)));
+            macInput.set(new Uint8Array(ns.util.toArrayBuffer(ourIdentityKey.pubKey)), 33);
             macInput[33*2] = (3 << 4) | 3;
             macInput.set(new Uint8Array(messageProto), 33*2 + 1);
             await ns.verifyMAC(macInput.buffer, keys[1], mac, 8);
@@ -10928,7 +21398,7 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
             if (chain.chainKey.key === undefined) {
                 throw new Error("Got invalid request to extend chain after it was already closed");
             }
-            const key = util.toArrayBuffer(chain.chainKey.key);
+            const key = ns.util.toArrayBuffer(chain.chainKey.key);
             const signed = await Promise.all([
                 ns.crypto.calculateMAC(key, (new Uint8Array([1])).buffer),
                 ns.crypto.calculateMAC(key, (new Uint8Array([2])).buffer)
@@ -10940,11 +21410,11 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
         }
 
         async maybeStepRatchet(session, remoteKey, previousCounter) {
-            if (session[util.toString(remoteKey)] !== undefined) {
+            if (session[ns.util.toString(remoteKey)] !== undefined) {
                 return;
             }
             const ratchet = session.currentRatchet;
-            let previousRatchet = session[util.toString(ratchet.lastRemoteEphemeralKey)];
+            let previousRatchet = session[ns.util.toString(ratchet.lastRemoteEphemeralKey)];
             if (previousRatchet !== undefined) {
                 await this.fillMessageKeys(previousRatchet, previousCounter);
                 delete previousRatchet.chainKey.key;
@@ -10955,12 +21425,12 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
             }
             await this.calculateRatchet(session, remoteKey, false);
             // Now swap the ephemeral key and calculate the new sending chain
-            previousRatchet = util.toString(ratchet.ephemeralKeyPair.pubKey);
+            previousRatchet = ns.util.toString(ratchet.ephemeralKeyPair.pubKey);
             if (session[previousRatchet] !== undefined) {
                 ratchet.previousCounter = session[previousRatchet].chainKey.counter;
                 delete session[previousRatchet];
             }
-            const keyPair = await ns.crypto.createKeyPair();
+            const keyPair = ns.curve.generateKeyPair();
             ratchet.ephemeralKeyPair = keyPair;
             await this.calculateRatchet(session, remoteKey, true);
             ratchet.lastRemoteEphemeralKey = remoteKey;
@@ -10969,11 +21439,11 @@ libsignal.SignalProtocolAddress.fromString = function(encodedAddress) {
         async calculateRatchet(session, remoteKey, sending) {
             const ratchet = session.currentRatchet;
             const sharedSecret = await ns.crypto.ECDHE(remoteKey,
-                util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
-            const masterKey = await ns.deriveSecrets(sharedSecret, util.toArrayBuffer(ratchet.rootKey),
-                                                     "WhisperRatchet");
+                ns.util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret, ns.util.toArrayBuffer(ratchet.rootKey),
+                                                            ns.util.toArrayBuffer("WhisperRatchet"));
             const ephemeralPublicKey = sending ? ratchet.ephemeralKeyPair.pubKey : remoteKey;
-            session[util.toString(ephemeralPublicKey)] = {
+            session[ns.util.toString(ephemeralPublicKey)] = {
                 messageKeys: {},
                 chainKey: {
                     counter: -1,
