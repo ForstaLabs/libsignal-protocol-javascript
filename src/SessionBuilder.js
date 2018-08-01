@@ -5,6 +5,9 @@
 
     const ns = self.libsignal = self.libsignal || {};
 
+    const whisperText = ns.util.stringToArrayBuffer("WhisperText");
+    const whisperRatchet = ns.util.stringToArrayBuffer("WhisperRatchet");
+
 
     ns.SessionBuilder = class SessionBuilder {
 
@@ -37,16 +40,11 @@
                 if (device.preKey) {
                     session.pendingPreKey.preKeyId = device.preKey.keyId;
                 }
-                const serialized = await this.storage.loadSession(addr);
-                let record;
-                if (serialized !== undefined) {
-                    record = ns.SessionRecord.deserialize(serialized);
-                } else {
-                    record = new ns.SessionRecord();
-                }
+                const data = await this.storage.loadSession(addr);
+                const record = ns.SessionRecord.fromStorage(data);
                 record.archiveCurrentState();
                 record.updateSessionState(session);
-                await this.storage.storeSession(addr, record.serialize());
+                await this.storage.storeSession(addr, record);
                 await this.storage.saveIdentity(addr, session.indexInfo.remoteIdentityKey);
             });
         }
@@ -60,7 +58,8 @@
             }
             const preKeyPair = await this.storage.loadPreKey(message.preKeyId);
             const signedPreKeyPair = await this.storage.loadSignedPreKey(message.signedPreKeyId);
-            let session = record.getSessionByBaseKey(message.baseKey);
+            const baseKey = message.baseKey.toArrayBuffer();
+            let session = record.getSession(baseKey);
             if (session) {
                 console.debug("Duplicate PreKeyMessage for session");
                 return;
@@ -83,8 +82,8 @@
                 throw new ns.PreKeyError('Invalid PreKey ID');
             }
             const newSession = await this.initSession(false, preKeyPair, signedPreKeyPair,
-                                                      msgIdentityKey, message.baseKey.toArrayBuffer(),
-                                                      undefined, message.registrationId);
+                                                      msgIdentityKey, baseKey, undefined,
+                                                      message.registrationId);
             // Note that the session is not actually saved until the very
             // end of decryptWhisperMessage ... to ensure that the sender
             // actually holds the private keys for all reported pubkeys
@@ -134,8 +133,7 @@
                                                            ourEphemeralKey.privKey);
                 sharedSecret.set(new Uint8Array(ecRes4), 32 * 4);
             }
-            const masterKey = await ns.crypto.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32),
-                                                            ns.util.toArrayBuffer("WhisperText"));
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32), whisperText);
             const session = {
                 registrationId: registrationId,
                 currentRatchet: {
@@ -147,7 +145,7 @@
                     remoteIdentityKey: theirIdentityPubKey,
                     closed: -1
                 },
-                oldRatchetList: []
+                chains: new ns.ArrayBufferMap()
             };
             // If we're initiating we go ahead and set our first sending ephemeral key now,
             // otherwise we figure it out when we first maybeStepRatchet with the remote's ephemeral key
@@ -167,19 +165,16 @@
 
         async calculateSendingRatchet(session, remoteKey) {
             const ratchet = session.currentRatchet;
-            const sharedSecret = ns.curve.calculateAgreement(remoteKey,
-                ns.util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey));
-            const masterKey = await ns.crypto.deriveSecrets(sharedSecret,
-                                                            ns.util.toArrayBuffer(ratchet.rootKey),
-                                                            ns.util.toArrayBuffer("WhisperRatchet"));
-            session[ns.util.toString(ratchet.ephemeralKeyPair.pubKey)] = {
-                messageKeys: {},
+            const sharedSecret = ns.curve.calculateAgreement(remoteKey, ratchet.ephemeralKeyPair.privKey);
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret, ratchet.rootKey, whisperRatchet);
+            session.chains.set(ratchet.ephemeralKeyPair.pubKey, {
+                messageKeys: new Map(),
                 chainKey: {
                     counter: -1,
                     key: masterKey[1]
                 },
                 chainType: ns.ChainType.SENDING
-            };
+            });
             ratchet.rootKey = masterKey[0];
         }
     };

@@ -1,6 +1,4 @@
-/*
- * vim: ts=4:sw=4
- */
+// vim: ts=4:sw=4
 
 (function() {
     'use strict';
@@ -17,62 +15,21 @@
         RECEIVING: 2
     };
 
-    var ARCHIVED_STATES_MAX_LENGTH = 40;
-    var OLD_RATCHETS_MAX_LENGTH = 10;
-    var SESSION_RECORD_VERSION = 'v1';
+    const ARCHIVED_STATES_MAX_LENGTH = 40;
+    const SESSION_RECORD_VERSION = 'v2';
 
-    var StaticByteBufferProto = new dcodeIO.ByteBuffer().__proto__;
-    var StaticArrayBufferProto = new ArrayBuffer().__proto__;
-    var StaticUint8ArrayProto = new Uint8Array().__proto__;
-
-    function isStringable(thing) {
-        return (thing === Object(thing) &&
-                (thing.__proto__ == StaticArrayBufferProto ||
-                 thing.__proto__ == StaticUint8ArrayProto ||
-                 thing.__proto__ == StaticByteBufferProto));
-    }
-
-    function ensureStringed(thing) {
-        if (typeof thing == "string" || typeof thing == "number" || typeof thing == "boolean") {
-            return thing;
-        } else if (isStringable(thing)) {
-            return ns.util.toString(thing);
-        } else if (thing instanceof Array) {
-            var array = [];
-            for (var i = 0; i < thing.length; i++) {
-                array[i] = ensureStringed(thing[i]);
-            }
-            return array;
-        } else if (thing === Object(thing)) {
-            var obj = {};
-            for (var key in thing) {
-                obj[key] = ensureStringed(thing[key]);
-            }
-            return obj;
-        } else if (thing === null) {
-            return null;
-        } else {
-            throw new Error("unsure of how to jsonify object of type " + typeof thing);
-        }
-    }
-
-    function jsonThing(thing) {
-        return JSON.stringify(ensureStringed(thing)); //TODO: jquery???
-    }
-
-    var migrations = [{
+    const migrations = [{
         version: 'v1',
-        migrate: function migrateV1(data) {
-            var sessions = data.sessions;
-            var key;
+        migrate: function(data) {
+            const sessions = data.sessions;
             if (data.registrationId) {
-                for (key in sessions) {
+                for (const key in sessions) {
                     if (!sessions[key].registrationId) {
                         sessions[key].registrationId = data.registrationId;
                     }
                 }
             } else {
-                for (key in sessions) {
+                for (const key in sessions) {
                     if (sessions[key].indexInfo.closed === -1) {
                         console.error('V1 session storage migration error: registrationId',
                             data.registrationId, 'for open session version',
@@ -81,49 +38,170 @@
                 }
             }
         }
+    }, {
+        version: 'v2',
+        migrate: function(data) {
+            const s2ab = ns.util.stringToArrayBuffer;
+            const sessions = new Map();  // Note: Map not ArrayBufferMap to emulate storage.
+            for (const key of Object.keys(data.sessions)) {
+                const sessionKey = s2ab(key);
+                if (sessionKey.byteLength != 33) {
+                    console.error("Unexpected session key!", key);
+                    debugger;
+                    continue;
+                }
+                const v1 = data.sessions[key];
+                const v2 = {};
+
+                v2.currentRatchet = {
+                    ephemeralKeyPair: {
+                        privKey: s2ab(v1.currentRatchet.ephemeralKeyPair.privKey),
+                        pubKey: s2ab(v1.currentRatchet.ephemeralKeyPair.pubKey),
+                    },
+                    lastRemoteEphemeralKey: s2ab(v1.currentRatchet.lastRemoteEphemeralKey),
+                    previousCounter: v1.currentRatchet.previousCounter,
+                    rootKey: s2ab(v1.currentRatchet.rootKey)
+                };
+                delete v1.currentRatchet;
+
+                v2.indexInfo = {
+                    baseKey: s2ab(v1.indexInfo.baseKey),
+                    baseKeyType: v1.indexInfo.baseKeyType,
+                    closed: v1.indexInfo.closed,
+                    remoteIdentityKey: s2ab(v1.indexInfo.remoteIdentityKey)
+                };
+                delete v1.indexInfo;
+
+                delete v1.oldRatchetList;  // never used.
+
+                if (v1.pendingPreKey) {
+                    v2.pendingPreKey = {
+                        baseKey: s2ab(v1.pendingPreKey.baseKey),
+                        preKeyId: v1.pendingPreKey.preKeyId,
+                        signedKeyId: v1.pendingPreKey.signedKeyId,
+                    };
+                }
+                delete v1.pendingPreKey;
+
+                v2.registrationId = v1.registrationId;
+                delete v1.registrationId;
+
+                // All remaining keys on the v1 should be chains...
+                v2.chains = new Map();  // Note: Map not ArrayBufferMap to emulate storage.
+                for (const x of Object.keys(v1)) {
+                    const chainKey = ns.util.stringToArrayBuffer(x);
+                    if (chainKey.byteLength != 33) {
+                        console.error("Unexpected chain key!", x);
+                        debugger;
+                        continue;
+                    }
+                    const v1Chain = v1[x];
+                    v2.chains.set(ns.util.arrayBufferToHex(chainKey), {
+                        chainKey: {
+                            counter: v1Chain.chainKey.counter,
+                            key: s2ab(v1Chain.chainKey.key),
+                        },
+                        chainType: v1Chain.chainType,
+                        messageKeys: new Map(Array.from(Object.entries(v1Chain.messageKeys)).map(x =>
+                            [x[0], s2ab(x[1])]))
+                    });
+                }
+
+                sessions.set(ns.util.arrayBufferToHex(sessionKey), v2);
+            }
+            data.sessions = sessions;
+        }
     }];
 
     function migrate(data) {
-        var run = (data.version === undefined);
-        for (var i=0; i < migrations.length; ++i) {
-            if (run) {
-                migrations[i].migrate(data);
-            } else if (migrations[i].version === data.version) {
-                run = true;
+        let head = 0;
+        if (data.version) {
+            head = migrations.findIndex(x => x.version === data.version) + 1;
+            if (!head) {
+                console.error("Migrating from unknown session version:", data.version);
             }
         }
-        if (!run) {
-            throw new Error("Error migrating SessionRecord");
+        for (const x of migrations.slice(head)) {
+            console.warn(`Migrating session: ${data.version} -> ${x.version}`);
+            x.migrate(data);
         }
     }
 
 
+    ns.ArrayBufferMap = class ArrayBufferMap extends Map {
+
+        static fromStorage(data) {
+            if (data instanceof this) {
+                return data;
+            }
+            if (data.constructor !== Map) {
+                throw new TypeError("Map required");
+            }
+            const instance = new this();
+            for (const x of data.entries()) {
+                Map.prototype.set.call(instance, x[0], x[1]);
+            }
+            return instance;
+        }
+
+        hashKey(key) {
+            if (!(key instanceof ArrayBuffer)) {
+                throw new TypeError("ArrayBuffer required");
+            }
+            return ns.util.arrayBufferToHex(key);
+        }
+
+        has(key) {
+            return super.has(this.hashKey(key));
+        }
+
+        get(key) {
+            return super.get(this.hashKey(key));
+        }
+
+        set(key, value) {
+            return super.set(this.hashKey(key), value);
+        }
+
+        delete(key) {
+            return super.delete(this.hashKey(key));
+        }
+    };
+
+
     ns.SessionRecord = class SessionRecord {
 
-        constructor() {
-            this.sessions = {};
+        constructor(sessions) {
+            if (sessions) {
+                if (!(sessions instanceof ns.ArrayBufferMap)) {
+                    throw new TypeError("ArrayBufferMap required");
+                }
+            } else {
+                sessions = new ns.ArrayBufferMap();
+            }
+            this.sessions = sessions;
             this.version = SESSION_RECORD_VERSION;
         }
 
-        static deserialize(serialized) {
-            const data = JSON.parse(serialized);
+        static fromStorage(data) {
+            // Parse structured data from storage engine into typed values.
+            if (!data) {
+                return new this();
+            }
+            if (data instanceof this) {
+                return data;
+            }
+            if (typeof data === 'string') {
+                console.warn("Loading legacy session");
+                data = JSON.parse(data);
+            }
             if (data.version !== SESSION_RECORD_VERSION) {
                 migrate(data);
             }
-            const record = new this();
-            record.sessions = data.sessions;
-            if (record.sessions === undefined || record.sessions === null ||
-                typeof record.sessions !== "object" || Array.isArray(record.sessions)) {
-                throw new Error("Error deserializing SessionRecord");
+            for (const session of data.sessions.values()) {
+                session.chains = ns.ArrayBufferMap.fromStorage(session.chains);
             }
-            return record;
-        }
-
-        serialize() {
-            return jsonThing({
-                sessions: this.sessions,
-                version: this.version
-            });
+            return new this(ns.ArrayBufferMap.fromStorage(data.sessions));
         }
 
         haveOpenSession() {
@@ -131,88 +209,55 @@
             return (!!openSession && typeof openSession.registrationId === 'number');
         }
 
-        getSessionByBaseKey(baseKey) {
-            const session = this.sessions[ns.util.toString(baseKey)];
+        getSession(key) {
+            const session = this.sessions.get(key);
             if (session && session.indexInfo.baseKeyType === ns.BaseKeyType.OURS) {
-                console.warn("Tried to lookup a session using our basekey");
-                return undefined;
+                console.error("Tried to lookup a session using our basekey");
+                return;
             }
             return session;
         }
 
-        getSessionByRemoteEphemeralKey(remoteEphemeralKey) {
-            this.detectDuplicateOpenSessions();
-            var searchKey = ns.util.toString(remoteEphemeralKey);
-            var openSession;
-            for (var key in this.sessions) {
-                if (this.sessions[key].indexInfo.closed == -1) {
-                    openSession = this.sessions[key];
-                }
-                if (this.sessions[key][searchKey] !== undefined) {
-                    return this.sessions[key];
-                }
-            }
-            if (openSession !== undefined) {
-                return openSession;
-            }
-            return undefined;
-        }
-
         getOpenSession() {
-            if (this.sessions === undefined) {
-                return undefined;
-            }
-            this.detectDuplicateOpenSessions();
-            for (const key in this.sessions) {
-                if (this.sessions[key].indexInfo.closed == -1) {
-                    return this.sessions[key];
-                }
-            }
-            return undefined;
-        }
-
-        detectDuplicateOpenSessions() {
-            let openSession;
-            for (const key in this.sessions) {
-                if (this.sessions[key].indexInfo.closed == -1) {
-                    if (openSession !== undefined) {
-                        throw new Error("Datastore inconsistensy: multiple open sessions");
-                    }
-                    openSession = this.sessions[key];
+            for (const session of this.sessions.values()) {
+                if (session.indexInfo.closed === -1) {
+                    return session;
                 }
             }
         }
 
         updateSessionState(session) {
-            this.removeOldChains(session);
-            this.sessions[ns.util.toString(session.indexInfo.baseKey)] = session;
+            this.sessions.set(session.indexInfo.baseKey, session);
             this.removeOldSessions();
         }
 
         getSessions() {
             // return an array of sessions ordered by time closed,
             // followed by the open session
-            const list = [];
+            const sessions = [];
             let openSession;
-            for (var k in this.sessions) {
-                if (this.sessions[k].indexInfo.closed === -1) {
-                    openSession = this.sessions[k];
+            for (const session of this.sessions.values()) {
+                if (session.indexInfo.closed === -1) {
+                    if (openSession) {
+                        throw new ReferenceError("Unexpected duplicate open sessions");
+                    }
+                    openSession = session;
                 } else {
-                    list.push(this.sessions[k]);
+                    sessions.push(session);
                 }
             }
-            list.sort((s1, s2) => s1.indexInfo.closed - s2.indexInfo.closed);
+            sessions.sort((s1, s2) => s1.indexInfo.closed - s2.indexInfo.closed);
             if (openSession) {
-                list.push(openSession);
+                sessions.push(openSession);
             }
-            return list;
+            return sessions;
         }
 
         archiveCurrentState() {
             const openSession = this.getOpenSession();
-            if (openSession !== undefined) {
+            if (openSession) {
                 openSession.indexInfo.closed = Date.now();
-                this.updateSessionState(openSession);
+                this.removeOldSessions();
             }
         }
 
@@ -220,43 +265,30 @@
             session.indexInfo.closed = -1;
         }
 
-        removeOldChains(session) {
-            // Sending ratchets are always removed when we step because we never need them again
-            // Receiving ratchets are added to the oldRatchetList, which we parse
-            // here and remove all but the last ten.
-            while (session.oldRatchetList.length > OLD_RATCHETS_MAX_LENGTH) {
-                let index = 0;
-                let oldest = session.oldRatchetList[0];
-                for (let i = 0; i < session.oldRatchetList.length; i++) {
-                    if (session.oldRatchetList[i].added < oldest.added) {
-                        oldest = session.oldRatchetList[i];
-                        index = i;
-                    }
-                }
-                delete session[ns.util.toString(oldest.ephemeralKey)];
-                session.oldRatchetList.splice(index, 1);
-            }
-        }
-
         removeOldSessions() {
-            let oldestBaseKey;
-            let oldestSession;
-            while (Object.keys(this.sessions).length > ARCHIVED_STATES_MAX_LENGTH) {
-                for (const key in this.sessions) {
-                    const session = this.sessions[key];
-                    if (session.indexInfo.closed > -1 && // session is closed
+            while (this.sessions.size > ARCHIVED_STATES_MAX_LENGTH) {
+                let oldestKey;
+                let oldestSession;
+                for (const x of this.sessions.entries()) {
+                    const key = x[0];
+                    const session = x[1];
+                    if (session.indexInfo.closed !== -1 &&
                         (!oldestSession || session.indexInfo.closed < oldestSession.indexInfo.closed)) {
-                        oldestBaseKey = key;
+                        oldestKey = key;
                         oldestSession = session;
                     }
                 }
-                delete this.sessions[ns.util.toString(oldestBaseKey)];
+                if (oldestKey) {
+                    console.info("Prune old closed session:", oldestKey);
+                    this.sessions.delete(oldestKey);
+                } else {
+                    throw new Error('Corrupt session map');
+                }
             }
         }
 
         deleteAllSessions() {
-            // Used primarily in session reset scenarios, where we really delete sessions
-            this.sessions = {};
+            this.sessions.clear();
         }
     };
 })();

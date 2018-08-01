@@ -12,13 +12,15 @@
         }
     }
 
-    function validatePubKeyFormat(pubKey) {
-        if (pubKey === undefined ||
-            ((pubKey.byteLength != 33 || new Uint8Array(pubKey)[0] != 5) &&
-             pubKey.byteLength != 32)) {
+    function scrubPubKeyFormat(pubKey) {
+        if (!(pubKey instanceof ArrayBuffer)) {
+            throw new TypeError("ArrayBuffer required");
+        }
+        if ((pubKey.byteLength !== 33 || new Uint8Array(pubKey)[0] !== 5) &&
+             pubKey.byteLength !== 32) {
             throw new Error("Invalid public key");
         }
-        if (pubKey.byteLength == 33) {
+        if (pubKey.byteLength === 33) {
             return pubKey.slice(1);
         } else {
             console.error("WARNING: Expected pubkey of length 33");
@@ -42,7 +44,7 @@
     },
 
     ns.calculateAgreement = function(pubKey, privKey) {
-        pubKey = validatePubKeyFormat(pubKey);
+        pubKey = scrubPubKeyFormat(pubKey);
         validatePrivKey(privKey);
         if (pubKey === undefined || pubKey.byteLength != 32) {
             throw new Error("Invalid public key");
@@ -59,7 +61,7 @@
     };
 
     ns.verifySignature = function(pubKey, msg, sig) {
-        pubKey = validatePubKeyFormat(pubKey);
+        pubKey = scrubPubKeyFormat(pubKey);
         if (pubKey === undefined || pubKey.byteLength != 32) {
             throw new Error("Invalid public key");
         }

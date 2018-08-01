@@ -14,16 +14,28 @@
     };
 
     ns.encrypt = async function(keyData, data, iv) {
+        if (!(data instanceof ArrayBuffer)) {
+            throw new TypeError("data must be ArrayBuffer");
+        }
         const key = await subtle.importKey('raw', keyData, {name: 'AES-CBC'}, false, ['encrypt']);
         return await subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
     };
 
     ns.decrypt = async function(keyData, data, iv) {
+        if (!(data instanceof ArrayBuffer)) {
+            throw new TypeError("data must be ArrayBuffer");
+        }
         const key = await subtle.importKey('raw', keyData, {name: 'AES-CBC'}, false, ['decrypt']);
         return await subtle.decrypt({name: 'AES-CBC', iv: new Uint8Array(iv)}, key, data);
     };
 
     ns.calculateMAC = async function(keyData, data) {
+        if (!(keyData instanceof ArrayBuffer)) {
+            throw new TypeError("keyData must be ArrayBuffer");
+        }
+        if (!(data instanceof ArrayBuffer)) {
+            throw new TypeError("data must be ArrayBuffer");
+        }
         const key = await subtle.importKey('raw', keyData, {
             name: 'HMAC',
             hash: {name: 'SHA-256'}
@@ -32,6 +44,9 @@
     };
 
     ns.hash = async function(data) {
+        if (!(data instanceof ArrayBuffer)) {
+            throw new TypeError("data must be ArrayBuffer");
+        }
         return await subtle.digest({name: 'SHA-512'}, data);
     };
 
