@@ -99,7 +99,7 @@
                     v2.chains.set(ns.util.arrayBufferToHex(chainKey), {
                         chainKey: {
                             counter: v1Chain.chainKey.counter,
-                            key: s2ab(v1Chain.chainKey.key),
+                            key: v1Chain.chainKey.key && s2ab(v1Chain.chainKey.key),
                         },
                         chainType: v1Chain.chainType,
                         messageKeys: new Map(Array.from(Object.entries(v1Chain.messageKeys)).map(x =>
