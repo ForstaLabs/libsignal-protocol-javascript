@@ -1,6 +1,4 @@
-/*
- * vim: ts=4:sw=4
- */
+// vim: ts=4:sw=4:expandtab
 
 (function() {
     'use strict';
@@ -92,6 +90,24 @@
             throw new TypeError("data must be String");
         }
         return ns.bytesToHex(libsignal.util.stringToBytes(data));
+    };
+
+    ns.hexToBytes = function(data) {
+        if (typeof data !== 'string') {
+            throw new TypeError("data must be string");
+        }
+        if (data.length < 2 || data.length % 2) {
+            throw new TypeError("Invalid hex string (wrong padding)");
+        }
+        const uints = [];
+        for (let i = 0; i < data.length; i += 2) {
+            uints.push(parseInt(data.slice(i, i + 2), 16));
+        }
+        return new Uint8Array(uints);
+    };
+
+    ns.hexToArrayBuffer = function(data) {
+        return ns.hexToBytes(data).buffer;
     };
 
     ns.isEqual = function(a, b) {

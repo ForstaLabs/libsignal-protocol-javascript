@@ -15,7 +15,7 @@
         RECEIVING: 2
     };
 
-    const ARCHIVED_STATES_MAX_LENGTH = 40;
+    const CLOSED_SESSIONS_MAX = 40;
     const SESSION_RECORD_VERSION = 'v2';
 
     const migrations = [{
@@ -144,27 +144,46 @@
             return instance;
         }
 
-        hashKey(key) {
+        encodeKey(key) {
             if (!(key instanceof ArrayBuffer)) {
                 throw new TypeError("ArrayBuffer required");
             }
             return ns.util.arrayBufferToHex(key);
         }
 
+        decodeKey(encoded) {
+            if (typeof encoded !== 'string') {
+                throw new TypeError("string required");
+            }
+            return ns.util.hexToArrayBuffer(encoded);
+        }
+
         has(key) {
-            return super.has(this.hashKey(key));
+            return super.has(this.encodeKey(key));
         }
 
         get(key) {
-            return super.get(this.hashKey(key));
+            return super.get(this.encodeKey(key));
         }
 
         set(key, value) {
-            return super.set(this.hashKey(key), value);
+            return super.set(this.encodeKey(key), value);
         }
 
         delete(key) {
-            return super.delete(this.hashKey(key));
+            return super.delete(this.encodeKey(key));
+        }
+
+        *keys() {
+            for (const k of super.keys()) {
+                yield this.decodeKey(k);
+            }
+        }
+
+        *entries() {
+            for (const x of super.entries()) {
+                yield [this.decodeKey(x[0]), x[1]];
+            }
         }
     };
 
@@ -212,61 +231,55 @@
         getSession(key) {
             const session = this.sessions.get(key);
             if (session && session.indexInfo.baseKeyType === ns.BaseKeyType.OURS) {
-                console.error("Tried to lookup a session using our basekey");
-                return;
+                throw new Error("Tried to lookup a session using our basekey");
             }
             return session;
         }
 
         getOpenSession() {
             for (const session of this.sessions.values()) {
-                if (session.indexInfo.closed === -1) {
+                if (!this.isClosed(session)) {
                     return session;
                 }
             }
         }
 
-        updateSessionState(session) {
+        setSession(session) {
             this.sessions.set(session.indexInfo.baseKey, session);
-            this.removeOldSessions();
         }
 
         getSessions() {
-            // return an array of sessions ordered by time closed,
-            // followed by the open session
-            const sessions = [];
-            let openSession;
-            for (const session of this.sessions.values()) {
-                if (session.indexInfo.closed === -1) {
-                    if (openSession) {
-                        throw new ReferenceError("Unexpected duplicate open sessions");
-                    }
-                    openSession = session;
-                } else {
-                    sessions.push(session);
-                }
-            }
-            sessions.sort((s1, s2) => s1.indexInfo.closed - s2.indexInfo.closed);
-            if (openSession) {
-                sessions.push(openSession);
-            }
-            return sessions;
+            // Return sessions ordered with most recently used first.
+            return Array.from(this.sessions.values()).sort((a, b) => {
+                const aUsed = a.indexInfo.used || 0;
+                const bUsed = b.indexInfo.used || 0;
+                return aUsed === bUsed ? 0 : aUsed < bUsed ? 1 : -1;
+            });
         }
 
-        archiveCurrentState() {
-            const openSession = this.getOpenSession();
-            if (openSession) {
-                openSession.indexInfo.closed = Date.now();
-                this.removeOldSessions();
+        closeSession(session) {
+            if (this.isClosed(session)) {
+                console.warn("Session already closed", session);
+                return;
             }
+            console.info("Closing session:", session);
+            session.indexInfo.closed = Date.now();
         }
 
-        promoteState(session) {
+        openSession(session) {
+            if (!this.isClosed(session)) {
+                console.warn("Session already open");
+            }
+            console.info("Opening session:", session);
             session.indexInfo.closed = -1;
         }
 
+        isClosed(session) {
+            return session.indexInfo.closed !== -1;
+        }
+
         removeOldSessions() {
-            while (this.sessions.size > ARCHIVED_STATES_MAX_LENGTH) {
+            while (this.sessions.size > CLOSED_SESSIONS_MAX) {
                 let oldestKey;
                 let oldestSession;
                 for (const x of this.sessions.entries()) {
@@ -279,7 +292,7 @@
                     }
                 }
                 if (oldestKey) {
-                    console.info("Prune old closed session:", oldestKey);
+                    console.info("Removing old closed session:", oldestSession);
                     this.sessions.delete(oldestKey);
                 } else {
                     throw new Error('Corrupt session map');

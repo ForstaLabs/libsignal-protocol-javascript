@@ -8,10 +8,11 @@
     ns.SignalError = class SignalError extends Error {};
 
     ns.UntrustedIdentityKeyError = class UntrustedIdentityKeyError extends ns.SignalError {
-        constructor(props) {
+        constructor(addr, identityKey) {
             super();
-            this.name = 'IdentityKeyError';
-            Object.assign(this, props);
+            this.name = 'UntrustedIdentityKeyError';
+            this.addr = addr;
+            this.identityKey = identityKey;
         }
     };
 
@@ -22,7 +23,14 @@
         }
     };
 
-    ns.PreKeyError = class PreKeyError extends ns.SignalError {
+    ns.MessageCounterError = class MessageCounterError extends ns.SessionError {
+        constructor(message) {
+            super(message);
+            this.name = 'MessageCounterError';
+        }
+    };
+
+    ns.PreKeyError = class PreKeyError extends ns.SessionError {
         constructor(message) {
             super(message);
             this.name = 'PreKeyError';

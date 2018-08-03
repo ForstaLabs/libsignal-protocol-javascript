@@ -54,7 +54,7 @@ module.exports = function(grunt) {
           'src/keyhelper.js',
           'build/protobufs_concat.js',
           'src/SessionRecord.js',
-          'src/SignalProtocolAddress.js',
+          'src/ProtocolAddress.js',
           'src/SessionBuilder.js',
           'src/SessionCipher.js',
           'src/SessionLock.js',

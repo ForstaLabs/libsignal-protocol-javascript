@@ -11,25 +11,22 @@
 
     ns.SessionBuilder = class SessionBuilder {
 
-        constructor(storage, remoteAddress) {
-            this.remoteAddress = remoteAddress;
+        constructor(storage, protocolAddress) {
+            this.addr = protocolAddress;
             this.storage = storage;
         }
 
-        async processPreKey(device) {
-            const addr = this.remoteAddress.toString();
-            return await ns.queueJob(addr, async () => {
-                const trusted = await this.storage.isTrustedIdentity(addr, device.identityKey);
+        async initOutgoing(device) {
+            const fqAddr = this.addr.toString();
+            return await ns.queueJob(fqAddr, async () => {
+                const trusted = await this.storage.isTrustedIdentity(this.addr.id, device.identityKey);
                 if (!trusted) {
-                    throw new ns.UntrustedIdentityKeyError({addr, identityKey: device.identityKey});
+                    throw new ns.UntrustedIdentityKeyError(this.addr.id, device.identityKey);
                 }
                 ns.curve.verifySignature(device.identityKey, device.signedPreKey.publicKey,
                                          device.signedPreKey.signature);
                 const baseKey = ns.curve.generateKeyPair();
-                let devicePreKey;
-                if (device.preKey) {
-                    devicePreKey = device.preKey.publicKey;
-                }
+                const devicePreKey = device.preKey && device.preKey.publicKey;
                 const session = await this.initSession(true, baseKey, undefined, device.identityKey,
                                                        devicePreKey, device.signedPreKey.publicKey,
                                                        device.registrationId);
@@ -40,55 +37,47 @@
                 if (device.preKey) {
                     session.pendingPreKey.preKeyId = device.preKey.keyId;
                 }
-                const data = await this.storage.loadSession(addr);
+                const data = await this.storage.loadSession(fqAddr);
                 const record = ns.SessionRecord.fromStorage(data);
-                record.archiveCurrentState();
-                record.updateSessionState(session);
-                await this.storage.storeSession(addr, record);
-                await this.storage.saveIdentity(addr, session.indexInfo.remoteIdentityKey);
+                const openSession = record.getOpenSession();
+                if (openSession) {
+                    console.warn("Closing stale open session for new outgoing prekey bundle");
+                    record.closeSession(openSession);
+                }
+                record.setSession(session);
+                await this.storage.storeSession(fqAddr, record);
             });
         }
 
-        async processV3(record, message) {
-            const addr = this.remoteAddress.toString();
+        async initIncoming(record, message) {
+            const fqAddr = this.addr.toString();
             const msgIdentityKey = message.identityKey.toArrayBuffer();
-            const trusted = await this.storage.isTrustedIdentity(addr, msgIdentityKey);
+            const trusted = await this.storage.isTrustedIdentity(fqAddr, msgIdentityKey);
             if (!trusted) {
-                throw new ns.UntrustedIdentityKeyError({addr, message, identityKey: msgIdentityKey});
+                throw new ns.UntrustedIdentityKeyError(this.addr.id, msgIdentityKey);
             }
-            const preKeyPair = await this.storage.loadPreKey(message.preKeyId);
-            const signedPreKeyPair = await this.storage.loadSignedPreKey(message.signedPreKeyId);
             const baseKey = message.baseKey.toArrayBuffer();
-            let session = record.getSession(baseKey);
-            if (session) {
+            if (record.getSession(baseKey)) {
+                // This just means we haven't replied.  Remove log soon.
                 console.debug("Duplicate PreKeyMessage for session");
                 return;
             }
-            session = record.getOpenSession();
-            if (signedPreKeyPair === undefined) {
-                // Session may or may not be the right one, but if its not, we
-                // can't do anything about it ...fall through and let
-                // decryptWhisperMessage handle that case
-                if (session !== undefined && session.currentRatchet !== undefined) {
-                    return;
-                } else {
-                    throw new ns.PreKeyError("Missing SignedPreKey");
-                }
-            }
-            if (session !== undefined) {
-                record.archiveCurrentState();
-            }
+            const preKeyPair = await this.storage.loadPreKey(message.preKeyId);
             if (message.preKeyId && !preKeyPair) {
                 throw new ns.PreKeyError('Invalid PreKey ID');
             }
-            const newSession = await this.initSession(false, preKeyPair, signedPreKeyPair,
-                                                      msgIdentityKey, baseKey, undefined,
-                                                      message.registrationId);
-            // Note that the session is not actually saved until the very
-            // end of decryptWhisperMessage ... to ensure that the sender
-            // actually holds the private keys for all reported pubkeys
-            record.updateSessionState(newSession);
-            await this.storage.saveIdentity(addr, msgIdentityKey);
+            const signedPreKeyPair = await this.storage.loadSignedPreKey(message.signedPreKeyId);
+            if (!signedPreKeyPair) {
+                throw new ns.PreKeyError("Missing SignedPreKey");
+            }
+            const existingOpenSession = record.getOpenSession();
+            if (existingOpenSession) {
+                console.warn("Closing open session in favor of incoming prekey bundle");
+                record.closeSession(existingOpenSession);
+            }
+            record.setSession(await this.initSession(false, preKeyPair, signedPreKeyPair,
+                                                     msgIdentityKey, baseKey, undefined,
+                                                     message.registrationId));
             return message.preKeyId;
         }
 
@@ -133,33 +122,33 @@
                                                            ourEphemeralKey.privKey);
                 sharedSecret.set(new Uint8Array(ecRes4), 32 * 4);
             }
-            const masterKey = await ns.crypto.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32), whisperText);
+            const masterKey = await ns.crypto.deriveSecrets(sharedSecret.buffer, new ArrayBuffer(32),
+                                                            whisperText);
             const session = {
-                registrationId: registrationId,
+                registrationId,
                 currentRatchet: {
                     rootKey: masterKey[0],
+                    ephemeralKeyPair: isInitiator ? ns.curve.generateKeyPair() : ourSignedKey,
                     lastRemoteEphemeralKey: theirSignedPubKey,
                     previousCounter: 0
                 },
                 indexInfo: {
+                    created: Date.now(),
+                    used: Date.now(),
                     remoteIdentityKey: theirIdentityPubKey,
+                    baseKey: isInitiator ? ourEphemeralKey.pubKey : theirEphemeralPubKey,
+                    baseKeyType: isInitiator ? ns.BaseKeyType.OURS : ns.BaseKeyType.THEIRS,
                     closed: -1
                 },
                 chains: new ns.ArrayBufferMap()
             };
-            // If we're initiating we go ahead and set our first sending ephemeral key now,
-            // otherwise we figure it out when we first maybeStepRatchet with the remote's ephemeral key
             if (isInitiator) {
-                session.indexInfo.baseKey = ourEphemeralKey.pubKey;
-                session.indexInfo.baseKeyType = ns.BaseKeyType.OURS;
-                const ourSendingEphemeralKey = ns.curve.generateKeyPair();
-                session.currentRatchet.ephemeralKeyPair = ourSendingEphemeralKey;
+                // If we're initiating we go ahead and set our first sending ephemeral key now,
+                // otherwise we figure it out when we first maybeStepRatchet with the remote's
+                // ephemeral key
                 await this.calculateSendingRatchet(session, theirSignedPubKey);
-            } else {
-                session.indexInfo.baseKey = theirEphemeralPubKey;
-                session.indexInfo.baseKeyType = ns.BaseKeyType.THEIRS;
-                session.currentRatchet.ephemeralKeyPair = ourSignedKey;
             }
+            console.info((isInitiator ? "Created" : "Imported") + " new session:", session);
             return session;
         }
 
