@@ -58,8 +58,7 @@
             }
             const baseKey = message.baseKey.toArrayBuffer();
             if (record.getSession(baseKey)) {
-                // This just means we haven't replied.  Remove log soon.
-                console.debug("Duplicate PreKeyMessage for session");
+                // This just means we haven't replied.
                 return;
             }
             const preKeyPair = await this.storage.loadPreKey(message.preKeyId);
