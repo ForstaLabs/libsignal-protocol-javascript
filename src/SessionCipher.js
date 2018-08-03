@@ -170,7 +170,7 @@
                 let record = await this.getRecord();
                 const preKeyProto = ns.protobuf.PreKeyWhisperMessage.decode(data.slice(1));
                 if (!record) {
-                    if (preKeyProto.registrationId === undefined) {
+                    if (preKeyProto.registrationId == null) {
                         throw new Error("No registrationId");
                     }
                     record = new ns.SessionRecord();
@@ -293,7 +293,7 @@
         async hasOpenSession() {
             return await this.queueJob(async () => {
                 const record = await this.getRecord();
-                if (record === undefined) {
+                if (!record) {
                     return false;
                 }
                 return record.haveOpenSession();

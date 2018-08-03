@@ -83,18 +83,18 @@
         async initSession(isInitiator, ourEphemeralKey, ourSignedKey, theirIdentityPubKey,
                           theirEphemeralPubKey, theirSignedPubKey, registrationId) {
             if (isInitiator) {
-                if (ourSignedKey !== undefined) {
+                if (ourSignedKey) {
                     throw new Error("Invalid call to initSession");
                 }
                 ourSignedKey = ourEphemeralKey;
             } else {
-                if (theirSignedPubKey !== undefined) {
+                if (theirSignedPubKey) {
                     throw new Error("Invalid call to initSession");
                 }
                 theirSignedPubKey = theirEphemeralPubKey;
             }
             let sharedSecret;
-            if (ourEphemeralKey === undefined || theirEphemeralPubKey === undefined) {
+            if (!ourEphemeralKey || !theirEphemeralPubKey) {
                 sharedSecret = new Uint8Array(32 * 4);
             } else {
                 sharedSecret = new Uint8Array(32 * 5);
@@ -116,7 +116,7 @@
                 sharedSecret.set(new Uint8Array(ecRes[1]), 32);
             }
             sharedSecret.set(new Uint8Array(ecRes[2]), 32 * 3);
-            if (ourEphemeralKey !== undefined && theirEphemeralPubKey !== undefined) {
+            if (ourEphemeralKey && theirEphemeralPubKey) {
                 const ecRes4 = ns.curve.calculateAgreement(theirEphemeralPubKey,
                                                            ourEphemeralKey.privKey);
                 sharedSecret.set(new Uint8Array(ecRes4), 32 * 4);

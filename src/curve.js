@@ -7,7 +7,7 @@
     const ns = self.libsignal.curve = {};
 
     function validatePrivKey(privKey) {
-        if (privKey === undefined || !(privKey instanceof ArrayBuffer) || privKey.byteLength != 32) {
+        if (!privKey || !(privKey instanceof ArrayBuffer) || privKey.byteLength != 32) {
             throw new Error("Invalid private key");
         }
     }
@@ -46,7 +46,7 @@
     ns.calculateAgreement = function(pubKey, privKey) {
         pubKey = scrubPubKeyFormat(pubKey);
         validatePrivKey(privKey);
-        if (pubKey === undefined || pubKey.byteLength != 32) {
+        if (!pubKey || pubKey.byteLength !== 32) {
             throw new Error("Invalid public key");
         }
         return libsignal.curve25519.sharedSecret(pubKey, privKey);
@@ -54,7 +54,7 @@
 
     ns.calculateSignature = function(privKey, message) {
         validatePrivKey(privKey);
-        if (message === undefined) {
+        if (!message) {
             throw new Error("Invalid message");
         }
         return libsignal.curve25519.sign(privKey, message);
@@ -62,13 +62,13 @@
 
     ns.verifySignature = function(pubKey, msg, sig) {
         pubKey = scrubPubKeyFormat(pubKey);
-        if (pubKey === undefined || pubKey.byteLength != 32) {
+        if (!pubKey || pubKey.byteLength !== 32) {
             throw new Error("Invalid public key");
         }
-        if (msg === undefined) {
+        if (!msg) {
             throw new Error("Invalid message");
         }
-        if (sig === undefined || sig.byteLength != 64) {
+        if (!sig || sig.byteLength !== 64) {
             throw new Error("Invalid signature");
         }
         libsignal.curve25519.verify(pubKey, msg, sig);
