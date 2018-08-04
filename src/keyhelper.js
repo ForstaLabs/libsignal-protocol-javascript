@@ -17,7 +17,7 @@
         return registrationId & 0x3fff;
     };
 
-    ns.generateSignedPreKey = async function(identityKeyPair, keyId) {
+    ns.generateSignedPreKey = function(identityKeyPair, keyId) {
         if (!(identityKeyPair.privKey instanceof ArrayBuffer) ||
             identityKeyPair.privKey.byteLength != 32 ||
             !(identityKeyPair.pubKey instanceof ArrayBuffer) ||
@@ -27,8 +27,8 @@
         if (!isNonNegativeInteger(keyId)) {
             throw new TypeError('Invalid argument for keyId: ' + keyId);
         }
-        const keyPair = await libsignal.curve.generateKeyPair();
-        const signature = await libsignal.curve.calculateSignature(identityKeyPair.privKey, keyPair.pubKey);
+        const keyPair = libsignal.curve.generateKeyPair();
+        const signature = libsignal.curve.calculateSignature(identityKeyPair.privKey, keyPair.pubKey);
         return {
             keyId,
             keyPair,
@@ -36,11 +36,11 @@
         };
     };
 
-    ns.generatePreKey = async function(keyId) {
+    ns.generatePreKey = function(keyId) {
         if (!isNonNegativeInteger(keyId)) {
             throw new TypeError('Invalid argument for keyId: ' + keyId);
         }
-        const keyPair = await libsignal.curve.generateKeyPair();
+        const keyPair = libsignal.curve.generateKeyPair();
         return {
             keyId,
             keyPair
