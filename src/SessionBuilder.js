@@ -49,7 +49,6 @@
         }
 
         async initIncoming(record, message) {
-            const fqAddr = this.addr.toString();
             const msgIdentityKey = message.identityKey.toArrayBuffer();
             if (!await this.storage.isTrustedIdentity(this.addr.id, msgIdentityKey)) {
                 throw new ns.UntrustedIdentityKeyError(this.addr.id, msgIdentityKey);
