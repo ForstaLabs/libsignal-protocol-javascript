@@ -19,8 +19,7 @@
         async initOutgoing(device) {
             const fqAddr = this.addr.toString();
             return await ns.queueJob(fqAddr, async () => {
-                const trusted = await this.storage.isTrustedIdentity(this.addr.id, device.identityKey);
-                if (!trusted) {
+                if (!await this.storage.isTrustedIdentity(this.addr.id, device.identityKey)) {
                     throw new ns.UntrustedIdentityKeyError(this.addr.id, device.identityKey);
                 }
                 ns.curve.verifySignature(device.identityKey, device.signedPreKey.publicKey,
@@ -52,8 +51,7 @@
         async initIncoming(record, message) {
             const fqAddr = this.addr.toString();
             const msgIdentityKey = message.identityKey.toArrayBuffer();
-            const trusted = await this.storage.isTrustedIdentity(this.addr.id, msgIdentityKey);
-            if (!trusted) {
+            if (!await this.storage.isTrustedIdentity(this.addr.id, msgIdentityKey)) {
                 throw new ns.UntrustedIdentityKeyError(this.addr.id, msgIdentityKey);
             }
             const baseKey = message.baseKey.toArrayBuffer();
