@@ -51,8 +51,7 @@
                     throw new ns.SessionError("No open session");
                 }
                 const remoteIdentityKey = session.indexInfo.remoteIdentityKey;
-                const trusted = await this.storage.isTrustedIdentity(this.addr.id, remoteIdentityKey);
-                if (!trusted) {
+                if (!await this.storage.isTrustedIdentity(this.addr.id, remoteIdentityKey)) {
                     throw new ns.UntrustedIdentityKeyError(this.addr.id, remoteIdentityKey);
                 }
                 const chain = session.chains.get(session.currentRatchet.ephemeralKeyPair.pubKey);
@@ -141,13 +140,12 @@
                 }
                 const result = await this.decryptWithSessions(data, record.getSessions());
                 const remoteIdentityKey = result.session.indexInfo.remoteIdentityKey;
-                const trusted = await this.storage.isTrustedIdentity(this.addr.id, remoteIdentityKey);
-                if (!trusted) {
+                if (!await this.storage.isTrustedIdentity(this.addr.id, remoteIdentityKey)) {
                     throw new ns.UntrustedIdentityKeyError(this.addr.id, remoteIdentityKey);
                 }
                 if (record.isClosed(result.session)) {
                     // It's possible for this to happen when processing a backlog of messages.
-                    // The message was, hopefully, just send back in a time when this session
+                    // The message was, hopefully, just sent back in a time when this session
                     // was the most current.  Simply make a note of it and continue.  If our
                     // actual open session is for reason invalid, that must be handled via
                     // a full SessionError response.
@@ -268,8 +266,7 @@
                 ratchet.previousCounter = session.chains.get(chainId).chainKey.counter;
                 session.chains.delete(chainId);
             }
-            const keyPair = ns.curve.generateKeyPair();
-            ratchet.ephemeralKeyPair = keyPair;
+            ratchet.ephemeralKeyPair = ns.curve.generateKeyPair();
             await this.calculateRatchet(session, remoteKey, true);
             ratchet.lastRemoteEphemeralKey = remoteKey;
         }
