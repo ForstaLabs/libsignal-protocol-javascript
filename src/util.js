@@ -56,7 +56,16 @@
         if (!(data instanceof Uint8Array)) {
             throw new TypeError("Uint8Array argument required");
         }
-        return String.fromCharCode.apply(null, data);
+        const len = data.length;
+        if (len < 65536) {
+            return String.fromCharCode.apply(null, data);
+        }
+        // Avoid RangeError for big values...
+        const buf = [];
+        for (let i = 0; i < data.length; i++) {
+            buf.push(String.fromCharCode(data[i]));
+        }
+        return buf.join('');
     };
 
     ns.arrayBufferToString = function(data) {
