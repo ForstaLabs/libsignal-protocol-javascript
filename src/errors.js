@@ -17,9 +17,12 @@
     };
 
     ns.SessionError = class SessionError extends ns.SignalError {
-        constructor(message) {
+        constructor(message, extra) {
             super(message);
             this.name = 'SessionError';
+            if (extra) {
+                Object.assign(this, extra);
+            }
         }
     };
 

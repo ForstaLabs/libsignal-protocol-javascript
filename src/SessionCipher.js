@@ -129,7 +129,7 @@
             for (const e of errors) {
                 console.error("Session error:" + e, e.stack);
             }
-            throw new ns.SessionError("No matching sessions found for message");
+            throw new ns.SessionError("No matching sessions found for message", {decryptError: errors});
         }
 
         async decryptWhisperMessage(data) {
